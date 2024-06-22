@@ -1,0 +1,36 @@
+services:
+  postgres:
+    container_name: sh-postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: sage-hub
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - 7010:5432
+    volumes:
+      - sh-postgres:/data/postgres
+    networks:
+      - sage-hub-network
+    restart: unless-stopped
+
+  keycloak:
+    container_name: sh-keycloak
+    image: quay.io/keycloak/keycloak:24.0.2
+    ports:
+      - 7020:8080
+    environment:
+      KEYCLOAK_ADMIN: ${DB_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - sage-hub-network
+    command:
+      - "start-dev"
+
+networks:
+  sage-hub-network:
+    driver: bridge
+volumes:
+  sh-postgres:
+    driver: local
