@@ -12,6 +12,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	boolean existsByUsername(String lowerCase);
 
-	Integer countByUsername(String username);
-
 }
