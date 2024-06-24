@@ -4,8 +4,12 @@ import java.util.Arrays;
 import java.util.Map;
 
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.Role;
+import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.RoleRepository;
+import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,10 +23,13 @@ import org.springframework.stereotype.Component;
 public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 
 	private final RoleRepository roleRepository;
+	private final AdminRepository adminRepository;
+	private final UserUtil userUtil;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		this.loadRoles();
+		this.loadSuperAdmin();
 	}
 
 	private void loadRoles() {
@@ -42,4 +49,20 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 			}
 		});
 	}
+
+	private void loadSuperAdmin() {
+		String firstName = "Super";
+		String lastName = "Admin";
+		User user = this.userUtil.createNewUser(firstName, lastName, RoleEnum.SUPER_ADMIN);
+		Admin superAdmin = Admin.builder()
+				.firstName(firstName)
+				.lastName(lastName)
+				.primaryEmail("superadmin@email.com")
+				.profilePictureUrl("https://www.gravatar.com/avatar.jpg")
+				.user(user)
+				.build();
+		this.adminRepository.save(superAdmin);
+		log.info("INFO - SuperAdminSeeder: Super admin seeded");
+	}
+
 }
