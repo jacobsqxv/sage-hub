@@ -13,6 +13,8 @@ spring:
 
   application:
     name: sage-hub
+    frontend:
+      local: ${FRONTEND_LOCAL}
 
 logging:
   level:
