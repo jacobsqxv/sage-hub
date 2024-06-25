@@ -15,10 +15,13 @@ import org.passay.PasswordGenerator;
 
 import org.springframework.stereotype.Component;
 
+import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class Generators {
+
 	private final UserRepository userRepository;
 
 	private final StudentRepository studentRepository;
@@ -34,7 +37,7 @@ public class Generators {
 	public String generatePassword() {
 		CharacterData specialChars = new CharacterData() {
 			public String getErrorCode() {
-				return "Unexpected value";
+				return UNEXPECTED_VALUE;
 			}
 
 			public String getCharacters() {

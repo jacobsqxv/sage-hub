@@ -1,5 +1,6 @@
 package dev.aries.sagehub.service.userservice;
 
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.ContactInfoRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
@@ -28,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
+import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_ROLE;
 
 /**
  * UserServiceImpl is a service class that implements the UserService interface.
@@ -62,7 +66,7 @@ public class UserServiceImpl implements UserService {
 		this.userUtil.isCurrentlyLoggedInUser(id);
 		if (!this.userUtil.isPasswordValid(request.oldPassword())) {
 			log.warn("WARN - UserService: Old password is incorrect");
-			throw new IllegalArgumentException("Old password is incorrect");
+			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
 		}
 		User user = this.userUtil.getUser(id);
 		user.setHashedPassword(this.passwordEncoder.encode(request.newPassword()));
@@ -90,7 +94,7 @@ public class UserServiceImpl implements UserService {
 				this.staffRepository.save(newStaff);
 				return this.globalUtil.getUserResponse(newStaff);
 			}
-			default -> throw new IllegalArgumentException("Invalid role");
+			default -> throw new IllegalArgumentException(INVALID_ROLE);
 		}
 	}
 
@@ -160,13 +164,13 @@ public class UserServiceImpl implements UserService {
 	}
 
 	/**
-	 * This method builds a BasicInfo object for a new user.
-	 * It first creates a new User object with the provided first name, last name, and role.
-	 * Then, it adds the secondary email to the contact information.
-	 * It generates a primary email for the user based on their username and role.
-	 * Depending on the role, it builds a Student or Staff object with the generated ID, primary email, contact information, and user.
-	 * Finally, it uses the buildBasicInfo method to set the first name, middle name, last name, gender, and date of birth from the request.
-	 *
+	 * This method builds a BasicInfo object for a new user. It first creates a new User
+	 * object with the provided first name, last name, and role. Then, it adds the
+	 * secondary email to the contact information. It generates a primary email for the
+	 * user based on their username and role. Depending on the role, it builds a Student
+	 * or Staff object with the generated ID, primary email, contact information, and
+	 * user. Finally, it uses the buildBasicInfo method to set the first name, middle
+	 * name, last name, gender, and date of birth from the request.
 	 * @param request the request containing the user information.
 	 * @param role the role of the new user (either "STUDENT" or "STAFF").
 	 * @return a BasicInfo object built with the provided builder and request.
@@ -190,7 +194,7 @@ public class UserServiceImpl implements UserService {
 					.primaryEmail(primaryEmail)
 					.contactInfo(contactInfo)
 					.user(user);
-			default -> throw new IllegalArgumentException("Invalid role");
+			default -> throw new IllegalArgumentException(INVALID_ROLE);
 		};
 		return buildBasicInfo(builder, request);
 	}
