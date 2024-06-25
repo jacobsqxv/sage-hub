@@ -51,7 +51,6 @@ public class AuthServiceImpl implements AuthService {
 			.authenticate(new UsernamePasswordAuthenticationToken(
 					request.username(), request.password()));
 		user = this.userUtil.getUser(authentication.getName());
-		log.info("INFO - AuthService: {} authenticated successfully", authentication.getName());
 		}
 		catch (BadCredentialsException ex) {
 			countOfFailedAttempts = user.getFailedLoginAttempts() + 1;
@@ -59,10 +58,8 @@ public class AuthServiceImpl implements AuthService {
 			if (countOfFailedAttempts >= 5) {
 				user.setAccountLocked(true);
 				user.setFailedLoginAttempts(0);
-				log.info("INFO - Account locked for user: {}", user.getUsername());
 			}
 			this.userRepository.save(user);
-			log.info("INFO - {} ", ex.getMessage());
 			log.info("INFO - Number of failed login attempts: {}", countOfFailedAttempts);
 			throw new BadCredentialsException(ExceptionConstants.INVALID_CREDENTIALS);
 		}

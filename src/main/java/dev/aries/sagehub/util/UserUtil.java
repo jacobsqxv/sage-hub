@@ -61,7 +61,7 @@ public class UserUtil {
 		if (!(loggedInUserRole.equals(RoleEnum.ADMIN) ||
 				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN)) &&
 				!currentlyLoggedInUser().getId().equals(id)) {
-			log.warn("WARN - Unauthorized access");
+			log.info("INFO - Unauthorized access to this resource");
 			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
 		}
 	}
@@ -69,7 +69,7 @@ public class UserUtil {
 	public void isCurrentlyLoggedInUser(Long id) {
 		User user = currentlyLoggedInUser();
 		if (!user.getUsername().equals(getUser(id).getUsername())) {
-			log.warn("WARN - UserService: Not authorized to access information for {}", user.getUsername());
+			log.info("INFO - Unauthorized access to information for {}", user.getUsername());
 			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
 		}
 	}
