@@ -22,6 +22,8 @@ public final class ExceptionConstants {
 
 	public static final String NO_CONTACT_INFO = "No contact information found for the user";
 
+	public static final String NO_UPDATE_STRATEGY = "No update strategy found for type: %s";
+
 	public static final String NO_EMERGENCY_CONTACT = "No emergency contact information found for the user";
 
 	private ExceptionConstants() {
