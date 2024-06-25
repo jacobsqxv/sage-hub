@@ -49,7 +49,7 @@ public class AdminServiceImpl implements AdminService {
 			.user(user)
 			.build();
 		this.adminRepository.save(admin);
-		log.info("Admin added: {}", admin.getUser().getUsername());
+		log.info("INFO - New admin added with ID: {}", admin.getUser().getUsername());
 		return this.globalUtil.getUserResponse(admin);
 	}
 

@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
 	public BasicUserResponse changePassword(Long id, PasswordChangeRequest request) {
 		this.userUtil.isCurrentlyLoggedInUser(id);
 		if (!this.userUtil.isPasswordValid(request.oldPassword())) {
-			log.warn("WARN - UserService: Old password is incorrect");
+			log.info("INFO - Current password is incorrect");
 			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
 		}
 		User user = this.userUtil.getUser(id);
@@ -133,7 +133,7 @@ public class UserServiceImpl implements UserService {
 		UpdateStrategy strategy = checkStrategy(type);
 		contactInfo = (ContactInfo) strategy.update(contactInfo, request);
 		this.contactInfoRepository.save(contactInfo);
-		log.info("Contact info updated: {}", contactInfo.getId());
+		log.info("INFO - Contact info with ID:{} updated", contactInfo.getId());
 		return this.contactInfoMapper.toContactInfoResponse(contactInfo);
 	}
 
@@ -164,6 +164,7 @@ public class UserServiceImpl implements UserService {
 		UpdateStrategy strategy = checkStrategy(type);
 		emergencyContact = (EmergencyContact) strategy.update(emergencyContact, request);
 		this.emergencyContactRepository.save(emergencyContact);
+		log.info("INFO - Emergency contact with ID{} updated", emergencyContact.getId());
 		return this.emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
 	}
 

@@ -45,7 +45,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 						.description(roleDescription.get(role))
 						.build();
 				this.roleRepository.save(roleToSave);
-				log.info("INFO - RoleSeeder: Role {} saved", role.name());
+				log.info("INFO - '{}' role added", role.name());
 			}
 		});
 	}
@@ -62,7 +62,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 				.user(user)
 				.build();
 		this.adminRepository.save(superAdmin);
-		log.info("INFO - SuperAdminSeeder: Super admin seeded");
+		log.info("INFO - Super admin added");
 	}
 
 }
