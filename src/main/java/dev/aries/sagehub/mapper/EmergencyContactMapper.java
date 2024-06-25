@@ -1,5 +1,6 @@
 package dev.aries.sagehub.mapper;
 
+import dev.aries.sagehub.dto.request.EmergencyContactRequest;
 import dev.aries.sagehub.dto.response.EmergencyContactResponse;
 import dev.aries.sagehub.model.EmergencyContact;
 

@@ -1,8 +1,10 @@
 package dev.aries.sagehub.service.userservice;
 
-import dev.aries.sagehub.constant.ExceptionConstants;
+import java.util.Map;
+
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.ContactInfoRequest;
+import dev.aries.sagehub.dto.request.EmergencyContactRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.ContactInfoResponse;
@@ -18,11 +20,13 @@ import dev.aries.sagehub.model.Staff;
 import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.ContactInfoRepository;
+import dev.aries.sagehub.repository.EmergencyContactRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
+import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +36,7 @@ import org.springframework.stereotype.Service;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_ROLE;
+import static dev.aries.sagehub.constant.ExceptionConstants.NO_UPDATE_STRATEGY;
 
 /**
  * UserServiceImpl is a service class that implements the UserService interface.
@@ -54,6 +59,8 @@ public class UserServiceImpl implements UserService {
 	private final Generators generators;
 	private final ContactInfoMapper contactInfoMapper;
 	private final EmergencyContactMapper emergencyContactMapper;
+	private final Map<String, UpdateStrategy> updateStrategies;
+	private final EmergencyContactRepository emergencyContactRepository;
 
 	/**
 	 * Changes the password of a user.
@@ -122,7 +129,9 @@ public class UserServiceImpl implements UserService {
 
 		this.userUtil.isAdminOrLoggedIn(id);
 		ContactInfo contactInfo = this.globalUtil.loadContactInfo(this.globalUtil.getUserInfo(id));
-
+		String type = "updateContactInfo";
+		UpdateStrategy strategy = checkStrategy(type);
+		contactInfo = (ContactInfo) strategy.update(contactInfo, request);
 		this.contactInfoRepository.save(contactInfo);
 		log.info("Contact info updated: {}", contactInfo.getId());
 		return this.contactInfoMapper.toContactInfoResponse(contactInfo);
@@ -138,6 +147,23 @@ public class UserServiceImpl implements UserService {
 		this.userUtil.isAdminOrLoggedIn(id);
 		EmergencyContact emergencyContact = this.globalUtil.loadEmergencyContact(
 				this.globalUtil.getUserInfo(id));
+		return this.emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
+	}
+	/**
+	 * Updates the emergency contact information of a user.
+	 * @param id the ID of the user.
+	 * @param request the request containing the new emergency contact information.
+	 * @return a EmergencyContactResponse containing the updated emergency contact information.
+	 */
+	@Override
+	public EmergencyContactResponse updateEmergencyContact(Long id, EmergencyContactRequest request) {
+		this.userUtil.isAdminOrLoggedIn(id);
+		EmergencyContact emergencyContact = this.globalUtil.loadEmergencyContact(
+				this.globalUtil.getUserInfo(id));
+		String type = "updateEmergencyContact";
+		UpdateStrategy strategy = checkStrategy(type);
+		emergencyContact = (EmergencyContact) strategy.update(emergencyContact, request);
+		this.emergencyContactRepository.save(emergencyContact);
 		return this.emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
 	}
 
@@ -204,5 +230,12 @@ public class UserServiceImpl implements UserService {
 				.secondaryEmail(email)
 				.build();
 		return this.contactInfoRepository.save(contactInfo).getId();
+	}
+
+	private UpdateStrategy checkStrategy(String type) {
+		if (updateStrategies.get(type) == null) {
+			throw new IllegalArgumentException(String.format(NO_UPDATE_STRATEGY, type));
+		}
+		return updateStrategies.get(type);
 	}
 }
