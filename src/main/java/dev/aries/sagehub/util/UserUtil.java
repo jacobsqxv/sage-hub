@@ -1,6 +1,7 @@
 package dev.aries.sagehub.util;
 
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import static dev.aries.sagehub.constant.ExceptionConstants.NO_USER_FOUND;
+import static dev.aries.sagehub.constant.ExceptionConstants.UNAUTHORIZED_ACCESS;
 
 @Component
 @RequiredArgsConstructor
@@ -27,12 +30,11 @@ public class UserUtil {
 
 	public User getUser(String username) {
 		return this.userRepository.findByUsername(username)
-			.orElseThrow(() -> new EntityNotFoundException("User not found"));
+			.orElseThrow(() -> new EntityNotFoundException(NO_USER_FOUND));
 	}
 
 	public User getUser(Long id) {
-		return this.userRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("User not found"));
+		return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(NO_USER_FOUND));
 	}
 
 	public User createNewUser(String firstName, String lastName, RoleEnum roleEnum) {
@@ -60,7 +62,7 @@ public class UserUtil {
 				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN)) &&
 				!currentlyLoggedInUser().getId().equals(id)) {
 			log.warn("WARN - Unauthorized access");
-			throw new IllegalStateException("Unauthorized access");
+			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
 		}
 	}
 
@@ -68,7 +70,7 @@ public class UserUtil {
 		User user = currentlyLoggedInUser();
 		if (!user.getUsername().equals(getUser(id).getUsername())) {
 			log.warn("WARN - UserService: Not authorized to access information for {}", user.getUsername());
-			throw new IllegalArgumentException("You are not authorized to access this user's information");
+			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
 		}
 	}
 

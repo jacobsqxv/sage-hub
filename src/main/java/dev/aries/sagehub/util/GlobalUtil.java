@@ -21,6 +21,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
+import static dev.aries.sagehub.constant.ExceptionConstants.NO_CONTACT_INFO;
+import static dev.aries.sagehub.constant.ExceptionConstants.NO_EMERGENCY_CONTACT;
+import static dev.aries.sagehub.constant.ExceptionConstants.NO_USER_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -47,7 +50,7 @@ public class GlobalUtil {
 			case STUDENT -> {
 				return this.studentRepository.findByUserId(id);
 			}
-			default -> throw new IllegalArgumentException("Invalid user");
+			default -> throw new IllegalArgumentException(NO_USER_FOUND);
 		}
 	}
 
@@ -64,18 +67,18 @@ public class GlobalUtil {
 				return getUserResponse(student);
 			}
 		}
-		throw new IllegalArgumentException("Invalid user");
+		throw new IllegalArgumentException(NO_USER_FOUND);
 	}
 
 	public <T> BasicUserResponse getUserResponse(T user) {
 		if (user == null) {
-			throw new IllegalArgumentException("Invalid user");
+			throw new IllegalArgumentException(NO_USER_FOUND);
 		}
 		try {
 			User linkedUser = (User) user.getClass().getMethod("getUser").invoke(user);
 			BasicUserResponse.BasicUserResponseBuilder response = BasicUserResponse.builder()
 				.id(linkedUser.getId())
-					.profilePicture((String) user.getClass().getMethod("getProfilePictureUrl").invoke(user))
+				.profilePicture((String) user.getClass().getMethod("getProfilePictureUrl").invoke(user))
 				.fullname((String) user.getClass().getMethod("fullName").invoke(user))
 				.username(linkedUser.getUsername())
 				.primaryEmail((String) user.getClass().getMethod("getPrimaryEmail").invoke(user))
@@ -110,7 +113,7 @@ public class GlobalUtil {
 		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
 			Object user = optional.get();
 			if (user instanceof Admin) {
-				throw new EntityNotFoundException("No contact info found for admin");
+				throw new EntityNotFoundException(NO_CONTACT_INFO);
 			}
 			else if (user instanceof Staff || user instanceof Student) {
 				try {
@@ -121,14 +124,14 @@ public class GlobalUtil {
 				}
 			}
 		}
-		throw new IllegalArgumentException("Invalid user");
+		throw new IllegalArgumentException(NO_USER_FOUND);
 	}
 
 	public EmergencyContact loadEmergencyContact(Object userInfo) {
 		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
 			Object user = optional.get();
 			if (user instanceof Admin) {
-				throw new EntityNotFoundException("No emergency contact found for admin");
+				throw new EntityNotFoundException(NO_EMERGENCY_CONTACT);
 			}
 			else if (user instanceof Staff || user instanceof Student) {
 				try {
@@ -139,6 +142,6 @@ public class GlobalUtil {
 				}
 			}
 		}
-		throw new IllegalArgumentException("Invalid user");
+		throw new IllegalArgumentException(NO_USER_FOUND);
 	}
 }

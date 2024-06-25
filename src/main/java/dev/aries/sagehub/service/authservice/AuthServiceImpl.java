@@ -3,6 +3,7 @@ package dev.aries.sagehub.service.authservice;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.AuthRequest;
 import dev.aries.sagehub.dto.response.AuthResponse;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
@@ -63,6 +64,7 @@ public class AuthServiceImpl implements AuthService {
 			this.userRepository.save(user);
 			log.info("INFO - {} ", ex.getMessage());
 			log.info("INFO - Number of failed login attempts: {}", countOfFailedAttempts);
+			throw new BadCredentialsException(ExceptionConstants.INVALID_CREDENTIALS);
 		}
 		String token = this.tokenService.generateToken(Objects.requireNonNull(authentication));
 		user.setFailedLoginAttempts(0);
