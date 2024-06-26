@@ -23,6 +23,7 @@ public class ContactInfo extends Auditing {
 	private Long id;
 	@Column(nullable = false)
 	private String secondaryEmail;
+	@Column(nullable = false)
 	private String phoneNumber;
 	private String address;
 	private String city;

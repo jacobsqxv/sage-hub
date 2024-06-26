@@ -32,7 +32,7 @@ public class User extends Auditing {
 
 	@Column(unique = true, updatable = false, nullable = false)
 	private String username;
-
+	@Column(nullable = false)
 	private String hashedPassword;
 
 	@ManyToOne

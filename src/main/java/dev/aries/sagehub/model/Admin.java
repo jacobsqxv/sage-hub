@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import static dev.aries.sagehub.model.BasicInfo.getFullName;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -27,8 +29,10 @@ public class Admin extends Auditing {
 	@Column(nullable = false)
 	private String profilePictureUrl;
 
+	@Column(nullable = false)
 	private String firstName;
 
+	@Column(nullable = false)
 	private String lastName;
 
 	private String middleName;
@@ -40,13 +44,6 @@ public class Admin extends Auditing {
 	private User user;
 
 	public String fullName() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(this.firstName).append(" ");
-		if (this.middleName == null || this.middleName.isEmpty()) {
-			return builder.append(this.lastName).toString().trim();
-		}
-		builder.append(this.middleName).append(" ");
-		builder.append(this.lastName);
-		return builder.toString().trim();
+		return getFullName(this.firstName, this.middleName, this.lastName);
 	}
 }
