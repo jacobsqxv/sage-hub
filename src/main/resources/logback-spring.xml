@@ -14,7 +14,7 @@
 
     <appender name="RollingFile"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS}/sagehub-logger.log</file>
+        <file>${LOGS}/sagehub_log.log</file>
         <encoder
                 class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>%d{ISO8601} %p [%t] %C{1}: %m%n</Pattern>
@@ -23,7 +23,7 @@
         <rollingPolicy
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOGS}/archived/sagehub-logger-%d{yyyy-MM-dd}.%i.log
+            <fileNamePattern>${LOGS}/archived/sagehub_log-%d{yyyy-MM-dd}.%i.log.gz
             </fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
