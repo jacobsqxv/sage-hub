@@ -1,5 +1,7 @@
 package dev.aries.sagehub.controller;
 
+import java.util.List;
+
 import dev.aries.sagehub.dto.request.DepartmentRequest;
 import dev.aries.sagehub.dto.response.DepartmentResponse;
 import dev.aries.sagehub.service.departmentservice.DepartmentService;
@@ -32,7 +34,7 @@ public class DepartmentController {
 	}
 
 	@GetMapping
-	public ResponseEntity<DepartmentResponse> getAllDepartments() {
+	public ResponseEntity<List<DepartmentResponse>> getAllDepartments() {
 		return ResponseEntity.ok(departmentService.getAllDepartments());
 	}
 

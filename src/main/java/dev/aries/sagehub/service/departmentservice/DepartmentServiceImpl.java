@@ -1,7 +1,6 @@
 package dev.aries.sagehub.service.departmentservice;
 
 import java.util.List;
-import java.util.Map;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.DepartmentRequest;
@@ -13,6 +12,7 @@ import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Generators;
+import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.util.UserUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +28,12 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private final ProgramCourseRepository programCourseRepository;
 	private final Generators generators;
 	private final DepartmentMapper departmentMapper;
-	private final Map<String, UpdateStrategy> updateStrategies;
 	private final UserUtil userUtil;
+	private final GlobalUtil globalUtil;
 
 	@Override
 	public DepartmentResponse addDepartment(DepartmentRequest request) {
+		existsByName(request.name());
 		Department department = Department.builder()
 				.name(request.name())
 				.code(generators.generateDeptCode())
@@ -50,17 +51,16 @@ public class DepartmentServiceImpl implements DepartmentService {
 	}
 
 	@Override
-	public DepartmentResponse getAllDepartments() {
+	public List<DepartmentResponse> getAllDepartments() {
 		List<Department> departments = departmentRepository.findAll();
-		return departments.stream().map(departmentMapper::toResponse).findFirst()
-				.orElseThrow(() -> new EntityNotFoundException(ExceptionConstants.NO_DEPARTMENT_FOUND));
+		return departments.stream().map(departmentMapper::toResponse).toList();
 	}
 
 	@Override
 	public DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request) {
 		this.userUtil.isAdmin();
 		Department department = loadDepartment(departmentId);
-		UpdateStrategy updateStrategy = updateStrategies.get("Department");
+		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateDepartment");
 		department = (Department) updateStrategy.update(department, request);
 		this.departmentRepository.save(department);
 		log.info("INFO - Department {} updated successfully", department.getCode());
@@ -81,5 +81,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private Department loadDepartment(Long id) {
 		return departmentRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException(ExceptionConstants.NO_DEPARTMENT_FOUND));
+	}
+
+	private void existsByName(String name) {
+		if (departmentRepository.existsByName(name)) {
+			throw new IllegalArgumentException(String.format(ExceptionConstants.DEPARTMENT_EXISTS, name));
+		}
 	}
 }
