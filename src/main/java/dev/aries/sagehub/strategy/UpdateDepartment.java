@@ -20,7 +20,6 @@ public class UpdateDepartment implements UpdateStrategy<Department, DepartmentRe
 
 	@Override
 	public Department update(Department entity, DepartmentRequest request) {
-		entity.setName(request.name() != null ? request.name() : entity.getName());
 		entity.setStatus(Status.valueOf(request.status() != null ? request.status() : entity.getStatus().getValue()));
 		if (request.programIds() != null && !request.programIds().isEmpty()) {
 			List<ProgramCourse> programCourses = programCourseRepository.findAllById(request.programIds());
