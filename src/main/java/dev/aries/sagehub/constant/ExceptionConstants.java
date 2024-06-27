@@ -30,6 +30,8 @@ public final class ExceptionConstants {
 
 	public static final String PROGRAM_FETCH_ERROR = "One or more programs not found";
 
+	public static final String DEPARTMENT_EXISTS = "Department with name %s already exists";
+
 	private ExceptionConstants() {
 		throw new IllegalStateException(UTILITY_CLASS);
 	}
