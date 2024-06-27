@@ -3,6 +3,7 @@ package dev.aries.sagehub.util;
 import java.security.SecureRandom;
 import java.util.Calendar;
 
+import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
@@ -23,16 +24,14 @@ import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 public class Generators {
 
 	private final UserRepository userRepository;
-
 	private final StudentRepository studentRepository;
-
 	private final StaffRepository staffRepository;
-
-	private static final CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
-
-	private static final CharacterRule alphabetical = new CharacterRule(EnglishCharacterData.Alphabetical);
+	private final DepartmentRepository departmentRepository;
 
 	private static final SecureRandom random = new SecureRandom();
+	private static final PasswordGenerator generator = new PasswordGenerator();
+	private static final CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
+	private static final CharacterRule alphabetical = new CharacterRule(EnglishCharacterData.Alphabetical);
 
 	public String generatePassword() {
 		CharacterData specialChars = new CharacterData() {
@@ -50,7 +49,6 @@ public class Generators {
 	}
 
 	private String generateId(boolean isStudent) {
-		PasswordGenerator generator = new PasswordGenerator();
 		String randomDigits = generator.generatePassword(5, digits);
 		int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 		StringBuilder idBuilder = new StringBuilder();
@@ -93,5 +91,13 @@ public class Generators {
 			}
 		}
 		return id;
+	}
+
+	public String generateDeptCode() {
+		String code = generator.generatePassword(3, digits);
+		while (this.departmentRepository.existsByCode(code)) {
+			code = generator.generatePassword(3, digits);
+		}
+		return code;
 	}
 }
