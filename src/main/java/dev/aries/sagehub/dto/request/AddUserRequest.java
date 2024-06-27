@@ -4,9 +4,13 @@ import java.time.LocalDate;
 
 import dev.aries.sagehub.constant.Patterns;
 import dev.aries.sagehub.constant.ValidationMessage;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 
+import org.springframework.validation.annotation.Validated;
+
+@Validated
 public record AddUserRequest(
 		@Pattern(regexp = Patterns.NAME, message = ValidationMessage.NAME)
 		String firstname,
@@ -15,8 +19,8 @@ public record AddUserRequest(
 		@Pattern(regexp = Patterns.NAME, message = ValidationMessage.NAME)
 		String lastname,
 		String profilePicture,
-		@Pattern(regexp = Patterns.EMAIL, message = ValidationMessage.EMAIL)
-		String secondaryEmail,
+		@Valid
+		ContactInfoRequest contactInfo,
 		String gender,
 		@Past(message = ValidationMessage.DATE_OF_BIRTH)
 		LocalDate dateOfBirth

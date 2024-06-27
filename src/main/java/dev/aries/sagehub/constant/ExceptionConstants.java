@@ -22,9 +22,13 @@ public final class ExceptionConstants {
 
 	public static final String NO_CONTACT_INFO = "No contact information found for the user";
 
+	public static final String NO_DEPARTMENT_FOUND = "Department not found or does not exist";
+
 	public static final String NO_UPDATE_STRATEGY = "No update strategy found for type: %s";
 
 	public static final String NO_EMERGENCY_CONTACT = "No emergency contact information found for the user";
+
+	public static final String PROGRAM_FETCH_ERROR = "One or more programs not found";
 
 	private ExceptionConstants() {
 		throw new IllegalStateException(UTILITY_CLASS);
