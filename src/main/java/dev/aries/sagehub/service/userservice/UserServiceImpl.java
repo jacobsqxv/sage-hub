@@ -1,7 +1,5 @@
 package dev.aries.sagehub.service.userservice;
 
-import java.util.Map;
-
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.ContactInfoRequest;
 import dev.aries.sagehub.dto.request.EmergencyContactRequest;
@@ -36,7 +34,6 @@ import org.springframework.stereotype.Service;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_ROLE;
-import static dev.aries.sagehub.constant.ExceptionConstants.NO_UPDATE_STRATEGY;
 
 /**
  * UserServiceImpl is a service class that implements the UserService interface.
@@ -59,7 +56,6 @@ public class UserServiceImpl implements UserService {
 	private final Generators generators;
 	private final ContactInfoMapper contactInfoMapper;
 	private final EmergencyContactMapper emergencyContactMapper;
-	private final Map<String, UpdateStrategy> updateStrategies;
 	private final EmergencyContactRepository emergencyContactRepository;
 
 	/**
@@ -129,8 +125,7 @@ public class UserServiceImpl implements UserService {
 
 		this.userUtil.isAdminOrLoggedIn(id);
 		ContactInfo contactInfo = this.globalUtil.loadContactInfo(this.globalUtil.getUserInfo(id));
-		String type = "updateContactInfo";
-		UpdateStrategy strategy = checkStrategy(type);
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateContactInfo");
 		contactInfo = (ContactInfo) strategy.update(contactInfo, request);
 		this.contactInfoRepository.save(contactInfo);
 		log.info("INFO - Contact info with ID:{} updated", contactInfo.getId());
@@ -160,8 +155,7 @@ public class UserServiceImpl implements UserService {
 		this.userUtil.isAdminOrLoggedIn(id);
 		EmergencyContact emergencyContact = this.globalUtil.loadEmergencyContact(
 				this.globalUtil.getUserInfo(id));
-		String type = "updateEmergencyContact";
-		UpdateStrategy strategy = checkStrategy(type);
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateEmergencyContact");
 		emergencyContact = (EmergencyContact) strategy.update(emergencyContact, request);
 		this.emergencyContactRepository.save(emergencyContact);
 		log.info("INFO - Emergency contact with ID{} updated", emergencyContact.getId());
@@ -206,7 +200,7 @@ public class UserServiceImpl implements UserService {
 	private BasicInfo buildInfo(AddUserRequest request, String role) {
 		User user = this.userUtil.createNewUser(
 				request.firstname(), request.lastname(), RoleEnum.valueOf(role));
-		Long id = addEmailToContactInfo(request.secondaryEmail());
+		Long id = addContactInfo(request.contactInfo());
 		ContactInfo contactInfo = this.contactInfoRepository.findById(id)
 				.orElseThrow();
 		String primaryEmail = this.generators.generateUserEmail(user.getUsername(), role);
@@ -226,17 +220,14 @@ public class UserServiceImpl implements UserService {
 		return buildBasicInfo(builder, request);
 	}
 
-	private Long addEmailToContactInfo(String email) {
+	private Long addContactInfo(ContactInfoRequest request) {
 		ContactInfo contactInfo = ContactInfo.builder()
-				.secondaryEmail(email)
+				.secondaryEmail(request.secondaryEmail())
+				.phoneNumber(request.phoneNumber())
+				.address(request.address())
+				.city(request.city())
+				.region(request.region())
 				.build();
 		return this.contactInfoRepository.save(contactInfo).getId();
-	}
-
-	private UpdateStrategy checkStrategy(String type) {
-		if (updateStrategies.get(type) == null) {
-			throw new IllegalArgumentException(String.format(NO_UPDATE_STRATEGY, type));
-		}
-		return updateStrategies.get(type);
 	}
 }
