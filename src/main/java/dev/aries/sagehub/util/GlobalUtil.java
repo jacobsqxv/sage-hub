@@ -2,6 +2,7 @@ package dev.aries.sagehub.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 
 import dev.aries.sagehub.dto.response.BasicUserResponse;
@@ -16,6 +17,7 @@ import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
+import dev.aries.sagehub.strategy.UpdateStrategy;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import static dev.aries.sagehub.constant.ExceptionConstants.NO_CONTACT_INFO;
 import static dev.aries.sagehub.constant.ExceptionConstants.NO_EMERGENCY_CONTACT;
+import static dev.aries.sagehub.constant.ExceptionConstants.NO_UPDATE_STRATEGY;
 import static dev.aries.sagehub.constant.ExceptionConstants.NO_USER_FOUND;
 
 @Component
@@ -31,12 +34,10 @@ import static dev.aries.sagehub.constant.ExceptionConstants.NO_USER_FOUND;
 public class GlobalUtil {
 
 	private final UserUtil userUtil;
-
 	private final AdminRepository adminRepository;
-
 	private final StaffRepository staffRepository;
-
 	private final StudentRepository studentRepository;
+	private final Map<String, UpdateStrategy> updateStrategies;
 
 	public Object getUserInfo(Long id) {
 		Role userRole = this.userUtil.getUser(id).getRole();
@@ -83,6 +84,7 @@ public class GlobalUtil {
 				.username(linkedUser.getUsername())
 				.primaryEmail((String) user.getClass().getMethod("getPrimaryEmail").invoke(user))
 				.secondaryEmail(null)
+				.status(linkedUser.getStatus().getValue())
 				.role(linkedUser.getRole().getName().name());
 			if (user instanceof Student || user instanceof Staff) {
 				Enum<Gender> gender;
@@ -143,5 +145,12 @@ public class GlobalUtil {
 			}
 		}
 		throw new IllegalArgumentException(NO_USER_FOUND);
+	}
+
+	public UpdateStrategy checkStrategy(String type) {
+		if (updateStrategies.get(type) == null) {
+			throw new IllegalArgumentException(String.format(NO_UPDATE_STRATEGY, type));
+		}
+		return updateStrategies.get(type);
 	}
 }

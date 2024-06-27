@@ -1,6 +1,7 @@
 package dev.aries.sagehub.util;
 
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.UserRepository;
@@ -45,6 +46,7 @@ public class UserUtil {
 			.accountEnabled(true)
 			.role(this.roleUtil.getRole(roleEnum))
 			.failedLoginAttempts(0)
+			.status(Status.ACTIVE)
 			.build();
 		log.info("INFO - Generated password for {} is {}", user.getUsername(), password);
 		return this.userRepository.save(user);
@@ -62,6 +64,15 @@ public class UserUtil {
 				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN)) &&
 				!currentlyLoggedInUser().getId().equals(id)) {
 			log.info("INFO - Unauthorized access to this resource");
+			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
+		}
+	}
+
+	public void isAdmin() {
+		RoleEnum loggedInUserRole = currentlyLoggedInUser().getRole().getName();
+		if (!(loggedInUserRole.equals(RoleEnum.ADMIN) ||
+				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN))) {
+			log.info("INFO - Unauthorized access");
 			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
 		}
 	}
