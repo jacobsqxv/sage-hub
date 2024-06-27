@@ -30,6 +30,7 @@ public class Department extends Auditing {
 	private Long id;
 	@Column(unique = true, nullable = false, updatable = false)
 	private String code;
+	@Column(unique = true, nullable = false, updatable = false)
 	private String name;
 	@OneToMany(mappedBy = "department", orphanRemoval = true)
 	@JsonManagedReference
