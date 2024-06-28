@@ -9,7 +9,8 @@ public enum Status {
 	ACTIVE("Active"),
 	PENDING_REVIEW("Pending Review"),
 	UNDER_REVIEW("Under Review"),
-	INACTIVE("Inactive");
+	INACTIVE("Inactive"),
+	ARCHIVED("Archived");
 
 	private final String value;
 }
