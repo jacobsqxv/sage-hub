@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class DepartmentController {
 	private final DepartmentService departmentService;
 
 	@PostMapping
+	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 	public ResponseEntity<DepartmentResponse> addDepartment(@RequestBody @Valid DepartmentRequest request) {
 		return ResponseEntity.ok(departmentService.addDepartment(request));
 	}
@@ -39,12 +41,14 @@ public class DepartmentController {
 	}
 
 	@PutMapping("/{department-id}")
+	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 	public ResponseEntity<DepartmentResponse> updateDepartment(@PathVariable("department-id") Long departmentId,
 			@RequestBody @Valid DepartmentRequest request) {
 		return ResponseEntity.ok(departmentService.updateDepartment(departmentId, request));
 	}
 
 	@PutMapping("/{department-id}/archive")
+	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 	public ResponseEntity<DepartmentResponse> archiveDepartment(@PathVariable("department-id") Long departmentId) {
 		return ResponseEntity.ok(departmentService.archiveDepartment(departmentId));
 	}
