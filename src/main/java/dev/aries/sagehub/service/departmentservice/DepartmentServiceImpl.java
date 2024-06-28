@@ -2,7 +2,6 @@ package dev.aries.sagehub.service.departmentservice;
 
 import java.util.List;
 
-import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.DepartmentRequest;
 import dev.aries.sagehub.dto.response.DepartmentResponse;
 import dev.aries.sagehub.enums.Status;
@@ -11,6 +10,7 @@ import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
+import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.util.UserUtil;
@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
+import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
+import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +30,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private final ProgramCourseRepository programCourseRepository;
 	private final Generators generators;
 	private final DepartmentMapper departmentMapper;
-	private final UserUtil userUtil;
+	private final Checks checks;
 	private final GlobalUtil globalUtil;
+	private static final String NAME = "Department";
 
 	@Override
 	public DepartmentResponse addDepartment(DepartmentRequest request) {
@@ -58,7 +61,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	@Override
 	public DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request) {
-		this.userUtil.isAdmin();
+		this.checks.isAdmin();
 		Department department = loadDepartment(departmentId);
 		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateDepartment");
 		department = (Department) updateStrategy.update(department, request);
@@ -69,9 +72,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	@Override
 	public DepartmentResponse archiveDepartment(Long departmentId) {
-		this.userUtil.isAdmin();
+		this.checks.isAdmin();
 		Department department = loadDepartment(departmentId);
-		department.setStatus(Status.INACTIVE);
+		department.setStatus(Status.ARCHIVED);
 		this.departmentRepository.save(department);
 		log.info("INFO - Department {} archived successfully", department.getCode());
 		this.programCourseRepository.updateStatusByDepartmentId(Status.INACTIVE, departmentId);
@@ -80,12 +83,12 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	private Department loadDepartment(Long id) {
 		return departmentRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(ExceptionConstants.NO_DEPARTMENT_FOUND));
+				.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, NAME)));
 	}
 
 	private void existsByName(String name) {
 		if (departmentRepository.existsByName(name)) {
-			throw new IllegalArgumentException(String.format(ExceptionConstants.DEPARTMENT_EXISTS, name));
+			throw new IllegalArgumentException(String.format(NAME_EXISTS, NAME, name));
 		}
 	}
 }
