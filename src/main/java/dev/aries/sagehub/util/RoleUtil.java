@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
-import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_ROLE;
+import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class RoleUtil {
 
 	public Role getRole(RoleEnum name) {
 		return this.roleRepository.findByName(name)
-				.orElseThrow(() -> new EntityNotFoundException(INVALID_ROLE));
+				.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, "Role")));
 	}
 
 }
