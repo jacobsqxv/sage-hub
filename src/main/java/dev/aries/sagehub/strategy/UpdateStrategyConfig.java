@@ -14,13 +14,18 @@ public class UpdateStrategyConfig {
 
 	private final UpdateEmergencyContact updateEmergencyContact;
 	private final UpdateContactInfo updateContactInfo;
+	private final UpdateDepartment updateDepartment;
+	private final UpdateProgram updateProgram;
+	private final UpdateCourse updateCourse;
 
 	@Bean
 	public Map<String, UpdateStrategy> updateStrategies() {
 		Map<String, UpdateStrategy> strategies = new HashMap<>();
 		strategies.put("EmergencyContact", updateEmergencyContact);
 		strategies.put("ContactInfo", updateContactInfo);
-
+		strategies.put("Department", updateDepartment);
+		strategies.put("Program", updateProgram);
+		strategies.put("Course", updateCourse);
 		return strategies;
 	}
 }

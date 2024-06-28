@@ -6,7 +6,6 @@ import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
-import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +27,6 @@ public class AdminServiceImpl implements AdminService {
 
 	private final UserUtil userUtil;
 
-	private final GlobalUtil globalUtil;
-
 	/**
 	 * Adds a new admin.
 	 * @param request the request containing the admin information.
@@ -50,7 +47,7 @@ public class AdminServiceImpl implements AdminService {
 			.build();
 		this.adminRepository.save(admin);
 		log.info("INFO - New admin added with ID: {}", admin.getUser().getUsername());
-		return this.globalUtil.getUserResponse(admin);
+		return this.userUtil.getUserResponse(admin);
 	}
 
 }

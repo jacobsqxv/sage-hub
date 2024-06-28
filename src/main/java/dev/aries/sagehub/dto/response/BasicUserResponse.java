@@ -18,6 +18,7 @@ public record BasicUserResponse(
 		String primaryEmail,
 		String role,
 		String gender,
+		String status,
 		LocalDate dateOfBirth,
 		String secondaryEmail
 ) {

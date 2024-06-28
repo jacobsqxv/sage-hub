@@ -1,7 +1,5 @@
 package dev.aries.sagehub.service.userservice;
 
-import java.util.Map;
-
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.ContactInfoRequest;
 import dev.aries.sagehub.dto.request.EmergencyContactRequest;
@@ -24,6 +22,7 @@ import dev.aries.sagehub.repository.EmergencyContactRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.strategy.UpdateStrategy;
@@ -35,8 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
-import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_ROLE;
-import static dev.aries.sagehub.constant.ExceptionConstants.NO_UPDATE_STRATEGY;
+import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
 /**
  * UserServiceImpl is a service class that implements the UserService interface.
@@ -54,13 +52,14 @@ public class UserServiceImpl implements UserService {
 	private final StaffRepository staffRepository;
 	private final ContactInfoRepository contactInfoRepository;
 	private final UserUtil userUtil;
+	private final Checks checks;
 	private final GlobalUtil globalUtil;
 	private final PasswordEncoder passwordEncoder;
 	private final Generators generators;
 	private final ContactInfoMapper contactInfoMapper;
 	private final EmergencyContactMapper emergencyContactMapper;
-	private final Map<String, UpdateStrategy> updateStrategies;
 	private final EmergencyContactRepository emergencyContactRepository;
+	private static final String ROLE = "Role";
 
 	/**
 	 * Changes the password of a user.
@@ -70,16 +69,16 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public BasicUserResponse changePassword(Long id, PasswordChangeRequest request) {
-		this.userUtil.isCurrentlyLoggedInUser(id);
-		if (!this.userUtil.isPasswordValid(request.oldPassword())) {
+		this.checks.isCurrentlyLoggedInUser(id);
+		if (!this.checks.isPasswordValid(request.oldPassword())) {
 			log.info("INFO - Current password is incorrect");
 			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
 		}
 		User user = this.userUtil.getUser(id);
 		user.setHashedPassword(this.passwordEncoder.encode(request.newPassword()));
 		this.userRepository.save(user);
-		Object userInfo = this.globalUtil.getUserInfo(id);
-		return this.globalUtil.getBasicInfo(userInfo);
+		Object userInfo = this.userUtil.getUserInfo(id);
+		return this.userUtil.getBasicInfo(userInfo);
 	}
 
 	/**
@@ -94,14 +93,14 @@ public class UserServiceImpl implements UserService {
 			case "STUDENT" -> {
 				Student newStudent = (Student) buildInfo(request, role);
 				this.studentRepository.save(newStudent);
-				return this.globalUtil.getUserResponse(newStudent);
+				return this.userUtil.getUserResponse(newStudent);
 			}
 			case "STAFF" -> {
 				Staff newStaff = (Staff) buildInfo(request, role);
 				this.staffRepository.save(newStaff);
-				return this.globalUtil.getUserResponse(newStaff);
+				return this.userUtil.getUserResponse(newStaff);
 			}
-			default -> throw new IllegalArgumentException(INVALID_ROLE);
+			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));
 		}
 	}
 
@@ -112,8 +111,8 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public ContactInfoResponse getContactInfo(Long id) {
-		this.userUtil.isAdminOrLoggedIn(id);
-		ContactInfo contactInfo = this.globalUtil.loadContactInfo(this.globalUtil.getUserInfo(id));
+		this.checks.isAdminOrLoggedIn(id);
+		ContactInfo contactInfo = this.userUtil.loadContactInfo(this.userUtil.getUserInfo(id));
 
 		return this.contactInfoMapper.toContactInfoResponse(contactInfo);
 	}
@@ -127,10 +126,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ContactInfoResponse updateContactInfo(Long id, ContactInfoRequest request) {
 
-		this.userUtil.isAdminOrLoggedIn(id);
-		ContactInfo contactInfo = this.globalUtil.loadContactInfo(this.globalUtil.getUserInfo(id));
-		String type = "updateContactInfo";
-		UpdateStrategy strategy = checkStrategy(type);
+		this.checks.isAdminOrLoggedIn(id);
+		ContactInfo contactInfo = this.userUtil.loadContactInfo(this.userUtil.getUserInfo(id));
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateContactInfo");
 		contactInfo = (ContactInfo) strategy.update(contactInfo, request);
 		this.contactInfoRepository.save(contactInfo);
 		log.info("INFO - Contact info with ID:{} updated", contactInfo.getId());
@@ -144,9 +142,9 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public EmergencyContactResponse getEmergencyContact(Long id) {
-		this.userUtil.isAdminOrLoggedIn(id);
-		EmergencyContact emergencyContact = this.globalUtil.loadEmergencyContact(
-				this.globalUtil.getUserInfo(id));
+		this.checks.isAdminOrLoggedIn(id);
+		EmergencyContact emergencyContact = this.userUtil.loadEmergencyContact(
+				this.userUtil.getUserInfo(id));
 		return this.emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
 	}
 	/**
@@ -157,11 +155,10 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public EmergencyContactResponse updateEmergencyContact(Long id, EmergencyContactRequest request) {
-		this.userUtil.isAdminOrLoggedIn(id);
-		EmergencyContact emergencyContact = this.globalUtil.loadEmergencyContact(
-				this.globalUtil.getUserInfo(id));
-		String type = "updateEmergencyContact";
-		UpdateStrategy strategy = checkStrategy(type);
+		this.checks.isAdminOrLoggedIn(id);
+		EmergencyContact emergencyContact = this.userUtil.loadEmergencyContact(
+				this.userUtil.getUserInfo(id));
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateEmergencyContact");
 		emergencyContact = (EmergencyContact) strategy.update(emergencyContact, request);
 		this.emergencyContactRepository.save(emergencyContact);
 		log.info("INFO - Emergency contact with ID{} updated", emergencyContact.getId());
@@ -206,7 +203,7 @@ public class UserServiceImpl implements UserService {
 	private BasicInfo buildInfo(AddUserRequest request, String role) {
 		User user = this.userUtil.createNewUser(
 				request.firstname(), request.lastname(), RoleEnum.valueOf(role));
-		Long id = addEmailToContactInfo(request.secondaryEmail());
+		Long id = addContactInfo(request.contactInfo());
 		ContactInfo contactInfo = this.contactInfoRepository.findById(id)
 				.orElseThrow();
 		String primaryEmail = this.generators.generateUserEmail(user.getUsername(), role);
@@ -221,22 +218,19 @@ public class UserServiceImpl implements UserService {
 					.primaryEmail(primaryEmail)
 					.contactInfo(contactInfo)
 					.user(user);
-			default -> throw new IllegalArgumentException(INVALID_ROLE);
+			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));
 		};
 		return buildBasicInfo(builder, request);
 	}
 
-	private Long addEmailToContactInfo(String email) {
+	private Long addContactInfo(ContactInfoRequest request) {
 		ContactInfo contactInfo = ContactInfo.builder()
-				.secondaryEmail(email)
+				.secondaryEmail(request.secondaryEmail())
+				.phoneNumber(request.phoneNumber())
+				.address(request.address())
+				.city(request.city())
+				.region(request.region())
 				.build();
 		return this.contactInfoRepository.save(contactInfo).getId();
-	}
-
-	private UpdateStrategy checkStrategy(String type) {
-		if (updateStrategies.get(type) == null) {
-			throw new IllegalArgumentException(String.format(NO_UPDATE_STRATEGY, type));
-		}
-		return updateStrategies.get(type);
 	}
 }

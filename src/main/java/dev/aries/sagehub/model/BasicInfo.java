@@ -30,6 +30,7 @@ public class BasicInfo extends Auditing {
 
 	private String middleName;
 
+	@Column(nullable = false)
 	private Gender gender;
 
 	@Column(nullable = false)
@@ -42,13 +43,17 @@ public class BasicInfo extends Auditing {
 	private User user;
 
 	public String fullName() {
+		return getFullName(this.firstName, this.middleName, this.lastName);
+	}
+
+	static String getFullName(String firstName, String middleName, String lastName) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(this.firstName).append(" ");
-		if (this.middleName == null || this.middleName.isEmpty()) {
-			return builder.append(this.lastName).toString().trim();
+		builder.append(firstName).append(" ");
+		if (middleName == null || middleName.isEmpty()) {
+			return builder.append(lastName).toString().trim();
 		}
-		builder.append(this.middleName).append(" ");
-		builder.append(this.lastName);
+		builder.append(middleName).append(" ");
+		builder.append(lastName);
 		return builder.toString().trim();
 	}
 }

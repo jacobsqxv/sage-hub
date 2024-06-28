@@ -3,6 +3,8 @@ package dev.aries.sagehub.util;
 import java.security.SecureRandom;
 import java.util.Calendar;
 
+import dev.aries.sagehub.repository.CourseRepository;
+import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
@@ -23,16 +25,15 @@ import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 public class Generators {
 
 	private final UserRepository userRepository;
-
 	private final StudentRepository studentRepository;
-
 	private final StaffRepository staffRepository;
-
-	private static final CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
-
-	private static final CharacterRule alphabetical = new CharacterRule(EnglishCharacterData.Alphabetical);
+	private final DepartmentRepository departmentRepository;
 
 	private static final SecureRandom random = new SecureRandom();
+	private static final PasswordGenerator generator = new PasswordGenerator();
+	private static final CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
+	private static final CharacterRule alphabetical = new CharacterRule(EnglishCharacterData.Alphabetical);
+	private final CourseRepository courseRepository;
 
 	public String generatePassword() {
 		CharacterData specialChars = new CharacterData() {
@@ -50,7 +51,6 @@ public class Generators {
 	}
 
 	private String generateId(boolean isStudent) {
-		PasswordGenerator generator = new PasswordGenerator();
 		String randomDigits = generator.generatePassword(5, digits);
 		int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 		StringBuilder idBuilder = new StringBuilder();
@@ -93,5 +93,30 @@ public class Generators {
 			}
 		}
 		return id;
+	}
+
+	public String generateDeptCode() {
+		String code = generator.generatePassword(3, digits);
+		while (this.departmentRepository.existsByCode(code)) {
+			code = generator.generatePassword(3, digits);
+		}
+		return code;
+	}
+
+	public String generateCourseCode(String name) {
+		String prefix;
+		if (name.toLowerCase().startsWith("introduction to ")) {
+			String[] words = name.toLowerCase().substring("introduction to ".length()).split(" ");
+			prefix = words[0].length() < 4 ? words[0].toUpperCase() : words[0].substring(0, 4).toUpperCase();
+		} else {
+			prefix = name.substring(0, 4).toUpperCase();
+		}
+ 		String suffix = generator.generatePassword(3, digits);
+		String code = String.format("%s %s", prefix, suffix);
+		while (this.courseRepository.existsByCode(code)) {
+			suffix = generator.generatePassword(3, digits);
+			code = String.format("%s%s", prefix, suffix);
+		}
+		return code;
 	}
 }

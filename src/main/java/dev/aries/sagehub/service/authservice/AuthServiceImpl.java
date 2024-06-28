@@ -10,7 +10,6 @@ import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.security.TokenService;
-import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
 	private final TokenService tokenService;
 	private final UserUtil userUtil;
 	private final UserRepository userRepository;
-	private final GlobalUtil globalUtil;
 	/**
 	 * Authenticates a user.
 	 * @param request The request containing the username and password.
@@ -67,8 +65,8 @@ public class AuthServiceImpl implements AuthService {
 		user.setFailedLoginAttempts(0);
 		user.setLastLogin(LocalDateTime.now());
 		this.userRepository.save(user);
-		BasicUserResponse userResponse = this.globalUtil.getBasicInfo(
-				this.globalUtil.getUserInfo(user.getId()));
+		BasicUserResponse userResponse = this.userUtil.getBasicInfo(
+				this.userUtil.getUserInfo(user.getId()));
 		return new AuthResponse(
 				token,
 				userResponse,

@@ -3,8 +3,11 @@ package dev.aries.sagehub.model;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import dev.aries.sagehub.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,12 +35,15 @@ public class User extends Auditing {
 
 	@Column(unique = true, updatable = false, nullable = false)
 	private String username;
-
+	@Column(nullable = false)
 	private String hashedPassword;
 
 	@ManyToOne
 	@JoinColumn(name = "role_id")
 	private Role role;
+
+	@Enumerated(EnumType.STRING)
+	private Status status;
 
 	private LocalDateTime lastLogin;
 

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,15 @@ public class GlobalExceptionHandler {
 		});
 		int code = HttpStatus.BAD_REQUEST.value();
 		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, errors));
+	}
+
+	@ExceptionHandler(EntityNotFoundException.class)
+	public ResponseEntity<ExceptionResponse> handleNotFoundException(EntityNotFoundException exp) {
+		logException(exp);
+		Set<String> error = new HashSet<>();
+		error.add(exp.getMessage());
+		int code = HttpStatus.NOT_FOUND.value();
+		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
 	}
 
 	@ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })

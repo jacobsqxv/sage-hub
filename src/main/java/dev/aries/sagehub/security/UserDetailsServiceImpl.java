@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import static dev.aries.sagehub.constant.ExceptionConstants.NO_USER_FOUND;
+import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		User user = this.userRepository.findByUsername(username)
-			.orElseThrow(() -> new UsernameNotFoundException(NO_USER_FOUND));
+			.orElseThrow(() -> new UsernameNotFoundException(String.format(NOT_FOUND, "User")));
 		return new UserDetailsImpl(user);
 	}
 
