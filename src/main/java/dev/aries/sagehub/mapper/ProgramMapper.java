@@ -15,7 +15,6 @@ public class ProgramMapper {
 				program.getId(),
 				program.getName(),
 				program.getDescription(),
-				"No courses found for this program",
 				program.getStatus().getValue()
 		);
 	}
