@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/courses")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 public class CourseController {
 	private final CourseService courseService;
 
 	@PostMapping
-	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 	public ResponseEntity<CourseResponse> addCourse(@RequestBody @Valid CourseRequest request) {
 		return ResponseEntity.ok(courseService.addCourse(request));
 	}
@@ -36,18 +36,17 @@ public class CourseController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<CourseResponse>> getAllCourses() {
-		return ResponseEntity.ok(courseService.getAllCourses());
+	public ResponseEntity<List<CourseResponse>> getCourses() {
+		return ResponseEntity.ok(courseService.getCourses());
 	}
 
 	@PutMapping("/{course-id}")
-	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
-	public ResponseEntity<CourseResponse> updateCourse(@PathVariable("course-id") Long courseId, CourseRequest request) {
+	public ResponseEntity<CourseResponse> updateCourse(
+			@PathVariable("course-id") Long courseId, @RequestBody @Valid CourseRequest request) {
 		return ResponseEntity.ok(courseService.updateCourse(courseId, request));
 	}
 
 	@PutMapping("/{course-id}/archive")
-	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 	public ResponseEntity<CourseResponse> archiveCourse(@PathVariable("course-id") Long courseId) {
 		return ResponseEntity.ok(courseService.archiveCourse(courseId));
 	}

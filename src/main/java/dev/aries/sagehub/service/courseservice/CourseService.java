@@ -10,7 +10,7 @@ public interface CourseService {
 
 	CourseResponse getCourse(Long courseId);
 
-	List<CourseResponse> getAllCourses();
+	List<CourseResponse> getCourses();
 
 	CourseResponse updateCourse(Long id, CourseRequest request);
 

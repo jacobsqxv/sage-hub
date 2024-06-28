@@ -13,7 +13,6 @@ import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
-import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +26,6 @@ public class CourseServiceImpl implements CourseService {
 	private final CourseRepository courseRepository;
 	private final CourseMapper courseMapper;
 	private final GlobalUtil globalUtil;
-	private final UserUtil userUtil;
 	private final Checks checks;
 	public static final String NAME = "Course";
 
@@ -52,7 +50,7 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	@Override
-	public List<CourseResponse> getAllCourses() {
+	public List<CourseResponse> getCourses() {
 		List<Course> courses = this.courseRepository.findAll();
 		return courses.stream().map(this.courseMapper::toCourseResponse).toList();
 	}
