@@ -8,13 +8,11 @@ import jakarta.validation.constraints.Positive;
 
 public record CourseRequest(
 		@NotEmpty(message = ValidationMessage.NOT_NULL)
-		@Pattern(regexp = Patterns.COURSE_CODE, message = ValidationMessage.CODE)
-		String code,
-		@NotEmpty(message = ValidationMessage.NOT_NULL)
 		@Pattern(regexp = Patterns.NAME, message = ValidationMessage.NAME)
 		String name,
 		String description,
 		@Positive(message = ValidationMessage.INVALID_NUMBER)
-		Integer creditUnits
+		Integer creditUnits,
+		String status
 ) {
 }
