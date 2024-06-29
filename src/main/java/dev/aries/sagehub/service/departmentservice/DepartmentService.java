@@ -14,5 +14,4 @@ public interface DepartmentService {
 
 	DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request);
 
-	DepartmentResponse archiveDepartment(Long departmentId);
 }
