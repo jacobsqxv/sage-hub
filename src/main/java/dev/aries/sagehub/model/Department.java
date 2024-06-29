@@ -32,9 +32,9 @@ public class Department extends Auditing {
 	private String code;
 	@Column(unique = true, nullable = false, updatable = false)
 	private String name;
-	@OneToMany(mappedBy = "department", orphanRemoval = true)
+	@OneToMany(orphanRemoval = true)
 	@JsonManagedReference
-	private List<ProgramCourse> programs;
+	private List<Program> programs;
 	@Enumerated(EnumType.STRING)
 	private Status status;
 }
