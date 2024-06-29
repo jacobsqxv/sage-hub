@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DepartmentMapper {
-	private final ProgramCourseMapper programCourseMapper;
+	private final ProgramMapper programMapper;
 
 	public DepartmentResponse toResponse(Department department) {
 		if (department.getPrograms() == null){
@@ -26,7 +26,7 @@ public class DepartmentMapper {
 				department.getCode(),
 				department.getName(),
 				department.getPrograms().stream()
-						.map(programCourseMapper::toProgramCourseResponse)
+						.map(programMapper::toProgramResponse)
 						.toList(),
 				department.getStatus().getValue()
 		);

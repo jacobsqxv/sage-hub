@@ -14,12 +14,11 @@ public class ProgramCourseMapper {
 
 	public ProgramCourseResponse toProgramCourseResponse(ProgramCourse programCourse) {
 		return new ProgramCourseResponse(
+				programCourse.getId(),
 				programMapper.toProgramResponse(programCourse.getProgram()),
-				programCourse.getCourses().stream()
-						.map(courseMapper::toCourseResponse)
-						.toList(),
-				programCourse.getYear().toString(),
-				programCourse.getSemester().toString(),
+				courseMapper.toCourseResponse(programCourse.getCourse()),
+				programCourse.getAcademicPeriod().year().toString(),
+				programCourse.getAcademicPeriod().semester().toString(),
 				programCourse.getStatus().getValue()
 		);
 	}
