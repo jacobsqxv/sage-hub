@@ -47,9 +47,4 @@ public class DepartmentController {
 		return ResponseEntity.ok(departmentService.updateDepartment(departmentId, request));
 	}
 
-	@PutMapping("/{department-id}/archive")
-	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
-	public ResponseEntity<DepartmentResponse> archiveDepartment(@PathVariable("department-id") Long departmentId) {
-		return ResponseEntity.ok(departmentService.archiveDepartment(departmentId));
-	}
 }

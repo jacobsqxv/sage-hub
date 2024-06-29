@@ -2,7 +2,9 @@ package dev.aries.sagehub.controller;
 
 import java.util.List;
 
+import dev.aries.sagehub.dto.request.ProgramCourseRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
+import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.service.programservice.ProgramService;
 import jakarta.validation.Valid;
@@ -44,9 +46,10 @@ public class ProgramController {
 		return ResponseEntity.ok(programService.updateProgram(programId, request));
 	}
 
-	@PutMapping("/{program-id}/archive")
-	public ResponseEntity<ProgramResponse> archiveProgram(
-			@PathVariable("program-id") Long programId) {
-		return ResponseEntity.ok(programService.archiveProgram(programId));
+	@PutMapping("/{program-id}/courses")
+	public ResponseEntity<ProgramCourseResponse> updateProgramCourses(
+			@PathVariable("program-id") Long programId, @RequestBody @Valid ProgramCourseRequest request) {
+		return ResponseEntity.ok(programService.updateProgramCourses(programId, request));
 	}
+
 }

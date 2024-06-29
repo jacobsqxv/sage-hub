@@ -46,8 +46,4 @@ public class CourseController {
 		return ResponseEntity.ok(courseService.updateCourse(courseId, request));
 	}
 
-	@PutMapping("/{course-id}/archive")
-	public ResponseEntity<CourseResponse> archiveCourse(@PathVariable("course-id") Long courseId) {
-		return ResponseEntity.ok(courseService.archiveCourse(courseId));
-	}
 }
