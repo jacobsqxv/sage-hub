@@ -35,10 +35,8 @@ public class Checks {
 	}
 
 	public void isAdminOrLoggedIn(Long id) {
-		RoleEnum loggedInUserRole = currentlyLoggedInUser().getRole().getName();
-		if (!(loggedInUserRole.equals(RoleEnum.ADMIN) ||
-				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN)) &&
-				!currentlyLoggedInUser().getId().equals(id)) {
+		isAdmin();
+		if (!currentlyLoggedInUser().getId().equals(id)) {
 			log.info("INFO - Unauthorized access to this resource");
 			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
 		}
