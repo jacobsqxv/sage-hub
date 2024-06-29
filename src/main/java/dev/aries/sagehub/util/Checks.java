@@ -65,4 +65,9 @@ public class Checks {
 		User user = currentlyLoggedInUser();
 		return this.passwordEncoder.matches(password, user.getHashedPassword());
 	}
+
+	public boolean checkAdmin() {
+		RoleEnum loggedInUserRole = currentlyLoggedInUser().getRole().getName();
+		return loggedInUserRole.equals(RoleEnum.ADMIN) || loggedInUserRole.equals(RoleEnum.SUPER_ADMIN);
+	}
 }
