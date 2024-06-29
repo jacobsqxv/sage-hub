@@ -1,13 +1,13 @@
 package dev.aries.sagehub.controller;
 
-import java.util.List;
-
 import dev.aries.sagehub.dto.request.DepartmentRequest;
 import dev.aries.sagehub.dto.response.DepartmentResponse;
+import dev.aries.sagehub.dto.search.GetDepartmentsPage;
 import dev.aries.sagehub.service.departmentservice.DepartmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +36,8 @@ public class DepartmentController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<DepartmentResponse>> getAllDepartments() {
-		return ResponseEntity.ok(departmentService.getAllDepartments());
+	public ResponseEntity<Page<DepartmentResponse>> getAllDepartments(GetDepartmentsPage request) {
+		return ResponseEntity.ok(departmentService.getDepartments(request));
 	}
 
 	@PutMapping("/{department-id}")

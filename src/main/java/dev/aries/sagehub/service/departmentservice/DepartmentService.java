@@ -1,16 +1,17 @@
 package dev.aries.sagehub.service.departmentservice;
 
-import java.util.List;
-
 import dev.aries.sagehub.dto.request.DepartmentRequest;
 import dev.aries.sagehub.dto.response.DepartmentResponse;
+import dev.aries.sagehub.dto.search.GetDepartmentsPage;
+
+import org.springframework.data.domain.Page;
 
 public interface DepartmentService {
 	DepartmentResponse addDepartment(DepartmentRequest request);
 
 	DepartmentResponse getDepartment(Long departmentId);
 
-	List<DepartmentResponse> getAllDepartments();
+	Page<DepartmentResponse> getDepartments(GetDepartmentsPage request);
 
 	DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request);
 
