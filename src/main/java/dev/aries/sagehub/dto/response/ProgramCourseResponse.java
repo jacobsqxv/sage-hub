@@ -1,10 +1,9 @@
 package dev.aries.sagehub.dto.response;
 
-import java.util.List;
-
 public record ProgramCourseResponse(
+		Long id,
 		ProgramResponse program,
-		List<CourseResponse> courses,
+		CourseResponse course,
 		String year,
 		String semester,
 		String status

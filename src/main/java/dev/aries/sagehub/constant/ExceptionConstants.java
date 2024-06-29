@@ -26,8 +26,6 @@ public final class ExceptionConstants {
 
 	public static final String NAME_EXISTS = "%s with name %s already exists";
 
-	public static final String COURSE_EXISTS = "Course with name name %s already exists";
-
 	public static final String CANNOT_UPDATE_NAME = "%s name cannot be updated";
 
 	private ExceptionConstants() {

@@ -15,6 +15,7 @@ public class ProgramMapper {
 				program.getId(),
 				program.getName(),
 				program.getDescription(),
+				program.getDepartment().getName(),
 				program.getStatus().getValue()
 		);
 	}

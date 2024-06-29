@@ -8,26 +8,23 @@ import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.mapper.DepartmentMapper;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.repository.DepartmentRepository;
-import dev.aries.sagehub.repository.ProgramCourseRepository;
+import dev.aries.sagehub.repository.ProgramRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
-import dev.aries.sagehub.util.UserUtil;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
-import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class DepartmentServiceImpl implements DepartmentService {
 	private final DepartmentRepository departmentRepository;
-	private final ProgramCourseRepository programCourseRepository;
+	private final ProgramRepository programRepository;
 	private final Generators generators;
 	private final DepartmentMapper departmentMapper;
 	private final Checks checks;
@@ -49,7 +46,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	@Override
 	public DepartmentResponse getDepartment(Long departmentId) {
-		Department department = loadDepartment(departmentId);
+		Department department = this.globalUtil.loadDepartment(departmentId);
 		return departmentMapper.toResponse(department);
 	}
 
@@ -62,28 +59,12 @@ public class DepartmentServiceImpl implements DepartmentService {
 	@Override
 	public DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request) {
 		this.checks.isAdmin();
-		Department department = loadDepartment(departmentId);
+		Department department = this.globalUtil.loadDepartment(departmentId);
 		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateDepartment");
 		department = (Department) updateStrategy.update(department, request);
 		this.departmentRepository.save(department);
 		log.info("INFO - Department {} updated successfully", department.getCode());
 		return departmentMapper.toResponse(department);
-	}
-
-	@Override
-	public DepartmentResponse archiveDepartment(Long departmentId) {
-		this.checks.isAdmin();
-		Department department = loadDepartment(departmentId);
-		department.setStatus(Status.ARCHIVED);
-		this.departmentRepository.save(department);
-		log.info("INFO - Department {} archived successfully", department.getCode());
-		this.programCourseRepository.updateStatusByDepartmentId(Status.INACTIVE, departmentId);
-		return departmentMapper.toResponse(department);
-	}
-
-	private Department loadDepartment(Long id) {
-		return departmentRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, NAME)));
 	}
 
 	private void existsByName(String name) {

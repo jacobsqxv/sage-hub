@@ -9,6 +9,7 @@ public record ProgramResponse(
 		Long id,
 		String name,
 		String description,
+		String department,
 		String status
 ) {
 }

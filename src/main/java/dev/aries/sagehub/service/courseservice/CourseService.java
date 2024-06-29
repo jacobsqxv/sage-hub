@@ -14,5 +14,4 @@ public interface CourseService {
 
 	CourseResponse updateCourse(Long id, CourseRequest request);
 
-	CourseResponse archiveCourse(Long courseId);
 }

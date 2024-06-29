@@ -45,7 +45,7 @@ public class CourseServiceImpl implements CourseService {
 
 	@Override
 	public CourseResponse getCourse(Long courseId) {
-		Course course = loadCourse(courseId);
+		Course course = this.globalUtil.loadCourse(courseId);
 		return this.courseMapper.toCourseResponse(course);
 	}
 
@@ -58,27 +58,12 @@ public class CourseServiceImpl implements CourseService {
 	@Override
 	public CourseResponse updateCourse(Long id, CourseRequest request) {
 		this.checks.isAdmin();
-		Course course = loadCourse(id);
+		Course course = this.globalUtil.loadCourse(id);
 		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateCourse");
 		course = (Course) updateStrategy.update(course, request);
 		this.courseRepository.save(course);
 		log.info("INFO - Course {} updated successfully", course.getCode());
 		return this.courseMapper.toCourseResponse(course);
-	}
-
-	@Override
-	public CourseResponse archiveCourse(Long courseId) {
-		this.checks.isAdmin();
-		Course course = loadCourse(courseId);
-		course.setStatus(Status.ARCHIVED);
-		this.courseRepository.save(course);
-		return this.courseMapper.toCourseResponse(course);
-	}
-
-	private Course loadCourse(Long courseId) {
-		return this.courseRepository.findById(courseId)
-				.orElseThrow(() -> new IllegalArgumentException(
-						String.format(ExceptionConstants.NOT_FOUND, NAME)));
 	}
 
 	private void existsByName(String name) {
