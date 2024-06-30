@@ -1,7 +1,7 @@
 package dev.aries.sagehub.repository;
 
 import dev.aries.sagehub.model.Department;
-import dev.aries.sagehub.specification.GenericSpecification;
+import dev.aries.sagehub.specification.GeneralSpecification;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +15,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long>, J
 	boolean existsByName(String departmentName);
 
 	default Page<Department> findAll(String name, String code, String status, Pageable page) {
-		GenericSpecification<Department> spec = new GenericSpecification<>();
+		GeneralSpecification<Department> spec = new GeneralSpecification<>();
 		return findAll(
 				Specification
 						.where(spec.hasName(name))
