@@ -62,11 +62,11 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	private Page<CourseResponse> getAllCourses(GetCoursesPage request) {
-		return loadCourses(request, Status.ACTIVE.name());
+		return loadCourses(request, request.status());
 	}
 
 	private Page<CourseResponse> getActiveCourses(GetCoursesPage request) {
-		return loadCourses(request, request.status());
+		return loadCourses(request, Status.ACTIVE.name());
 	}
 
 	private Page<CourseResponse> loadCourses(GetCoursesPage request, String status) {
