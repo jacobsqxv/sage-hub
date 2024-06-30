@@ -1,14 +1,11 @@
 package dev.aries.sagehub.service.programservice;
 
-import java.util.List;
-
 import dev.aries.sagehub.dto.request.ProgramCourseRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
 import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
-import dev.aries.sagehub.enums.Semester;
+import dev.aries.sagehub.dto.search.GetProgramsPage;
 import dev.aries.sagehub.enums.Status;
-import dev.aries.sagehub.enums.Year;
 import dev.aries.sagehub.mapper.ProgramCourseMapper;
 import dev.aries.sagehub.mapper.ProgramMapper;
 import dev.aries.sagehub.model.AcademicPeriod;
@@ -24,7 +21,12 @@ import dev.aries.sagehub.util.GlobalUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
 
 @Slf4j
@@ -39,7 +41,8 @@ public class ProgramServiceImpl implements ProgramService {
 	private final ProgramCourseMapper programCourseMapper;
 	private final GlobalUtil globalUtil;
 	private final Checks checks;
-	public static final String NAME = "Program";
+	private static final String NAME = "Program";
+	private static final Integer OFFSET = 1;
 
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
@@ -60,9 +63,27 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	@Override
-	public List<ProgramResponse> getPrograms() {
-		List<Program> programs = this.programRepository.findAll();
-		return programs.stream().map(this.programMapper::toProgramResponse).toList();
+	public Page<ProgramResponse> getPrograms(GetProgramsPage request) {
+		if (this.checks.checkAdmin()) {
+			return getAllPrograms(request);
+		}
+		return getActivePrograms(request);
+	}
+
+	private Page<ProgramResponse> getActivePrograms(GetProgramsPage request) {
+		return loadPrograms(request, Status.ACTIVE.name());
+	}
+
+	private Page<ProgramResponse> getAllPrograms(GetProgramsPage request) {
+		return loadPrograms(request, request.status());
+	}
+
+	private Page<ProgramResponse> loadPrograms(GetProgramsPage request, String status) {
+		Integer page = request.page() - OFFSET;
+		Integer size = request.size();
+		Pageable pageable = PageRequest.of(page, size, Sort.by("name"));
+		return this.programRepository.findAll(request.name(), request.department(), status, pageable)
+				.map(this.programMapper::toProgramResponse);
 	}
 
 	@Override
@@ -100,7 +121,8 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public ProgramCourseResponse updateProgramCourses(Long programId, ProgramCourseRequest request) {
 		this.checks.isAdmin();
-		ProgramCourse programCourse = this.globalUtil.loadProgramCourses(programId, request.courseId(), request.period());
+		ProgramCourse programCourse = this.globalUtil.loadProgramCourses(
+				programId, request.courseId(), request.period());
 		if (programCourse == null) {
 			return addProgramCourses(programId, request);
 		}
@@ -111,7 +133,7 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	private void existsByName(String name) {
-		if (programRepository.existsByName(name)) {
+		if (this.programRepository.existsByName(name)) {
 			throw new IllegalArgumentException(
 					String.format(NAME_EXISTS, NAME, name));
 		}
