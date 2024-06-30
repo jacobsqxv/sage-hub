@@ -9,6 +9,7 @@ import dev.aries.sagehub.model.Role;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.RoleRepository;
+import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,12 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private final RoleRepository roleRepository;
 	private final AdminRepository adminRepository;
 	private final UserUtil userUtil;
+	private final UserRepository userRepository;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		this.loadRoles();
-		this.loadSuperAdmin();
+		this.checkSuperAdmin();
 	}
 
 	private void loadRoles() {
@@ -65,4 +67,12 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 		log.info("INFO - Super admin added");
 	}
 
+	private void checkSuperAdmin() {
+		if (this.userRepository.findByUsername("sadmin").isPresent()) {
+			log.info("INFO - Super admin already exists");
+		}
+		else {
+			loadSuperAdmin();
+		}
+	}
 }

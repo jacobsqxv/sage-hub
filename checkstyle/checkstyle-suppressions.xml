@@ -8,4 +8,6 @@
     <suppress files="generated-sources" checks="[a-zA-Z0-9]*" />
     <suppress files="\.java$" checks="HeaderCheck" />
     <suppress files="\.java$" checks="JavadocPackageCheck" />
+    <suppress files="\.java$" checks="SpringAvoidStaticImport" />
+
 </suppressions>

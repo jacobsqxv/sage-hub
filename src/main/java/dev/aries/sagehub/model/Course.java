@@ -1,6 +1,5 @@
 package dev.aries.sagehub.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import dev.aries.sagehub.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

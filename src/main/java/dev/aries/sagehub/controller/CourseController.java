@@ -1,13 +1,13 @@
 package dev.aries.sagehub.controller;
 
-import java.util.List;
-
 import dev.aries.sagehub.dto.request.CourseRequest;
 import dev.aries.sagehub.dto.response.CourseResponse;
+import dev.aries.sagehub.dto.search.GetCoursesPage;
 import dev.aries.sagehub.service.courseservice.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,23 +27,23 @@ public class CourseController {
 
 	@PostMapping
 	public ResponseEntity<CourseResponse> addCourse(@RequestBody @Valid CourseRequest request) {
-		return ResponseEntity.ok(courseService.addCourse(request));
+		return ResponseEntity.ok(this.courseService.addCourse(request));
 	}
 
 	@GetMapping("/{course-id}")
 	public ResponseEntity<CourseResponse> getCourse(@PathVariable("course-id") Long courseId) {
-		return ResponseEntity.ok(courseService.getCourse(courseId));
+		return ResponseEntity.ok(this.courseService.getCourse(courseId));
 	}
 
 	@GetMapping
-	public ResponseEntity<List<CourseResponse>> getCourses() {
-		return ResponseEntity.ok(courseService.getCourses());
+	public ResponseEntity<Page<CourseResponse>> getCourses(GetCoursesPage request) {
+		return ResponseEntity.ok(this.courseService.getCourses(request));
 	}
 
 	@PutMapping("/{course-id}")
 	public ResponseEntity<CourseResponse> updateCourse(
 			@PathVariable("course-id") Long courseId, @RequestBody @Valid CourseRequest request) {
-		return ResponseEntity.ok(courseService.updateCourse(courseId, request));
+		return ResponseEntity.ok(this.courseService.updateCourse(courseId, request));
 	}
 
 }
