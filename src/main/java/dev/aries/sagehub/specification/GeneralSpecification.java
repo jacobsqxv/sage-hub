@@ -4,7 +4,7 @@ import dev.aries.sagehub.enums.Status;
 
 import org.springframework.data.jpa.domain.Specification;
 
-public class GenericSpecification<T> {
+public class GeneralSpecification<T> {
 	public Specification<T> hasName(String name) {
 		return (root, query, criteriaBuilder) -> (name == null || name.trim().isEmpty()) ?
 				null : criteriaBuilder.like(
