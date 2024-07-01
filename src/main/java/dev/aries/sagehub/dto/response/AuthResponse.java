@@ -6,8 +6,7 @@ public record AuthResponse(
 		String token,
 		BasicUserResponse user,
 		LocalDateTime lastLogin,
-		Integer failedLoginAttempts,
-		boolean isAccountLocked,
+		String status,
 		boolean isAccountEnabled
 ) {
 }
