@@ -1,10 +1,11 @@
 package dev.aries.sagehub.util;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Map;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
-import dev.aries.sagehub.enums.Semester;
-import dev.aries.sagehub.enums.Year;
 import dev.aries.sagehub.model.AcademicPeriod;
 import dev.aries.sagehub.model.Course;
 import dev.aries.sagehub.model.Department;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
+
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 import static dev.aries.sagehub.constant.ExceptionConstants.NO_UPDATE_STRATEGY;
 
@@ -35,15 +37,16 @@ public class GlobalUtil {
 	private final CourseRepository courseRepository;
 
 	public UpdateStrategy checkStrategy(String type) {
-		if (updateStrategies.get(type) == null) {
+		if (this.updateStrategies.get(type) == null) {
 			throw new IllegalArgumentException(String.format(NO_UPDATE_STRATEGY, type));
 		}
-		return updateStrategies.get(type);
+		return this.updateStrategies.get(type);
 	}
 
 	public Department loadDepartment(Long id) {
 		return this.departmentRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, "Department")));
+				.orElseThrow(() -> new EntityNotFoundException(
+						String.format(NOT_FOUND, "Department")));
 	}
 
 	public Program loadProgram(Long programId) {
@@ -53,7 +56,8 @@ public class GlobalUtil {
 	}
 
 	public ProgramCourse loadProgramCourses(Long programId, Long courseId, AcademicPeriod period) {
-		return this.programCourseRepository.findByProgramIdAndCourseIdAndAcademicPeriod(programId, courseId, period);
+		return this.programCourseRepository
+				.findByProgramIdAndCourseIdAndAcademicPeriod(programId, courseId, period);
 	}
 
 	public Course loadCourse(Long courseId) {
@@ -61,5 +65,15 @@ public class GlobalUtil {
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Course")));
 	}
-
+	public String formatDateTime(LocalDateTime dateTime) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+				"d'st' MMMM, uuuu hh:mma", Locale.ENGLISH);
+		return dateTime.format(formatter)
+				.replaceAll("(\\d{2})st", "$1th")
+				.replaceAll("(\\d)1th", "$11st")
+				.replaceAll("(\\d)2th", "$12nd")
+				.replaceAll("(\\d)3th", "$13rd")
+				.replace("2st", "2nd")
+				.replace("3st", "3rd");
+	}
 }
