@@ -15,10 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
 
 @Service
@@ -31,49 +30,45 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private final Checks checks;
 	private final GlobalUtil globalUtil;
 	private static final String NAME = "Department";
-	private static final Integer OFFSET = 1;
 
 	@Override
 	public DepartmentResponse addDepartment(DepartmentRequest request) {
 		existsByName(request.name());
 		Department department = Department.builder()
 				.name(request.name())
-				.code(generators.generateDeptCode())
+				.code(this.generators.generateDeptCode())
 				.status(Status.PENDING_REVIEW)
 				.build();
-		departmentRepository.save(department);
+		this.departmentRepository.save(department);
 		log.info("INFO - Department {} added successfully", department.getCode());
-		return departmentMapper.toResponse(department);
+		return this.departmentMapper.toResponse(department);
 	}
 
 	@Override
 	public DepartmentResponse getDepartment(Long departmentId) {
 		Department department = this.globalUtil.loadDepartment(departmentId);
-		return departmentMapper.toResponse(department);
+		return this.departmentMapper.toResponse(department);
 	}
 
 	@Override
-	public Page<DepartmentResponse> getDepartments(GetDepartmentsPage request) {
+	public Page<DepartmentResponse> getDepartments(GetDepartmentsPage request, Pageable pageable) {
 		if (this.checks.checkAdmin()) {
-			return getAllDepartments(request);
+			return getAllDepartments(request, pageable);
 		}
-		return getActiveDepartments(request);
+		return getActiveDepartments(request, pageable);
 	}
 
-	private Page<DepartmentResponse> getActiveDepartments(GetDepartmentsPage request) {
-		return loadDepartments(request, Status.ACTIVE.name());
+	private Page<DepartmentResponse> getActiveDepartments(GetDepartmentsPage request, Pageable pageable) {
+		return loadDepartments(request, Status.ACTIVE.name(), pageable);
 	}
 
-	private Page<DepartmentResponse> getAllDepartments(GetDepartmentsPage request) {
-		return loadDepartments(request, request.status());
+	private Page<DepartmentResponse> getAllDepartments(GetDepartmentsPage request, Pageable pageable) {
+		return loadDepartments(request, request.status(), pageable);
 	}
 
-	private Page<DepartmentResponse> loadDepartments(GetDepartmentsPage request, String status) {
-		Integer page = request.page() - OFFSET;
-		Integer size = request.size();
-		Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-		return departmentRepository.findAll(request.name(), request.code(), status, pageable)
-				.map(departmentMapper::toResponse);
+	private Page<DepartmentResponse> loadDepartments(GetDepartmentsPage request, String status, Pageable pageable) {
+		return this.departmentRepository.findAll(request.name(), request.code(), status, pageable)
+				.map(this.departmentMapper::toResponse);
 	}
 
 	@Override
@@ -84,11 +79,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 		department = (Department) updateStrategy.update(department, request);
 		this.departmentRepository.save(department);
 		log.info("INFO - Department {} updated successfully", department.getCode());
-		return departmentMapper.toResponse(department);
+		return this.departmentMapper.toResponse(department);
 	}
 
 	private void existsByName(String name) {
-		if (departmentRepository.existsByName(name)) {
+		if (this.departmentRepository.existsByName(name)) {
 			throw new IllegalArgumentException(String.format(NAME_EXISTS, NAME, name));
 		}
 	}
