@@ -79,6 +79,11 @@ public final class ExceptionConstants {
 	public static final String EXPIRED_TOKEN = "Token has expired";
 
 	/**
+	 * Message for email sending failure.
+	 */
+	public static final String EMAIL_SENDING_FAILURE = "There was an error sending the email";
+
+	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.
 	 */

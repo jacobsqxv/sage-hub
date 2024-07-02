@@ -10,6 +10,7 @@ import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.RoleRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private final UserUtil userUtil;
 	private final UserRepository userRepository;
 	private final Generators generators;
+	private final EmailService emailService;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -63,11 +65,12 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 		Admin superAdmin = Admin.builder()
 				.firstName(firstName)
 				.lastName(lastName)
-				.primaryEmail("superadmin@email.com")
+				.primaryEmail("sagehub.superadmin@mockinbox.com")
 				.profilePictureUrl("https://www.gravatar.com/avatar.jpg")
 				.user(user)
 				.build();
 		this.adminRepository.save(superAdmin);
+		this.emailService.sendAccountCreatedEmail(username, password, superAdmin.getPrimaryEmail());
 		log.info("INFO - Super admin added with username: {} and password: {}", username, password);
 	}
 
