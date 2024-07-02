@@ -10,6 +10,7 @@ import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.RoleRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private final AdminRepository adminRepository;
 	private final UserUtil userUtil;
 	private final UserRepository userRepository;
+	private final Generators generators;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -55,7 +57,9 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private void loadSuperAdmin() {
 		String firstName = "Super";
 		String lastName = "Admin";
-		User user = this.userUtil.createNewUser(firstName, lastName, RoleEnum.SUPER_ADMIN);
+		String username = this.generators.generateUsername(firstName, lastName);
+		String password = this.generators.generatePassword();
+		User user = this.userUtil.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
 		Admin superAdmin = Admin.builder()
 				.firstName(firstName)
 				.lastName(lastName)
@@ -64,7 +68,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 				.user(user)
 				.build();
 		this.adminRepository.save(superAdmin);
-		log.info("INFO - Super admin added");
+		log.info("INFO - Super admin added with username: {} and password: {}", username, password);
 	}
 
 	private void checkSuperAdmin() {

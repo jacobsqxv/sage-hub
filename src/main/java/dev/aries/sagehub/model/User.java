@@ -1,7 +1,6 @@
 package dev.aries.sagehub.model;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import dev.aries.sagehub.enums.Status;
 import jakarta.persistence.Column;
@@ -49,7 +48,7 @@ public class User extends Auditing {
 
 	private Integer failedLoginAttempts;
 
-	private boolean accountLocked;
+	private LocalDateTime lockTime;
 
 	private boolean accountEnabled;
 

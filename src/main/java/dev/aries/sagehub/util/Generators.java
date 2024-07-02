@@ -105,18 +105,25 @@ public class Generators {
 
 	public String generateCourseCode(String name) {
 		String prefix;
-		if (name.toLowerCase().startsWith("introduction to ")) {
-			String[] words = name.toLowerCase().substring("introduction to ".length()).split(" ");
-			prefix = words[0].length() < 4 ? words[0].toUpperCase() : words[0].substring(0, 4).toUpperCase();
-		} else {
-			prefix = name.substring(0, 4).toUpperCase();
+		name = name.toLowerCase();
+		if (name.startsWith("introduction to ")) {
+			String[] words = name.substring("introduction to ".length()).split(" ");
+			prefix = (words[0].length() < 4) ? words[0].toUpperCase() : words[0].substring(0, 4);
 		}
- 		String suffix = generator.generatePassword(3, digits);
+		else {
+			prefix = name.substring(0, 4);
+		}
+		prefix = prefix.toUpperCase();
+		String suffix = generator.generatePassword(3, digits);
 		String code = String.format("%s %s", prefix, suffix);
 		while (this.courseRepository.existsByCode(code)) {
 			suffix = generator.generatePassword(3, digits);
 			code = String.format("%s%s", prefix, suffix);
 		}
 		return code;
+	}
+
+	public String generateToken() {
+		return generator.generatePassword(16, digits, alphabetical);
 	}
 }

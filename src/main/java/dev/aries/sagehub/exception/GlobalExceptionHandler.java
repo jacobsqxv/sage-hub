@@ -29,10 +29,11 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ExceptionResponse> handleUnauthorizedExceptions(Exception exp) {
 		logException(exp);
 		Set<String> error = new HashSet<>();
-		switch (exp.getClass().getSimpleName()) {
-			case "LockedException" -> error.add(ExceptionConstants.ACCOUNT_LOCKED);
-			case "DisabledException" -> error.add(ExceptionConstants.ACCOUNT_DISABLED);
-			default -> error.add(exp.getMessage());
+		if (exp instanceof DisabledException) {
+			error.add(ExceptionConstants.ACCOUNT_DISABLED);
+		}
+		else {
+			error.add(exp.getMessage());
 		}
 		int code = HttpStatus.UNAUTHORIZED.value();
 		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
