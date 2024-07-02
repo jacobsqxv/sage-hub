@@ -1,5 +1,6 @@
 package dev.aries.sagehub.service.programservice;
 
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ProgramCourseRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
 import dev.aries.sagehub.dto.response.ProgramCourseResponse;
@@ -22,12 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
 
 @Slf4j
 @Service
@@ -42,7 +39,6 @@ public class ProgramServiceImpl implements ProgramService {
 	private final GlobalUtil globalUtil;
 	private final Checks checks;
 	private static final String NAME = "Program";
-	private static final Integer OFFSET = 1;
 
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
@@ -63,25 +59,22 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	@Override
-	public Page<ProgramResponse> getPrograms(GetProgramsPage request) {
+	public Page<ProgramResponse> getPrograms(GetProgramsPage request, Pageable pageable) {
 		if (this.checks.checkAdmin()) {
-			return getAllPrograms(request);
+			return getAllPrograms(request, pageable);
 		}
-		return getActivePrograms(request);
+		return getActivePrograms(request, pageable);
 	}
 
-	private Page<ProgramResponse> getActivePrograms(GetProgramsPage request) {
-		return loadPrograms(request, Status.ACTIVE.name());
+	private Page<ProgramResponse> getActivePrograms(GetProgramsPage request, Pageable pageable) {
+		return loadPrograms(request, Status.ACTIVE.name(), pageable);
 	}
 
-	private Page<ProgramResponse> getAllPrograms(GetProgramsPage request) {
-		return loadPrograms(request, request.status());
+	private Page<ProgramResponse> getAllPrograms(GetProgramsPage request, Pageable pageable) {
+		return loadPrograms(request, request.status(), pageable);
 	}
 
-	private Page<ProgramResponse> loadPrograms(GetProgramsPage request, String status) {
-		Integer page = request.page() - OFFSET;
-		Integer size = request.size();
-		Pageable pageable = PageRequest.of(page, size, Sort.by("name"));
+	private Page<ProgramResponse> loadPrograms(GetProgramsPage request, String status, Pageable pageable) {
 		return this.programRepository.findAll(request.name(), request.department(), status, pageable)
 				.map(this.programMapper::toProgramResponse);
 	}
@@ -135,7 +128,7 @@ public class ProgramServiceImpl implements ProgramService {
 	private void existsByName(String name) {
 		if (this.programRepository.existsByName(name)) {
 			throw new IllegalArgumentException(
-					String.format(NAME_EXISTS, NAME, name));
+					String.format(ExceptionConstants.NAME_EXISTS, NAME, name));
 		}
 	}
 }

@@ -16,9 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,7 +29,6 @@ public class CourseServiceImpl implements CourseService {
 	private final GlobalUtil globalUtil;
 	private final Checks checks;
 	private static final String NAME = "Course";
-	private static final Integer OFFSET = 1;
 
 	@Override
 	public CourseResponse addCourse(CourseRequest request) {
@@ -54,25 +51,22 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	@Override
-	public Page<CourseResponse> getCourses(GetCoursesPage request) {
+	public Page<CourseResponse> getCourses(GetCoursesPage request, Pageable pageable) {
 		if (this.checks.checkAdmin()) {
-			return getAllCourses(request);
+			return getAllCourses(request, pageable);
 		}
-		return getActiveCourses(request);
+		return getActiveCourses(request, pageable);
 	}
 
-	private Page<CourseResponse> getAllCourses(GetCoursesPage request) {
-		return loadCourses(request, request.status());
+	private Page<CourseResponse> getAllCourses(GetCoursesPage request, Pageable pageable) {
+		return loadCourses(request, request.status(), pageable);
 	}
 
-	private Page<CourseResponse> getActiveCourses(GetCoursesPage request) {
-		return loadCourses(request, Status.ACTIVE.name());
+	private Page<CourseResponse> getActiveCourses(GetCoursesPage request, Pageable pageable) {
+		return loadCourses(request, Status.ACTIVE.name(), pageable);
 	}
 
-	private Page<CourseResponse> loadCourses(GetCoursesPage request, String status) {
-		Integer page = request.page() - OFFSET;
-		Integer size = request.size();
-		Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+	private Page<CourseResponse> loadCourses(GetCoursesPage request, String status, Pageable pageable) {
 		return this.courseRepository.findAll(request.name(), request.code(), status, pageable)
 				.map(this.courseMapper::toCourseResponse);
 	}
