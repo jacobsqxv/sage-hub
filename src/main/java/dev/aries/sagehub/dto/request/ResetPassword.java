@@ -10,8 +10,6 @@ public record ResetPassword(
 		String username,
 		@NotEmpty(message = ValidationMessage.NOT_NULL)
 		@Pattern(regexp = Patterns.PASSWORD, message = ValidationMessage.PASSWORD)
-		String password,
-		@NotEmpty(message = ValidationMessage.NOT_NULL)
-		String token
+		String password
 ) {
 }
