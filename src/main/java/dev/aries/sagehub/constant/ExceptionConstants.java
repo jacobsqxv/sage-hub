@@ -74,6 +74,11 @@ public final class ExceptionConstants {
 	public static final String CANNOT_UPDATE_NAME = "%s name cannot be updated";
 
 	/**
+	 * Message for expired verification token.
+	 */
+	public static final String EXPIRED_TOKEN = "Token has expired";
+
+	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.
 	 */
