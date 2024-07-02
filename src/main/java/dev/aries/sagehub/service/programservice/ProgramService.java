@@ -7,11 +7,12 @@ import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProgramService {
 	ProgramResponse addProgram(ProgramRequest request);
 
-	Page<ProgramResponse> getPrograms(GetProgramsPage request);
+	Page<ProgramResponse> getPrograms(GetProgramsPage request, Pageable pageable);
 
 	ProgramResponse getProgram(Long programId);
 
