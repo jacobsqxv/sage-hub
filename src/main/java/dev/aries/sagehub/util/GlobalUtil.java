@@ -65,6 +65,7 @@ public class GlobalUtil {
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Course")));
 	}
+
 	public String formatDateTime(LocalDateTime dateTime) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
 				"d'st' MMMM, uuuu hh:mma", Locale.ENGLISH);

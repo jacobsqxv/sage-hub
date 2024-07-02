@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 import static dev.aries.sagehub.constant.ExceptionConstants.NO_INFO_FOUND;
 
@@ -37,36 +38,36 @@ public class UserUtil {
 	private static final String CONTACT = "contact";
 	private static final String EMERGENCY_CONTACT = "emergency contact";
 	private static final String USER = "User";
+	private static final String GET_CONTACT_INFO = "getContactInfo";
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final RoleUtil roleUtil;
 	private final AdminRepository adminRepository;
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
-	private final Generators generators;
 
 	public User getUser(String username) {
+		log.info("INFO - Getting user with username: {}", username);
 		return this.userRepository.findByUsername(username)
 				.orElseThrow(
 						() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
 	}
 
 	public User getUser(Long id) {
+		log.info("INFO - Getting user with user ID: {}", id);
 		return this.userRepository.findById(id).orElseThrow(
 				() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
 	}
 
-	public User createNewUser(String firstName, String lastName, RoleEnum roleEnum) {
-		String password = this.generators.generatePassword();
+	public User createNewUser(String username, String password, RoleEnum roleEnum) {
 		User user = User.builder()
-				.username(this.generators.generateUsername(firstName, lastName))
+				.username(username)
 				.hashedPassword(this.passwordEncoder.encode(password))
 				.accountEnabled(true)
 				.role(this.roleUtil.getRole(roleEnum))
 				.failedLoginAttempts(0)
 				.status(Status.ACTIVE)
 				.build();
-		log.info("INFO - Generated password for {} is {}", user.getUsername(), password);
 		return this.userRepository.save(user);
 	}
 
@@ -113,40 +114,46 @@ public class UserUtil {
 			User linkedUser = (User) user.getClass().getMethod("getUser").invoke(user);
 			BasicUserResponse.BasicUserResponseBuilder response = BasicUserResponse.builder()
 					.id(linkedUser.getId())
-					.profilePicture((String) user.getClass().getMethod("getProfilePictureUrl").invoke(user))
+					.profilePicture((String) user.getClass()
+							.getMethod("getProfilePictureUrl").invoke(user))
 					.fullname((String) user.getClass().getMethod("fullName").invoke(user))
 					.username(linkedUser.getUsername())
-					.primaryEmail((String) user.getClass().getMethod("getPrimaryEmail").invoke(user))
+					.primaryEmail((String) user.getClass()
+							.getMethod("getPrimaryEmail").invoke(user))
 					.status(linkedUser.getStatus().getValue())
 					.role(linkedUser.getRole().getName().name());
 
 			if (user instanceof Student) {
 				getStudentResponse(user, response);
-			} else if (user instanceof Staff) {
+			}
+			else if (user instanceof Staff) {
 				getStaffResponse(user, response);
 			}
 
 			return response.build();
-		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+		}
+		catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
 			throw new IllegalStateException(ex.getMessage());
 		}
 	}
 
 	public ContactInfo loadContactInfo(Object userInfo) {
-		return loadUserInfo(userInfo, user -> {
+		return loadUserInfo(userInfo, (user) -> {
 			try {
-				return (ContactInfo) user.getClass().getMethod("getContactInfo").invoke(user);
-			} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+				return (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
+			}
+			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
 				throw new IllegalArgumentException(ex);
 			}
 		}, CONTACT);
 	}
 
 	public EmergencyContact loadEmergencyContact(Object userInfo) {
-		return loadUserInfo(userInfo, user -> {
+		return loadUserInfo(userInfo, (user) -> {
 			try {
-				return (EmergencyContact) user.getClass().getMethod("getContactInfo").invoke(user);
-			} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+				return (EmergencyContact) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
+			}
+			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
 				throw new IllegalArgumentException(ex);
 			}
 		}, EMERGENCY_CONTACT);
@@ -155,7 +162,7 @@ public class UserUtil {
 	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
 			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		Enum<Gender> gender = (Enum<Gender>) user.getClass().getMethod("getGender").invoke(user);
-		ContactInfo linkedContactInfo = (ContactInfo) user.getClass().getMethod("getContactInfo").invoke(user);
+		ContactInfo linkedContactInfo = (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
 		response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
 		response.dateOfBirth((LocalDate) user.getClass().getMethod("getDateOfBirth").invoke(user));
 		response.gender(String.valueOf(gender));
@@ -178,7 +185,8 @@ public class UserUtil {
 			Object user = optional.get();
 			if (user instanceof Admin) {
 				throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
-			} else if (user instanceof Staff || user instanceof Student) {
+			}
+			else if (user instanceof Staff || user instanceof Student) {
 				return mapper.apply(user);
 			}
 		}

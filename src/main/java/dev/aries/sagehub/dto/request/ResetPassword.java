@@ -5,7 +5,7 @@ import dev.aries.sagehub.constant.ValidationMessage;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
-public record PasswordResetRequest(
+public record ResetPassword(
 		@NotEmpty(message = ValidationMessage.NOT_NULL)
 		String username,
 		@NotEmpty(message = ValidationMessage.NOT_NULL)

@@ -11,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import static dev.aries.sagehub.constant.ExceptionConstants.UNAUTHORIZED_ACCESS;
 
 @Slf4j
 @Component
@@ -23,8 +22,10 @@ public class Checks {
 	public <E extends Enum<E>> void checkIfEnumExists(Class<E> enumClass, String request) {
 		try {
 			Enum.valueOf(enumClass, request.toUpperCase());
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(String.format(ExceptionConstants.NOT_FOUND, enumClass.getSimpleName()));
+		}
+		catch (IllegalArgumentException ex) {
+			throw new IllegalArgumentException(String.format(ExceptionConstants.NOT_FOUND,
+					enumClass.getSimpleName()));
 		}
 	}
 
@@ -38,7 +39,7 @@ public class Checks {
 		isAdmin();
 		if (!currentlyLoggedInUser().getId().equals(id)) {
 			log.info("INFO - Unauthorized access to this resource");
-			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
 
@@ -47,7 +48,7 @@ public class Checks {
 		if (!(loggedInUserRole.equals(RoleEnum.ADMIN) ||
 				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN))) {
 			log.info("INFO - Unauthorized access");
-			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
 
@@ -55,12 +56,11 @@ public class Checks {
 		User user = currentlyLoggedInUser();
 		if (!user.getUsername().equals(this.userUtil.getUser(id).getUsername())) {
 			log.info("INFO - Unauthorized access to information for {}", user.getUsername());
-			throw new UnauthorizedAccessException(UNAUTHORIZED_ACCESS);
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
 
-	public boolean isPasswordValid(String password) {
-		User user = currentlyLoggedInUser();
+	public boolean isPasswordEqual(User user, String password) {
 		return this.passwordEncoder.matches(password, user.getHashedPassword());
 	}
 
