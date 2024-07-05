@@ -67,14 +67,22 @@ public class GlobalUtil {
 	}
 
 	public String formatDateTime(LocalDateTime dateTime) {
+		int day = dateTime.getDayOfMonth();
+		String ordinalIndicator = getOrdinalIndicator(day);
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-				"d'st' MMMM, uuuu hh:mma", Locale.ENGLISH);
-		return dateTime.format(formatter)
-				.replaceAll("(\\d{2})st", "$1th")
-				.replaceAll("(\\d)1th", "$11st")
-				.replaceAll("(\\d)2th", "$12nd")
-				.replaceAll("(\\d)3th", "$13rd")
-				.replace("2st", "2nd")
-				.replace("3st", "3rd");
+				"d'" + ordinalIndicator + "' MMMM, uuuu hh:mma", Locale.ENGLISH);
+		return dateTime.format(formatter);
+	}
+
+	private static String getOrdinalIndicator(int day) {
+		if (day >= 11 && day <= 13) {
+			return "th";
+		}
+		return switch (day % 10) {
+			case 1 -> "st";
+			case 2 -> "nd";
+			case 3 -> "rd";
+			default -> "th";
+		};
 	}
 }

@@ -22,6 +22,7 @@ import dev.aries.sagehub.repository.EmergencyContactRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
@@ -60,6 +61,7 @@ public class UserServiceImpl implements UserService {
 	private final ContactInfoMapper contactInfoMapper;
 	private final EmergencyContactMapper emergencyContactMapper;
 	private final EmergencyContactRepository emergencyContactRepository;
+	private final EmailService emailService;
 
 	/**
 	 * Changes the password of a user.
@@ -221,6 +223,8 @@ public class UserServiceImpl implements UserService {
 					.user(user);
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));
 		};
+		String recipient = contactInfo.getSecondaryEmail();
+		this.emailService.sendAccountCreatedEmail(username, password, recipient);
 		log.info("INFO - New user added with username: {} and password: {}", username, password);
 		return buildBasicInfo(builder, request);
 	}

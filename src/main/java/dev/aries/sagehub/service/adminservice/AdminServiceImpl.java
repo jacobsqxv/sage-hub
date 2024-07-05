@@ -6,6 +6,7 @@ import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
+import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class AdminServiceImpl implements AdminService {
 	private final AdminRepository adminRepository;
 	private final Generators generators;
 	private final UserUtil userUtil;
+	private final EmailService emailService;
 
 	/**
 	 * Adds a new admin.
@@ -49,6 +51,7 @@ public class AdminServiceImpl implements AdminService {
 			.user(user)
 			.build();
 		this.adminRepository.save(admin);
+		this.emailService.sendAccountCreatedEmail(username, password, request.primaryEmail());
 		log.info("INFO - New admin added with ID: {}", admin.getUser().getUsername());
 		return this.userUtil.getUserResponse(admin);
 	}
