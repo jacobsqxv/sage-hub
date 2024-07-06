@@ -6,10 +6,15 @@ package dev.aries.sagehub.enums;
  * @author Aries N/A
  */
 public enum RoleEnum {
-
 	/**
-	 * Represents a student role. Students typically have the least amount of access and
+	 * Represents a prospective student role.
+	 * Prospective students typically have the least amount of access and
 	 * permissions.
+	 */
+	PROSPECTIVE_STUDENT,
+	/**
+	 * Represents a student role. Students have more access and
+	 * permissions than prospective students, but less than staff.
 	 */
 	STUDENT,
 

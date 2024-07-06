@@ -2,6 +2,7 @@ package dev.aries.sagehub.model;
 
 import java.time.LocalDateTime;
 
+import dev.aries.sagehub.enums.AccountStatus;
 import dev.aries.sagehub.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,7 +43,7 @@ public class User extends Auditing {
 	private Role role;
 
 	@Enumerated(EnumType.STRING)
-	private Status status;
+	private AccountStatus status;
 
 	private LocalDateTime lastLogin;
 

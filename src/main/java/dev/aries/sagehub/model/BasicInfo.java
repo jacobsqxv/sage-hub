@@ -36,9 +36,6 @@ public class BasicInfo extends Auditing {
 	@Column(nullable = false)
 	private LocalDate dateOfBirth;
 
-	@Column(unique = true, updatable = false, nullable = false)
-	private String primaryEmail;
-
 	@OneToOne
 	private User user;
 
