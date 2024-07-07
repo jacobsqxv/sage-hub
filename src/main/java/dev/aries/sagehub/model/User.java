@@ -3,7 +3,6 @@ package dev.aries.sagehub.model;
 import java.time.LocalDateTime;
 
 import dev.aries.sagehub.enums.AccountStatus;
-import dev.aries.sagehub.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,9 +38,9 @@ public class User extends Auditing {
 	private String hashedPassword;
 
 	@ManyToOne
-	@JoinColumn(name = "role_id")
+	@JoinColumn(name = "role_id", nullable = false)
 	private Role role;
-
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private AccountStatus status;
 
@@ -53,4 +52,19 @@ public class User extends Auditing {
 
 	private boolean accountEnabled;
 
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof User user)) {
+			return false;
+		}
+		return getId() != null && getId().equals(user.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

@@ -27,6 +27,24 @@ public class ContactInfo extends Auditing {
 	@Column(nullable = false)
 	private String phoneNumber;
 	@Embedded
+	@Column(nullable = false)
 	private Address address;
+	@Column(nullable = false)
 	private String postalAddress;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof ContactInfo contactInfo)) {
+			return false;
+		}
+		return getId() != null && getId().equals(contactInfo.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

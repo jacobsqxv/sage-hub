@@ -35,6 +35,23 @@ public class Department extends Auditing {
 	@OneToMany(orphanRemoval = true)
 	@JsonManagedReference
 	private List<Program> programs;
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Department department)) {
+			return false;
+		}
+		return getId() != null && getId().equals(department.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

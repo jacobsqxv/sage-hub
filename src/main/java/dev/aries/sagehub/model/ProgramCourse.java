@@ -1,8 +1,6 @@
 package dev.aries.sagehub.model;
 
-import dev.aries.sagehub.enums.Semester;
 import dev.aries.sagehub.enums.Status;
-import dev.aries.sagehub.enums.Year;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -37,8 +35,25 @@ public class ProgramCourse extends Auditing {
 	@JoinColumn(name = "course_id", nullable = false)
 	private Course course;
 	@Embedded
+	@Column(nullable = false)
 	private AcademicPeriod academicPeriod;
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof ProgramCourse programCourse)) {
+			return false;
+		}
+		return getId() != null && getId().equals(programCourse.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

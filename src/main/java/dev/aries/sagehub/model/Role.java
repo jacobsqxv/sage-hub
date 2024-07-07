@@ -27,10 +27,24 @@ public class Role extends Auditing {
 	private Long id;
 
 	@Column(unique = true, nullable = false, updatable = false)
-
 	@Enumerated(EnumType.STRING)
 	private RoleEnum name;
-
+	@Column(nullable = false)
 	private String description;
 
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Role role)) {
+			return false;
+		}
+		return getId() != null && getId().equals(role.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

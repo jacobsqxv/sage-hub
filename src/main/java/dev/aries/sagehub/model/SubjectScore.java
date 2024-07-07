@@ -1,5 +1,6 @@
 package dev.aries.sagehub.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +21,24 @@ public class SubjectScore extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(nullable = false)
 	private String subjectName;
+	@Column(nullable = false)
 	private Character grade;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof SubjectScore subjectScore)) {
+			return false;
+		}
+		return getId() != null && getId().equals(subjectScore.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

@@ -10,6 +10,7 @@ import jakarta.persistence.Enumerated;
 @Embeddable
 public record AcademicPeriod(
 		@Column(nullable = false)
+		@Enumerated(EnumType.STRING)
 		Year year,
 		@Column(nullable = false)
 		@Enumerated(EnumType.STRING)

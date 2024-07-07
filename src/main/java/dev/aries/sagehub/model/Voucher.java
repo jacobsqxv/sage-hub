@@ -1,6 +1,7 @@
 package dev.aries.sagehub.model;
 
 import dev.aries.sagehub.enums.VoucherStatus;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,8 +25,11 @@ public class Voucher extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(unique = true, nullable = false)
 	private Long serialNumber;
+	@Column(nullable = false)
 	private String pin;
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private VoucherStatus status;
 	@ManyToOne

@@ -31,6 +31,23 @@ public class Course extends Auditing {
 	private String description;
 	@Column(nullable = false)
 	private Integer creditUnits;
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Course course)) {
+			return false;
+		}
+		return getId() != null && getId().equals(course.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }
