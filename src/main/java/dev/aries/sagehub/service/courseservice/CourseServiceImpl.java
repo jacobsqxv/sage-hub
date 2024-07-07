@@ -38,7 +38,7 @@ public class CourseServiceImpl implements CourseService {
 				.code(this.generators.generateCourseCode(request.name()))
 				.description(request.description())
 				.creditUnits(request.creditUnits())
-				.status(Status.PENDING_REVIEW)
+				.status(Status.PENDING)
 				.build();
 		this.courseRepository.save(course);
 		return this.courseMapper.toCourseResponse(course);

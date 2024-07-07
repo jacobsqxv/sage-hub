@@ -48,7 +48,7 @@ public class ProgramServiceImpl implements ProgramService {
 				.name(request.name().toUpperCase())
 				.description(request.description())
 				.department(department)
-				.status(Status.PENDING_REVIEW)
+				.status(Status.PENDING)
 				.build();
 		this.programRepository.save(program);
 		if (!department.getPrograms().contains(program)) {
@@ -105,7 +105,7 @@ public class ProgramServiceImpl implements ProgramService {
 						(request.period().year()),
 						request.period().semester()
 				))
-				.status(Status.PENDING_REVIEW)
+				.status(Status.PENDING)
 				.build();
 		this.programCourseRepository.save(programCourse);
 		return this.programCourseMapper.toProgramCourseResponse(programCourse);

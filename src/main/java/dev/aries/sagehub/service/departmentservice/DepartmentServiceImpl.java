@@ -37,7 +37,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 		Department department = Department.builder()
 				.name(request.name())
 				.code(this.generators.generateDeptCode())
-				.status(Status.PENDING_REVIEW)
+				.status(Status.PENDING)
 				.build();
 		this.departmentRepository.save(department);
 		log.info("INFO - Department {} added successfully", department.getCode());

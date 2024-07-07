@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
 				token,
 				userResponse,
 				user.getLastLogin(),
-				user.getStatus().getValue(),
+				user.getStatus().toString(),
 				user.isAccountEnabled());
 	}
 
@@ -113,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public GenericResponse resetPasswordRequest(ResetPasswordRequest request) {
 		User user = this.userUtil.getUser(request.username());
-		String value = this.generator.generateToken();
+		String value = this.generator.generateToken(16);
 		Token token = Token.builder()
 				.value(value)
 				.type(TokenType.RESET_PASSWORD)
