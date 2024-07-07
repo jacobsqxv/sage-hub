@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import dev.aries.sagehub.dto.response.BasicUserResponse;
+import dev.aries.sagehub.enums.AccountStatus;
 import dev.aries.sagehub.enums.Gender;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.enums.Status;
@@ -66,7 +67,7 @@ public class UserUtil {
 				.accountEnabled(true)
 				.role(this.roleUtil.getRole(roleEnum))
 				.failedLoginAttempts(0)
-				.status(Status.ACTIVE)
+				.status(AccountStatus.ACTIVE)
 				.build();
 		return this.userRepository.save(user);
 	}
@@ -120,7 +121,7 @@ public class UserUtil {
 					.username(linkedUser.getUsername())
 					.primaryEmail((String) user.getClass()
 							.getMethod("getPrimaryEmail").invoke(user))
-					.status(linkedUser.getStatus().getValue())
+					.status(linkedUser.getStatus().toString())
 					.role(linkedUser.getRole().getName().name());
 
 			if (user instanceof Student) {

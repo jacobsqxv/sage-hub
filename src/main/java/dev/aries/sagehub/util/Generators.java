@@ -6,8 +6,8 @@ import java.util.Calendar;
 import dev.aries.sagehub.repository.CourseRepository;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.StaffRepository;
-import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.passay.CharacterData;
@@ -25,7 +25,7 @@ import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 public class Generators {
 
 	private final UserRepository userRepository;
-	private final StudentRepository studentRepository;
+	private final VoucherRepository voucherRepository;
 	private final StaffRepository staffRepository;
 	private final DepartmentRepository departmentRepository;
 
@@ -83,7 +83,7 @@ public class Generators {
 	public Long generateUniqueId(boolean isStudent) {
 		Long id = Long.valueOf(generateId(isStudent));
 		if (isStudent) {
-			while (this.studentRepository.existsById(id)) {
+			while (this.voucherRepository.existsBySerialNumber(id)) {
 				id = Long.valueOf(generateId(true));
 			}
 		}
@@ -123,7 +123,7 @@ public class Generators {
 		return code;
 	}
 
-	public String generateToken() {
-		return generator.generatePassword(16, digits, alphabetical);
+	public String generateToken(int length) {
+		return generator.generatePassword(length, digits, alphabetical);
 	}
 }
