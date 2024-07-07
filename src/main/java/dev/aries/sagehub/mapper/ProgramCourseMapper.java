@@ -19,7 +19,7 @@ public class ProgramCourseMapper {
 				courseMapper.toCourseResponse(programCourse.getCourse()),
 				programCourse.getAcademicPeriod().year().toString(),
 				programCourse.getAcademicPeriod().semester().toString(),
-				programCourse.getStatus().getValue()
+				programCourse.getStatus().toString()
 		);
 	}
 }

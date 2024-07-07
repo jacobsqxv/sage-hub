@@ -28,7 +28,7 @@ public class DepartmentMapper {
 				department.getPrograms().stream()
 						.map(programMapper::toProgramResponse)
 						.toList(),
-				department.getStatus().getValue()
+				department.getStatus().toString()
 		);
 	}
 
@@ -38,7 +38,7 @@ public class DepartmentMapper {
 				department.getCode(),
 				department.getName(),
 				"No programs offered in this department",
-				department.getStatus().getValue()
+				department.getStatus().toString()
 		);
 	}
 }
