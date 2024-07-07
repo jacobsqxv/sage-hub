@@ -1,6 +1,7 @@
 package dev.aries.sagehub.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import dev.aries.sagehub.model.Address;
 import lombok.Builder;
 
 @Builder
@@ -9,8 +10,7 @@ public record ContactInfoResponse(
 		Long id,
 		String secondaryEmail,
 		String phoneNumber,
-		String address,
-		String city,
-		String region
+		Address address,
+		String postalAddress
 ) {
 }

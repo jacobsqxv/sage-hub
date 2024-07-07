@@ -1,6 +1,7 @@
 package dev.aries.sagehub.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,7 +26,7 @@ public class ContactInfo extends Auditing {
 	private String secondaryEmail;
 	@Column(nullable = false)
 	private String phoneNumber;
-	private String address;
-	private String city;
-	private String region;
+	@Embedded
+	private Address address;
+	private String postalAddress;
 }

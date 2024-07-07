@@ -1,5 +1,6 @@
 package dev.aries.sagehub.model;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,5 +25,8 @@ public class EmergencyContact extends Auditing {
 	private String fullName;
 	private String relationship;
 	private String phoneNumber;
-	private String address;
+	private String email;
+	private String occupation;
+	@Embedded
+	private Address address;
 }

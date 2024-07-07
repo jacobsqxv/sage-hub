@@ -14,8 +14,7 @@ public class ContactInfoMapper {
 				contactInfo.getSecondaryEmail(),
 				contactInfo.getPhoneNumber(),
 				contactInfo.getAddress(),
-				contactInfo.getCity(),
-				contactInfo.getRegion()
+				contactInfo.getPostalAddress()
 		);
 	}
 

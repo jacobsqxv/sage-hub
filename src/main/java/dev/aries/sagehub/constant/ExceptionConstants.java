@@ -86,6 +86,10 @@ public final class ExceptionConstants {
 	 * Message for voucher limit reached.
 	 */
 	public static final String VOUCHERS_LIMIT = "Vouchers limit reached for the selected academic year";
+	/**
+	 * Message for voucher invalid.
+	 */
+	public static final String VOUCHER_INVALID = "Voucher has expired or is already used";
 
 	/**
 	 * Private constructor to prevent instantiation of this utility class.

@@ -5,6 +5,8 @@ import dev.aries.sagehub.model.EmergencyContact;
 
 import org.springframework.stereotype.Component;
 
+import static dev.aries.sagehub.strategy.UpdateAddress.updateAddress;
+
 @Component
 public class UpdateEmergencyContact implements UpdateStrategy<EmergencyContact, EmergencyContactRequest> {
 
@@ -13,8 +15,7 @@ public class UpdateEmergencyContact implements UpdateStrategy<EmergencyContact, 
 		entity.setFullName(request.fullName() != null ? request.fullName() : entity.getFullName());
 		entity.setPhoneNumber(request.phoneNumber() != null ? request.phoneNumber() : entity.getPhoneNumber());
 		entity.setRelationship(request.relationship() != null ? request.relationship() : entity.getRelationship());
-		entity.setAddress(request.address() != null ? request.address() : entity.getAddress());
-
+		entity.setAddress(updateAddress(entity.getAddress(), request.address()));
 		return entity;
 	}
 }

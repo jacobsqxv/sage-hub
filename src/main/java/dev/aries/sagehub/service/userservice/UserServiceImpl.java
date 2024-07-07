@@ -9,8 +9,10 @@ import dev.aries.sagehub.dto.response.ContactInfoResponse;
 import dev.aries.sagehub.dto.response.EmergencyContactResponse;
 import dev.aries.sagehub.enums.Gender;
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.mapper.AddressMapper;
 import dev.aries.sagehub.mapper.ContactInfoMapper;
 import dev.aries.sagehub.mapper.EmergencyContactMapper;
+import dev.aries.sagehub.model.Address;
 import dev.aries.sagehub.model.BasicInfo;
 import dev.aries.sagehub.model.ContactInfo;
 import dev.aries.sagehub.model.EmergencyContact;
@@ -62,6 +64,7 @@ public class UserServiceImpl implements UserService {
 	private final EmergencyContactMapper emergencyContactMapper;
 	private final EmergencyContactRepository emergencyContactRepository;
 	private final EmailService emailService;
+	private final AddressMapper addressMapper;
 
 	/**
 	 * Changes the password of a user.
@@ -233,9 +236,8 @@ public class UserServiceImpl implements UserService {
 		ContactInfo contactInfo = ContactInfo.builder()
 				.secondaryEmail(request.secondaryEmail())
 				.phoneNumber(request.phoneNumber())
-				.address(request.address())
-				.city(request.city())
-				.region(request.region())
+				.address(this.addressMapper.toAddress(request.address()))
+				.postalAddress(request.postalAddress())
 				.build();
 		return this.contactInfoRepository.save(contactInfo).getId();
 	}
