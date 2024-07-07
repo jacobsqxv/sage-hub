@@ -1,12 +1,15 @@
 package dev.aries.sagehub.bootstrap;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Map;
 
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.model.AcademicYear;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.Role;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.repository.AcademicYearRepository;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.RoleRepository;
 import dev.aries.sagehub.repository.UserRepository;
@@ -31,18 +34,34 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private final UserRepository userRepository;
 	private final Generators generators;
 	private final EmailService emailService;
+	private final AcademicYearRepository academicYearRepository;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		this.loadRoles();
 		this.checkSuperAdmin();
+		this.checkAcademicYear();
+	}
+
+	private void loadAcademicYear(Integer year) {
+		LocalDate startDate = LocalDate.of(year, 9, 1);
+		LocalDate endDate = startDate.plusYears(1).minusDays(1);
+		this.academicYearRepository.save(AcademicYear.builder()
+				.year(year)
+				.startDate(startDate)
+				.endDate(endDate)
+				.build());
+		log.info("INFO - Academic year {} added", year);
 	}
 
 	private void loadRoles() {
 		RoleEnum[] roles = RoleEnum.values();
 		Map<RoleEnum, String> roleDescription = Map.of(
-				RoleEnum.ADMIN, "Admin role", RoleEnum.STAFF, "Staff role",
-				RoleEnum.STUDENT, "Student role", RoleEnum.SUPER_ADMIN, "Super admin role");
+				RoleEnum.SUPER_ADMIN, "Super admin role",
+				RoleEnum.ADMIN, "Admin role",
+				RoleEnum.STAFF, "Staff role",
+				RoleEnum.STUDENT, "Student role",
+				RoleEnum.PROSPECTIVE_STUDENT, "Prospective Student role");
 
 		Arrays.stream(roles).forEach((role) -> {
 			if (!this.roleRepository.existsByName(role)) {
@@ -80,6 +99,16 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 		}
 		else {
 			loadSuperAdmin();
+		}
+	}
+
+	private void checkAcademicYear() {
+		Integer currentYear = LocalDate.now().getYear();
+		if (this.academicYearRepository.findByYear(currentYear).isPresent()) {
+			log.info("INFO - Academic year {} already exists", currentYear);
+		}
+		else {
+			loadAcademicYear(currentYear);
 		}
 	}
 }
