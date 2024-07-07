@@ -82,6 +82,10 @@ public final class ExceptionConstants {
 	 * Message for email sending failure.
 	 */
 	public static final String EMAIL_SENDING_FAILURE = "There was an error sending the email";
+	/**
+	 * Message for voucher limit reached.
+	 */
+	public static final String VOUCHERS_LIMIT = "Vouchers limit reached for the selected academic year";
 
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
