@@ -3,7 +3,11 @@ package dev.aries.sagehub.model;
 import java.time.LocalDate;
 
 import dev.aries.sagehub.enums.Gender;
+import dev.aries.sagehub.enums.MaritalStatus;
+import dev.aries.sagehub.enums.Title;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -31,6 +35,15 @@ public class BasicInfo extends Auditing {
 	private String middleName;
 
 	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private MaritalStatus maritalStatus;
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Title title;
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private Gender gender;
 
 	@Column(nullable = false)

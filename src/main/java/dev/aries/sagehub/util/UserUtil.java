@@ -8,8 +8,9 @@ import java.util.function.Function;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.enums.AccountStatus;
 import dev.aries.sagehub.enums.Gender;
+import dev.aries.sagehub.enums.MaritalStatus;
 import dev.aries.sagehub.enums.RoleEnum;
-import dev.aries.sagehub.enums.Status;
+import dev.aries.sagehub.enums.Title;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.ContactInfo;
 import dev.aries.sagehub.model.EmergencyContact;
@@ -162,11 +163,16 @@ public class UserUtil {
 
 	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
 			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Enum<Gender> gender = (Enum<Gender>) user.getClass().getMethod("getGender").invoke(user);
+		Gender gender = (Gender) user.getClass().getMethod("getGender").invoke(user);
+		Title title = (Title) user.getClass().getMethod("getTitle").invoke(user);
+		MaritalStatus maritalStatus = (MaritalStatus) user.getClass()
+				.getMethod("getMaritalStatus").invoke(user);
 		ContactInfo linkedContactInfo = (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
 		response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
 		response.dateOfBirth((LocalDate) user.getClass().getMethod("getDateOfBirth").invoke(user));
 		response.gender(String.valueOf(gender));
+		response.maritalStatus(String.valueOf(maritalStatus));
+		response.title(String.valueOf(title));
 	}
 
 	private <T> void getStudentResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)

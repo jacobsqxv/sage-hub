@@ -8,11 +8,12 @@ import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.ContactInfoResponse;
 import dev.aries.sagehub.dto.response.EmergencyContactResponse;
 import dev.aries.sagehub.enums.Gender;
+import dev.aries.sagehub.enums.MaritalStatus;
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.enums.Title;
 import dev.aries.sagehub.mapper.AddressMapper;
 import dev.aries.sagehub.mapper.ContactInfoMapper;
 import dev.aries.sagehub.mapper.EmergencyContactMapper;
-import dev.aries.sagehub.model.Address;
 import dev.aries.sagehub.model.BasicInfo;
 import dev.aries.sagehub.model.ContactInfo;
 import dev.aries.sagehub.model.EmergencyContact;
@@ -187,6 +188,8 @@ public class UserServiceImpl implements UserService {
 				.middleName(request.middleName())
 				.lastName(lastname)
 				.gender(Gender.valueOf(request.gender()))
+				.title(Title.valueOf(request.title()))
+				.maritalStatus(MaritalStatus.valueOf(request.maritalStatus()))
 				.dateOfBirth(request.dateOfBirth())
 				.profilePictureUrl(request.profilePicture())
 				.build();
