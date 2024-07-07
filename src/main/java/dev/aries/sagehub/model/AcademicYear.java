@@ -2,11 +2,8 @@ package dev.aries.sagehub.model;
 
 import java.time.LocalDate;
 
-import dev.aries.sagehub.enums.Semester;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,17 +19,30 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class AcademicPeriod {
+public class AcademicYear extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private Integer year;
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private Semester semester;
 	@Column(nullable = false, unique = true)
 	private LocalDate startDate;
 	@Column(nullable = false, unique = true)
 	private LocalDate endDate;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof AcademicYear academicYear)) {
+			return false;
+		}
+		return getId() != null && getId().equals(academicYear.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }
