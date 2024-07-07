@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class VoucherMapper {
 	public VoucherResponse toVoucherResponse(Voucher voucher) {
 		return new VoucherResponse(
+				voucher.getId(),
 				voucher.getSerialNumber(),
 				voucher.getPin(),
 				voucher.getStatus().toString()

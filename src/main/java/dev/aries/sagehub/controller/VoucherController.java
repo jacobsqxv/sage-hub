@@ -1,5 +1,6 @@
 package dev.aries.sagehub.controller;
 
+import dev.aries.sagehub.dto.request.AddVoucherRequest;
 import dev.aries.sagehub.dto.request.VoucherRequest;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.dto.response.VoucherResponse;
@@ -27,7 +28,7 @@ public class VoucherController {
 	private final VoucherService voucherService;
 
 	@PostMapping
-	public ResponseEntity<GenericResponse> addVouchers(@RequestBody @Valid VoucherRequest request) {
+	public ResponseEntity<GenericResponse> addVouchers(@RequestBody @Valid AddVoucherRequest request) {
 		return ResponseEntity.ok(this.voucherService.addVouchers(request));
 	}
 
@@ -35,5 +36,10 @@ public class VoucherController {
 	public ResponseEntity<Page<VoucherResponse>> getVouchers(
 			GetVouchersPage request, @PageableDefault Pageable pageable) {
 		return ResponseEntity.ok(this.voucherService.getVouchers(request, pageable));
+	}
+
+	@PostMapping("/verify")
+	public ResponseEntity<GenericResponse> verifyVoucher(@RequestBody @Valid VoucherRequest request) {
+		return ResponseEntity.ok(this.voucherService.verifyVoucher(request));
 	}
 }

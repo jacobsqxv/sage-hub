@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record VoucherRequest(
+public record AddVoucherRequest(
 		@NotNull(message = ValidationMessage.NOT_NULL)
 		Integer year,
 		@Positive

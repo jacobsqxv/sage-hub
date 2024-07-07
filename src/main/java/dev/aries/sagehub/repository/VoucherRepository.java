@@ -14,8 +14,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface VoucherRepository extends JpaRepository<Voucher, Long>, JpaSpecificationExecutor<Voucher> {
-	boolean existsByAcademicYear(AcademicYear academicYear);
+	Optional<Voucher> findBySerialNumberAndPin(Long serialNumber, String pin);
+
 	boolean existsBySerialNumber(Long serialNumber);
+
 	List<Voucher> findAllByAcademicYear(AcademicYear academicYear);
 
 	default Page<Voucher> findAll(Integer year, String status, Pageable page) {

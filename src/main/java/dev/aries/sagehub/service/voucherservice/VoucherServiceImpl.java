@@ -5,6 +5,7 @@ import java.util.List;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.constant.ResponseMessage;
+import dev.aries.sagehub.dto.request.AddVoucherRequest;
 import dev.aries.sagehub.dto.request.VoucherRequest;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.dto.response.VoucherResponse;
@@ -32,9 +33,10 @@ public class VoucherServiceImpl implements VoucherService {
 	private final Generators generators;
 	private final VoucherMapper voucherMapper;
 	private static final Integer STATUS_OK = HttpStatus.OK.value();
+	private static final String VOUCHER = "Voucher";
 
 	@Override
-	public GenericResponse addVouchers(VoucherRequest request) {
+	public GenericResponse addVouchers(AddVoucherRequest request) {
 		checkVouchers(request.year());
 		AcademicYear year = getAcademicYear(request.year());
 		List<Voucher> vouchers = new ArrayList<>();
@@ -58,6 +60,16 @@ public class VoucherServiceImpl implements VoucherService {
 				.map(this.voucherMapper::toVoucherResponse);
 	}
 
+	@Override
+	public GenericResponse verifyVoucher(VoucherRequest request) {
+		Voucher voucher = getVoucher(request.serialNumber(), request.pin());
+		checkValidity(voucher);
+		voucher.setStatus(VoucherStatus.USED);
+		this.voucherRepository.save(voucher);
+		return new GenericResponse(STATUS_OK,
+				String.format(ResponseMessage.VERIFIED, VOUCHER));
+	}
+
 	private void saveVouchers(List<Voucher> vouchers) {
 		if (vouchers.size() > 1) {
 			this.voucherRepository.saveAll(vouchers);
@@ -78,5 +90,18 @@ public class VoucherServiceImpl implements VoucherService {
 		return this.academicYearRepository.findByYear(year)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Academic Year")));
+	}
+
+	private Voucher getVoucher(Long serialNumber, String pin) {
+		return this.voucherRepository.findBySerialNumberAndPin(serialNumber, pin)
+				.orElseThrow(() -> new IllegalArgumentException(
+						String.format(ExceptionConstants.NOT_FOUND, VOUCHER)));
+	}
+
+	private void checkValidity(Voucher voucher) {
+		VoucherStatus status = voucher.getStatus();
+		if (!status.equals(VoucherStatus.ACTIVE)) {
+			throw new IllegalArgumentException(ExceptionConstants.VOUCHER_INVALID);
+		}
 	}
 }
