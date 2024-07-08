@@ -20,6 +20,7 @@ import dev.aries.sagehub.model.Staff;
 import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
+import dev.aries.sagehub.repository.ApplicationRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
@@ -48,6 +49,7 @@ public class UserUtil {
 	private final AdminRepository adminRepository;
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
+	private final ApplicationRepository applicationRepository;
 
 	public User getUser(String username) {
 		log.info("INFO - Getting user with username: {}", username);
@@ -85,6 +87,9 @@ public class UserUtil {
 			}
 			case STUDENT -> {
 				return this.studentRepository.findByUserId(id);
+			}
+			case PROSPECTIVE_STUDENT -> {
+				return this.applicationRepository.findByUserId(id);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
