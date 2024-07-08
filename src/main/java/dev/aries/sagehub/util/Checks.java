@@ -36,8 +36,7 @@ public class Checks {
 	}
 
 	public void isAdminOrLoggedIn(Long id) {
-		isAdmin();
-		if (!currentlyLoggedInUser().getId().equals(id)) {
+		if (!(checkAdmin() || currentlyLoggedInUser().getId().equals(id))) {
 			log.info("INFO - Unauthorized access to this resource");
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
