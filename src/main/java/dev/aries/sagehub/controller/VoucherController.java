@@ -15,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,8 +39,4 @@ public class VoucherController {
 		return ResponseEntity.ok(this.voucherService.getVouchers(request, pageable));
 	}
 
-	@PostMapping("/verify")
-	public ResponseEntity<GenericResponse> verifyVoucher(@RequestBody @Valid VoucherRequest request) {
-		return ResponseEntity.ok(this.voucherService.verifyVoucher(request));
-	}
 }

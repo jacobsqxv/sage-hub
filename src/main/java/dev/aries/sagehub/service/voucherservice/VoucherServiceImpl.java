@@ -1,5 +1,6 @@
 package dev.aries.sagehub.service.voucherservice;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +11,14 @@ import dev.aries.sagehub.dto.request.VoucherRequest;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.dto.response.VoucherResponse;
 import dev.aries.sagehub.dto.search.GetVouchersPage;
+import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.enums.VoucherStatus;
 import dev.aries.sagehub.mapper.VoucherMapper;
 import dev.aries.sagehub.model.AcademicYear;
+import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.Voucher;
 import dev.aries.sagehub.repository.AcademicYearRepository;
+import dev.aries.sagehub.repository.TokenRepository;
 import dev.aries.sagehub.repository.VoucherRepository;
 import dev.aries.sagehub.util.Generators;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,7 @@ public class VoucherServiceImpl implements VoucherService {
 	private static final int LIMIT = 1000;
 	private final VoucherRepository voucherRepository;
 	private final AcademicYearRepository academicYearRepository;
+	private final TokenRepository tokenRepository;
 	private final Generators generators;
 	private final VoucherMapper voucherMapper;
 	private static final Integer STATUS_OK = HttpStatus.OK.value();
@@ -66,8 +71,16 @@ public class VoucherServiceImpl implements VoucherService {
 		checkValidity(voucher);
 		voucher.setStatus(VoucherStatus.USED);
 		this.voucherRepository.save(voucher);
+		String value = this.generators.generateToken(16);
+		Token token = Token.builder()
+				.type(TokenType.VERIFY_VOUCHER)
+				.value(value)
+				.expiresAt(LocalDateTime.now().plusMinutes(30))
+				.userId(voucher.getSerialNumber())
+				.build();
+		this.tokenRepository.save(token);
 		return new GenericResponse(STATUS_OK,
-				String.format(ResponseMessage.VERIFIED, VOUCHER));
+				String.format("Generated token: %s", value));
 	}
 
 	private void saveVouchers(List<Voucher> vouchers) {
