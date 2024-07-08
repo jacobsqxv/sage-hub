@@ -31,6 +31,8 @@ public class ApplicantResult extends Auditing {
 	@Enumerated(EnumType.STRING)
 	private ResultType type;
 	@Column(nullable = false)
+	private String schoolName;
+	@Column(nullable = false)
 	private Integer year;
 	@Column(nullable = false)
 	private Integer indexNumber;

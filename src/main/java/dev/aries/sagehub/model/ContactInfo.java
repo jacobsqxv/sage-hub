@@ -29,7 +29,7 @@ public class ContactInfo extends Auditing {
 	@Embedded
 	@Column(nullable = false)
 	private Address address;
-	@Column(nullable = false)
+
 	private String postalAddress;
 
 	@Override
