@@ -2,7 +2,7 @@ package dev.aries.sagehub.mapper;
 
 import dev.aries.sagehub.dto.response.ApplicationResponse;
 import dev.aries.sagehub.dto.response.BasicInfoResponse;
-import dev.aries.sagehub.model.Applicant;
+import dev.aries.sagehub.model.Application;
 import dev.aries.sagehub.model.BasicInfo;
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +17,7 @@ public class ApplicationMapper {
 	private final EmergencyContactMapper emergencyContactMapper;
 	private final ContactInfoMapper contactInfoMapper;
 
-	public ApplicationResponse toApplicationResponse(Applicant applicant) {
+	public ApplicationResponse toApplicationResponse(Application applicant) {
 		return new ApplicationResponse(
 				applicant.getId(),
 				applicant.getApplyingForYear().getYear(),
@@ -36,7 +36,7 @@ public class ApplicationMapper {
 		);
 	}
 
-	private BasicInfoResponse toBasicInfoResponse(Applicant applicant) {
+	private BasicInfoResponse toBasicInfoResponse(Application applicant) {
 		BasicInfo basicInfo = BasicInfo.builder()
 				.profilePictureUrl(applicant.getProfilePictureUrl())
 				.firstName(applicant.getFirstName())

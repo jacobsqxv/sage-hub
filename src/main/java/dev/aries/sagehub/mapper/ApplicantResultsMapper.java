@@ -2,7 +2,9 @@ package dev.aries.sagehub.mapper;
 
 import java.util.stream.Collectors;
 
+import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
+import dev.aries.sagehub.enums.ResultType;
 import dev.aries.sagehub.model.ApplicantResult;
 import lombok.RequiredArgsConstructor;
 
@@ -23,5 +25,17 @@ public class ApplicantResultsMapper {
 						.map(this.subjectScoreMapper::toSubjectScoreResponse)
 						.collect(Collectors.toSet())
 		);
+	}
+
+	public ApplicantResult toApplicantResults(ApplicantResultRequest applicantResult) {
+		return ApplicantResult.builder()
+				.schoolName(applicantResult.schoolName())
+				.type(ResultType.valueOf(applicantResult.resultType().toUpperCase()))
+				.year(applicantResult.year())
+				.indexNumber(applicantResult.indexNumber())
+				.scores(applicantResult.subjectScores().stream()
+						.map(this.subjectScoreMapper::toSubjectScore)
+						.collect(Collectors.toSet()))
+				.build();
 	}
 }
