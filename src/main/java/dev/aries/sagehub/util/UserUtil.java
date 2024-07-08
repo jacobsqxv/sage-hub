@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
 
+import dev.aries.sagehub.dto.response.BasicInfoResponse;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.enums.AccountStatus;
 import dev.aries.sagehub.enums.Gender;
@@ -115,23 +116,22 @@ public class UserUtil {
 		try {
 			User linkedUser = (User) user.getClass().getMethod("getUser").invoke(user);
 			BasicUserResponse.BasicUserResponseBuilder response = BasicUserResponse.builder()
-					.id(linkedUser.getId())
-					.profilePicture((String) user.getClass()
-							.getMethod("getProfilePictureUrl").invoke(user))
-					.fullname((String) user.getClass().getMethod("fullName").invoke(user))
+					.userId(linkedUser.getId())
 					.username(linkedUser.getUsername())
 					.primaryEmail((String) user.getClass()
 							.getMethod("getPrimaryEmail").invoke(user))
 					.status(linkedUser.getStatus().toString())
 					.role(linkedUser.getRole().getName().name());
 
-			if (user instanceof Student) {
-				getStudentResponse(user, response);
+			if (user instanceof Student || user instanceof Staff) {
+				getCommonResponse(user, response);
 			}
-			else if (user instanceof Staff) {
-				getStaffResponse(user, response);
+			else if (user instanceof Admin) {
+				String fullName = (String) user.getClass().getMethod("fullName").invoke(user);
+				response.basicInfo(BasicInfoResponse.builder()
+						.fullName(fullName)
+						.build());
 			}
-
 			return response.build();
 		}
 		catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
@@ -139,26 +139,23 @@ public class UserUtil {
 		}
 	}
 
-	public ContactInfo loadContactInfo(Object userInfo) {
+	public <T> T loadUserInfoGeneric(Object userInfo, Class<T> infoClass) {
 		return loadUserInfo(userInfo, (user) -> {
 			try {
-				return (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
+				return infoClass.cast(user.getClass().getMethod(GET_CONTACT_INFO).invoke(user));
 			}
 			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
 				throw new IllegalArgumentException(ex);
 			}
-		}, CONTACT);
+		}, (infoClass == ContactInfo.class) ? CONTACT : EMERGENCY_CONTACT);
+	}
+
+	public ContactInfo loadContactInfo(Object userInfo) {
+		return loadUserInfoGeneric(userInfo, ContactInfo.class);
 	}
 
 	public EmergencyContact loadEmergencyContact(Object userInfo) {
-		return loadUserInfo(userInfo, (user) -> {
-			try {
-				return (EmergencyContact) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
-			}
-			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-				throw new IllegalArgumentException(ex);
-			}
-		}, EMERGENCY_CONTACT);
+		return loadUserInfoGeneric(userInfo, EmergencyContact.class);
 	}
 
 	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
@@ -169,22 +166,17 @@ public class UserUtil {
 				.getMethod("getMaritalStatus").invoke(user);
 		ContactInfo linkedContactInfo = (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
 		response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
-		response.dateOfBirth((LocalDate) user.getClass().getMethod("getDateOfBirth").invoke(user));
-		response.gender(String.valueOf(gender));
-		response.maritalStatus(String.valueOf(maritalStatus));
-		response.title(String.valueOf(title));
-	}
-
-	private <T> void getStudentResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		getCommonResponse(user, response);
-		response.studentId(Optional.ofNullable((Long) user.getClass().getMethod("getId").invoke(user)));
-	}
-
-	private <T> void getStaffResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		getCommonResponse(user, response);
-		response.staffId(Optional.ofNullable((Long) user.getClass().getMethod("getId").invoke(user)));
+		BasicInfoResponse basicInfoResponse = BasicInfoResponse.builder()
+				.profilePictureUrl((String) user.getClass()
+						.getMethod("getProfilePictureUrl").invoke(user))
+				.title(String.valueOf(title))
+				.fullName((String) user.getClass().getMethod("fullName").invoke(user))
+				.gender(String.valueOf(gender))
+				.maritalStatus(String.valueOf(maritalStatus))
+				.dateOfBirth((LocalDate) user.getClass().getMethod("getDateOfBirth").invoke(user))
+				.build();
+		response.basicInfo(basicInfoResponse);
+		response.memberId((Long) user.getClass().getMethod("getId").invoke(user));
 	}
 
 	private <T> T loadUserInfo(Object userInfo, Function<Object, T> mapper, String exceptionMessage) {
