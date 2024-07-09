@@ -14,8 +14,10 @@ public class ProgramMapper {
 		return new ProgramResponse(
 				program.getId(),
 				program.getName(),
-				program.getDescription(),
 				program.getDepartment().getName(),
+				program.getDegree().toString(),
+				program.getDescription(),
+				program.getDuration(),
 				program.getStatus().toString()
 		);
 	}

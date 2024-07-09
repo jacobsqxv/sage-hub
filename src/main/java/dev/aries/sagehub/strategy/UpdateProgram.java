@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ProgramRequest;
+import dev.aries.sagehub.enums.Degree;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.model.Program;
@@ -26,12 +27,15 @@ public class UpdateProgram implements UpdateStrategy<Program, ProgramRequest> {
 	@Override
 	public Program update(Program entity, ProgramRequest request) {
 		checkName(entity, request);
-		entity.setDescription(request.description() != null ? request.description() : entity.getDescription());
 		this.checks.checkIfEnumExists(Status.class, request.status());
+		this.checks.checkIfEnumExists(Degree.class, request.degree());
 		Department department = checkDepartment(request.departmentId());
+		entity.setDescription((request.description() != null) ?
+				request.description() : entity.getDescription());
+		entity.setDegree(Degree.valueOf(request.degree()));
 		entity.setDepartment(department);
-		updateStatus.updateProgramCoursesStatus(request.status(), entity.getId());
 		entity.setStatus(Status.valueOf(request.status()));
+		this.updateStatus.updateProgramCoursesStatus(request.status(), entity.getId());
 		log.info("INFO - Program status updated successfully: {}", entity.getStatus());
 		return entity;
 	}

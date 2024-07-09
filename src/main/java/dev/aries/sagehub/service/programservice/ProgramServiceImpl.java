@@ -6,6 +6,7 @@ import dev.aries.sagehub.dto.request.ProgramRequest;
 import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
+import dev.aries.sagehub.enums.Degree;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.mapper.ProgramCourseMapper;
 import dev.aries.sagehub.mapper.ProgramMapper;
@@ -43,11 +44,16 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
 		existsByName(request.name().toUpperCase());
+		this.checks.checkIfEnumExists(Degree.class, request.degree());
 		Department department = this.globalUtil.loadDepartment(request.departmentId());
+		Degree degree = Degree.valueOf(request.degree().toUpperCase());
 		Program program = Program.builder()
 				.name(request.name().toUpperCase())
 				.description(request.description())
 				.department(department)
+				.cutOff(request.cutOff())
+				.duration(request.duration())
+				.degree(degree)
 				.status(Status.PENDING)
 				.build();
 		this.programRepository.save(program);

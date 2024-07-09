@@ -8,8 +8,10 @@ import lombok.Builder;
 public record ProgramResponse(
 		Long id,
 		String name,
-		String description,
 		String department,
+		String degree,
+		String description,
+		Integer duration,
 		String status
 ) {
 }
