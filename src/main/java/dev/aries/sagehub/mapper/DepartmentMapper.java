@@ -1,8 +1,8 @@
 package dev.aries.sagehub.mapper;
 
+import dev.aries.sagehub.dto.response.DepartmentResponse;
 import dev.aries.sagehub.dto.response.wrapper.BasicDepartmentResponse;
 import dev.aries.sagehub.dto.response.wrapper.DepartmentProgramResponse;
-import dev.aries.sagehub.dto.response.DepartmentResponse;
 import dev.aries.sagehub.model.Department;
 import lombok.RequiredArgsConstructor;
 
@@ -14,7 +14,7 @@ public class DepartmentMapper {
 	private final ProgramMapper programMapper;
 
 	public DepartmentResponse toResponse(Department department) {
-		if (department.getPrograms() == null){
+		if (department.getPrograms() == null) {
 			return new DepartmentResponse(toBasicDepartmentResponse(department));
 		}
 		return new DepartmentResponse(toDepartmentProgramResponse(department));
@@ -26,7 +26,7 @@ public class DepartmentMapper {
 				department.getCode(),
 				department.getName(),
 				department.getPrograms().stream()
-						.map(programMapper::toProgramResponse)
+						.map(this.programMapper::toProgramResponse)
 						.toList(),
 				department.getStatus().toString()
 		);

@@ -27,7 +27,7 @@ public class EmergencyContactMapper {
 		Address address = this.addressMapper.toAddress(emergencyContactRequest.address());
 		return EmergencyContact.builder()
 				.fullName(emergencyContactRequest.fullName())
-				.relationship(emergencyContactRequest.relationship())
+				.relationship(emergencyContactRequest.relationship().toUpperCase())
 				.phoneNumber(emergencyContactRequest.phoneNumber())
 				.address(address)
 				.build();
