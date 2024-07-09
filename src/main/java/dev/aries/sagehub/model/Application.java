@@ -28,9 +28,12 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Applicant extends BasicInfo {
+public class Application extends BasicInfo {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(nullable = false)
+	private Long applicantId;
 	@OneToOne
 	private ContactInfo contactInfo;
 	@ManyToOne
@@ -52,7 +55,7 @@ public class Applicant extends BasicInfo {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof Applicant applicant)) {
+		if (!(o instanceof Application applicant)) {
 			return false;
 		}
 		return getId() != null && getId().equals(applicant.getId());
