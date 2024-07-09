@@ -7,6 +7,7 @@ import lombok.Builder;
 @Builder
 public record ApplicationResponse(
 		Long id,
+		Long applicantId,
 		Integer applyingForYear,
 		BasicInfoResponse basicInfo,
 		ContactInfoResponse contactInfo,
