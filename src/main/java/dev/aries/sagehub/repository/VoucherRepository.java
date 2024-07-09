@@ -28,4 +28,5 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long>, JpaSpec
 		);
 	}
 
+	Optional<Voucher> findBySerialNumber(Long serialNumber);
 }

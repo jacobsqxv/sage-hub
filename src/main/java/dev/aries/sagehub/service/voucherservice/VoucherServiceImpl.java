@@ -3,6 +3,7 @@ package dev.aries.sagehub.service.voucherservice;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.constant.ResponseMessage;
@@ -15,9 +16,11 @@ import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.enums.VoucherStatus;
 import dev.aries.sagehub.mapper.VoucherMapper;
 import dev.aries.sagehub.model.AcademicYear;
+import dev.aries.sagehub.model.Application;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.Voucher;
 import dev.aries.sagehub.repository.AcademicYearRepository;
+import dev.aries.sagehub.repository.ApplicationRepository;
 import dev.aries.sagehub.repository.TokenRepository;
 import dev.aries.sagehub.repository.VoucherRepository;
 import dev.aries.sagehub.util.Generators;
@@ -32,13 +35,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class VoucherServiceImpl implements VoucherService {
 	private static final int LIMIT = 1000;
+	private static final Integer STATUS_OK = HttpStatus.OK.value();
+	private static final String VOUCHER = "Voucher";
 	private final VoucherRepository voucherRepository;
 	private final AcademicYearRepository academicYearRepository;
 	private final TokenRepository tokenRepository;
+	private final ApplicationRepository applicationRepository;
 	private final Generators generators;
 	private final VoucherMapper voucherMapper;
-	private static final Integer STATUS_OK = HttpStatus.OK.value();
-	private static final String VOUCHER = "Voucher";
 
 	@Override
 	public GenericResponse addVouchers(AddVoucherRequest request) {
@@ -49,10 +53,10 @@ public class VoucherServiceImpl implements VoucherService {
 			Long serialNumber = this.generators.generateUniqueId(true);
 			String pin = this.generators.generateToken(10);
 			vouchers.add(Voucher.builder()
-							.serialNumber(serialNumber)
-							.pin(pin)
-							.academicYear(year)
-							.status(VoucherStatus.ACTIVE)
+					.serialNumber(serialNumber)
+					.pin(pin)
+					.academicYear(year)
+					.status(VoucherStatus.ACTIVE)
 					.build());
 		}
 		this.saveVouchers(vouchers);
@@ -69,8 +73,11 @@ public class VoucherServiceImpl implements VoucherService {
 	public GenericResponse verifyVoucher(VoucherRequest request) {
 		Voucher voucher = getVoucher(request.serialNumber(), request.pin());
 		checkValidity(voucher);
-		voucher.setStatus(VoucherStatus.USED);
-		this.voucherRepository.save(voucher);
+		if (voucher.getStatus().equals(VoucherStatus.USED)) {
+			Long applicationId = checkApplication(voucher);
+			return new GenericResponse(STATUS_OK,
+					String.format("Voucher already used for application: %d", applicationId));
+		}
 		String value = this.generators.generateToken(16);
 		Token token = Token.builder()
 				.type(TokenType.VERIFY_VOUCHER)
@@ -81,6 +88,12 @@ public class VoucherServiceImpl implements VoucherService {
 		this.tokenRepository.save(token);
 		return new GenericResponse(STATUS_OK,
 				String.format("Generated token: %s", value));
+	}
+
+	private Long checkApplication(Voucher voucher) {
+		Optional<Application> application = this.applicationRepository
+				.findByApplicantId(voucher.getSerialNumber());
+		return application.map(Application::getId).orElse(null);
 	}
 
 	private void saveVouchers(List<Voucher> vouchers) {
@@ -113,7 +126,7 @@ public class VoucherServiceImpl implements VoucherService {
 
 	private void checkValidity(Voucher voucher) {
 		VoucherStatus status = voucher.getStatus();
-		if (!status.equals(VoucherStatus.ACTIVE)) {
+		if (!status.equals(VoucherStatus.ACTIVE) && !status.equals(VoucherStatus.USED)) {
 			throw new IllegalArgumentException(ExceptionConstants.VOUCHER_INVALID);
 		}
 	}
