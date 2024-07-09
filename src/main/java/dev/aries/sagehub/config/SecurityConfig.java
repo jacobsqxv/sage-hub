@@ -41,6 +41,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+	private static final String[] WHITELIST = {
+			"/api/v1/auth/**",
+			"/api/v1/applications/login",
+	};
 	private final UserDetailsService userDetailsService;
 
 	@Bean
@@ -48,7 +52,7 @@ public class SecurityConfig {
 		return http
 				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests((auth) -> {
-					auth.requestMatchers("/api/v1/auth/**").permitAll();
+					auth.requestMatchers(WHITELIST).permitAll();
 					auth.anyRequest().authenticated();
 				})
 				.sessionManagement((session) ->
