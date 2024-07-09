@@ -1,7 +1,5 @@
 package dev.aries.sagehub.dto.response;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
