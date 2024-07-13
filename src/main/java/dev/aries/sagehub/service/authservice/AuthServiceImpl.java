@@ -17,6 +17,7 @@ import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.TokenRepository;
 import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.security.TokenService;
+import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
@@ -49,6 +50,7 @@ public class AuthServiceImpl implements AuthService {
 	private final TokenService tokenService;
 	private final GlobalUtil globalUtil;
 	private final UserUtil userUtil;
+	private final EmailService emailService;
 	private final Generators generator;
 	private final Checks checks;
 	private final UserRepository userRepository;
@@ -121,6 +123,8 @@ public class AuthServiceImpl implements AuthService {
 				.expiresAt(LocalDateTime.now().plusMinutes(15))
 				.build();
 		this.tokenRepository.save(token);
+		String recipient = this.userUtil.getPrimaryEmail(user.getId());
+		this.emailService.sendPasswordResetEmail(recipient, value);
 		log.info("INFO - Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
 	}
@@ -135,6 +139,8 @@ public class AuthServiceImpl implements AuthService {
 		}
 		user.setHashedPassword(this.passwordEncoder.encode(request.password()));
 		this.userRepository.save(user);
+		String recipient = this.userUtil.getPrimaryEmail(user.getId());
+		this.emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}
 

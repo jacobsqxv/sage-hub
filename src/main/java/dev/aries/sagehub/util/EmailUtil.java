@@ -1,71 +1,84 @@
 package dev.aries.sagehub.util;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.HashMap;
+import java.util.Map;
 
-import dev.aries.sagehub.exception.EmailSendFailureException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.aries.sagehub.service.emailservice.EmailDetails;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Form;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE_MIXED;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class EmailUtil {
-	private final JavaMailSender mailSender;
-	private final SpringTemplateEngine templateEngine;
+	@Value("${mailgun.api-key}")
+	private String mailgunApiKey;
+	@Value("${mailgun.from}")
+	private String mailgunFrom;
+	@Value("${mailgun.domain}")
+	private String mailgunDomain;
 
-	private static Context getContext(EmailDetails emailDetails) {
-		Context context = new Context();
-		context.setVariable("recipient", emailDetails.recipient());
-		context.setVariable("url", emailDetails.url());
-		context.setVariable("username", emailDetails.username());
-		context.setVariable("password", emailDetails.password());
-		return context;
+	public boolean sendEmail(EmailDetails emailDetails) {
+		ClientConfig clientConfig = new ClientConfig();
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("api", mailgunApiKey);
+		clientConfig.register(feature);
+
+		Form formData = new Form();
+		String variables = createDynamicVariables(emailDetails);
+		formData.param("from", "SageHub <" + mailgunFrom + ">");
+		formData.param("to", emailDetails.recipient());
+		formData.param("subject", emailDetails.template().getSubject());
+		formData.param("template", emailDetails.template().getName());
+		formData.param("h:X-Mailgun-Variables", variables);
+
+		try (Client client = ClientBuilder.newClient(clientConfig)) {
+			WebTarget webResource = client.target(mailgunDomain);
+			log.debug("INFO - Sending email to {}", emailDetails.recipient());
+			try (Response response = webResource.request(MediaType.APPLICATION_FORM_URLENCODED)
+					.post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED))) {
+				if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+					log.debug("INFO - Email successfully sent to {}", emailDetails.recipient());
+					return true;
+				}
+				else {
+					log.error("ERROR - Failed to send email to {}", emailDetails.recipient());
+					return false;
+				}
+			}
+		}
 	}
 
-	@Async
-	public CompletableFuture<Void> sendEmail(EmailDetails emailDetails) {
-		return CompletableFuture.runAsync(() -> {
-			try {
-				String templateName = emailDetails.template().getName();
+	private String createDynamicVariables(EmailDetails emailDetails) {
+		Map<String, Object> variables = new HashMap<>();
 
-				MimeMessage message = this.mailSender.createMimeMessage();
-				MimeMessageHelper helper = new MimeMessageHelper(
-						message,
-						MULTIPART_MODE_MIXED,
-						UTF_8.name());
-
-				Context context = getContext(emailDetails);
-
-				helper.setFrom("hbpbackend@mockinbox.com");
-				helper.setTo(emailDetails.recipient());
-				helper.setSubject(emailDetails.template().getSubject());
-
-				String template = this.templateEngine.process(templateName, context);
-
-				helper.setText(template, true);
-
-				this.mailSender.send(message);
-			}
-			catch (MessagingException ex) {
-				log.error("Email sending failed", ex);
-				throw new EmailSendFailureException();
-			}
-		}).exceptionally((ex) -> {
-			log.error("Exception occurred during email sending", ex);
-			return null;
-		});
+		if (emailDetails.username() != null) {
+			variables.put("username", emailDetails.username());
+		}
+		if (emailDetails.password() != null) {
+			variables.put("password", emailDetails.password());
+		}
+		if (emailDetails.url() != null) {
+			variables.put("url", emailDetails.url());
+		}
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.writeValueAsString(variables);
+		}
+		catch (Exception ex) {
+			return "{}";
+		}
 	}
 }
