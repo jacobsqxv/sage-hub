@@ -9,7 +9,6 @@ package dev.aries.sagehub.enums;
  * <ul>
  * <li>MALE: Represents the male gender.</li>
  * <li>FEMALE: Represents the female gender.</li>
- * <li>OTHER: Represents any gender not covered by the other options.</li>
  * </ul>
  * </p>
  *
@@ -24,10 +23,13 @@ public enum Gender {
 	/**
 	 * Represents the female gender.
 	 */
-	FEMALE,
-	/**
-	 * Represents any gender not covered by the other options.
-	 */
-	OTHER
+	FEMALE;
 
+	@Override
+	public String toString() {
+		return switch (this) {
+			case MALE -> "Male";
+			case FEMALE -> "Female";
+		};
+	}
 }

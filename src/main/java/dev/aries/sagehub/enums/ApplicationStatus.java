@@ -29,5 +29,15 @@ public enum ApplicationStatus {
 	/**
 	 * This represents the rejected state.
 	 */
-	REJECTED
+	REJECTED;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case PENDING -> "PENDING";
+			case APPROVED -> "APPROVED";
+			case UNDER_REVIEW -> "UNDER REVIEW";
+			case REJECTED -> "REJECTED";
+		};
+	}
 }

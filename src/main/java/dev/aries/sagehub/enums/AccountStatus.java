@@ -23,5 +23,14 @@ public enum AccountStatus {
 	/**
 	 * This represents the deleted state.
 	 */
-	DELETED
+	DELETED;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case ACTIVE -> "ACTIVE";
+			case INACTIVE -> "INACTIVE";
+			case DELETED -> "DELETED";
+		};
+	}
 }

@@ -18,15 +18,22 @@ public enum Title {
 	/**
 	 * This represents the title Mister.
 	 */
-	MR("Mr."),
+	MR,
 	/**
 	 * This represents the title Miss.
 	 */
-	MISS("Miss."),
+	MISS,
 	/**
 	 * This represents the title Missus.
 	 */
-	MRS("Mrs.");
+	MRS;
 
-	private final String value;
+	@Override
+	public String toString() {
+		return switch (this) {
+			case MR -> "Mr.";
+			case MISS -> "Miss";
+			case MRS -> "Mrs.";
+		};
+	}
 }

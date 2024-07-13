@@ -33,5 +33,16 @@ public enum MaritalStatus {
 	/**
 	 * Represents the separated marital status.
 	 */
-	SEPARATED
+	SEPARATED;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case SINGLE -> "Single";
+			case MARRIED -> "Married";
+			case DIVORCED -> "Divorced";
+			case WIDOWED -> "Widowed";
+			case SEPARATED -> "Separated";
+		};
+	}
 }

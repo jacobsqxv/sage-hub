@@ -40,5 +40,17 @@ public enum Status {
 	/**
 	 * This represents the deleted state.
 	 */
-	DELETED
+	DELETED;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case ACTIVE -> "ACTIVE";
+			case PENDING -> "PENDING";
+			case UNDER_REVIEW -> "UNDER REVIEW";
+			case INACTIVE -> "INACTIVE";
+			case ARCHIVED -> "ARCHIVED";
+			case DELETED -> "DELETED";
+		};
+	}
 }

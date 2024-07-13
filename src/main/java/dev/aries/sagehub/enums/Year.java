@@ -39,5 +39,17 @@ public enum Year {
 	/**
 	 * The sixth academic year, for programs that extend beyond five years.
 	 */
-	SIXTH
+	SIXTH;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case FIRST -> "First";
+			case SECOND -> "Second";
+			case THIRD -> "Third";
+			case FOURTH -> "Fourth";
+			case FIFTH -> "Fifth";
+			case SIXTH -> "Sixth";
+		};
+	}
 }

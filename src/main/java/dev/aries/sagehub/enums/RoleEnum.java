@@ -34,6 +34,16 @@ public enum RoleEnum {
 	 * Represents a super admin role. Super admins have the highest level of access and
 	 * permissions, including full management and configuration capabilities.
 	 */
-	SUPER_ADMIN
+	SUPER_ADMIN;
 
+	@Override
+	public String toString() {
+		return switch (this) {
+			case PROSPECTIVE_STUDENT -> "PROSPECTIVE STUDENT";
+			case STUDENT -> "STUDENT";
+			case STAFF -> "STAFF";
+			case ADMIN -> "ADMIN";
+			case SUPER_ADMIN -> "SUPER ADMIN";
+		};
+	}
 }

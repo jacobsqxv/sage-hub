@@ -16,10 +16,18 @@ public enum ResultType {
 	/**
 	 * Represents results from the West African Senior School Certificate Examination taken in school.
 	 */
-	WASSCE_SCHOOL("WASSCE School"),
+	WASSCE_SCHOOL,
 	/**
-	 * Represents results from the private candidate version of the West African Senior School Certificate Examination.
+	 * Represents results from the private candidate version
+	 * of the West African Senior School Certificate Examination.
 	 */
-	WASSCE_PRIVATE("WASSCE Private");
-	private final String value;
+	WASSCE_PRIVATE;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case WASSCE_SCHOOL -> "WASSCE (School)";
+			case WASSCE_PRIVATE -> "WASSCE (Private)";
+		};
+	}
 }

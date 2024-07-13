@@ -16,5 +16,13 @@ public enum Semester {
 	/**
 	 * Represents the second semester of the academic year.
 	 */
-	SECOND
+	SECOND;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case FIRST -> "First Semester";
+			case SECOND -> "Second Semester";
+		};
+	}
 }

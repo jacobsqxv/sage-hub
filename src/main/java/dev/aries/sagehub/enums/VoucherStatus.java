@@ -21,5 +21,14 @@ public enum VoucherStatus {
 	/**
 	 * This represents the expired state.
 	 */
-	EXPIRED
+	EXPIRED;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case ACTIVE -> "ACTIVE";
+			case USED -> "USED";
+			case EXPIRED -> "EXPIRED";
+		};
+	}
 }

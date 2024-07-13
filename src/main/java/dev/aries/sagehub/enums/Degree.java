@@ -17,5 +17,14 @@ public enum Degree {
 	/**
 	 * Represents a postgraduate program leading to a doctorate degree.
 	 */
-	DOCTORATE
+	DOCTORATE;
+
+	@Override
+	public String toString() {
+		return switch (this) {
+			case BACHELORS -> "Bachelors";
+			case MASTERS -> "Masters";
+			case DOCTORATE -> "Doctorate";
+		};
+	}
 }
