@@ -3,11 +3,13 @@ package dev.aries.sagehub.util;
 import java.security.SecureRandom;
 import java.util.Calendar;
 
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.CourseRepository;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.StaffRepository;
-import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.passay.CharacterData;
@@ -25,7 +27,7 @@ import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 public class Generators {
 
 	private final UserRepository userRepository;
-	private final StudentRepository studentRepository;
+	private final VoucherRepository voucherRepository;
 	private final StaffRepository staffRepository;
 	private final DepartmentRepository departmentRepository;
 
@@ -64,7 +66,7 @@ public class Generators {
 		return idBuilder.toString();
 	}
 
-	public String generateUsername(String firstName, String lastName) {
+	public Username generateUsername(String firstName, String lastName) {
 		lastName = lastName.replace("-", "");
 		String username = String.format("%s%s", firstName.charAt(0), lastName).toLowerCase();
 		int suffix = 1;
@@ -72,18 +74,19 @@ public class Generators {
 			username = username.replaceAll("\\d+$", "");
 			username = String.format("%s%d", username, suffix++);
 		}
-		return username;
+		return new Username(username);
 	}
 
-	public String generateUserEmail(String username, String domain) {
+	public Email generateUserEmail(String username, String domain) {
 		domain = domain.toLowerCase();
-		return String.format("%s.%s%s@sagehub.xyz", username, domain.substring(0, 2), domain.charAt(3));
+		String email = String.format("%s.%s%s@sagehub.xyz", username, domain.substring(0, 2), domain.charAt(3));
+		return new Email(email);
 	}
 
 	public Long generateUniqueId(boolean isStudent) {
 		Long id = Long.valueOf(generateId(isStudent));
 		if (isStudent) {
-			while (this.studentRepository.existsById(id)) {
+			while (this.voucherRepository.existsBySerialNumber(id)) {
 				id = Long.valueOf(generateId(true));
 			}
 		}
@@ -123,7 +126,7 @@ public class Generators {
 		return code;
 	}
 
-	public String generateToken() {
-		return generator.generatePassword(16, digits, alphabetical);
+	public String generateToken(int length) {
+		return generator.generatePassword(length, digits, alphabetical);
 	}
 }

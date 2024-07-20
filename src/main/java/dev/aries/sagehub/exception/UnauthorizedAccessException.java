@@ -3,10 +3,10 @@ package dev.aries.sagehub.exception;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class UnauthorizedAccessException extends RuntimeException {
-
-	private final String msg;
-
+	public UnauthorizedAccessException(String message) {
+		super(message);
+	}
 }

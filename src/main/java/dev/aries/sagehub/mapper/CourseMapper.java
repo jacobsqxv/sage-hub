@@ -15,7 +15,7 @@ public class CourseMapper {
 				course.getName(),
 				course.getDescription(),
 				course.getCreditUnits(),
-				course.getStatus().getValue()
+				course.getStatus().toString()
 		);
 	}
 }

@@ -7,6 +7,7 @@ import dev.aries.sagehub.dto.search.GetCoursesPage;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.mapper.CourseMapper;
 import dev.aries.sagehub.model.Course;
+import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.CourseRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Checks;
@@ -38,7 +39,7 @@ public class CourseServiceImpl implements CourseService {
 				.code(this.generators.generateCourseCode(request.name()))
 				.description(request.description())
 				.creditUnits(request.creditUnits())
-				.status(Status.PENDING_REVIEW)
+				.status(Status.PENDING)
 				.build();
 		this.courseRepository.save(course);
 		return this.courseMapper.toCourseResponse(course);
@@ -52,7 +53,8 @@ public class CourseServiceImpl implements CourseService {
 
 	@Override
 	public Page<CourseResponse> getCourses(GetCoursesPage request, Pageable pageable) {
-		if (this.checks.checkAdmin()) {
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllCourses(request, pageable);
 		}
 		return getActiveCourses(request, pageable);
@@ -73,7 +75,8 @@ public class CourseServiceImpl implements CourseService {
 
 	@Override
 	public CourseResponse updateCourse(Long id, CourseRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		Course course = this.globalUtil.loadCourse(id);
 		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateCourse");
 		course = (Course) updateStrategy.update(course, request);

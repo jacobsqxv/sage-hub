@@ -1,30 +1,28 @@
 package dev.aries.sagehub.util;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
 
+import dev.aries.sagehub.dto.response.BasicInfoResponse;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
-import dev.aries.sagehub.enums.Gender;
-import dev.aries.sagehub.enums.RoleEnum;
-import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.model.Admin;
+import dev.aries.sagehub.model.BasicInfo;
 import dev.aries.sagehub.model.ContactInfo;
 import dev.aries.sagehub.model.EmergencyContact;
 import dev.aries.sagehub.model.Role;
-import dev.aries.sagehub.model.Staff;
-import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
+import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.strategy.response.UserResponseStrategy;
+import dev.aries.sagehub.strategy.response.UserResponseStrategyConfig;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
@@ -40,11 +38,11 @@ public class UserUtil {
 	private static final String USER = "User";
 	private static final String GET_CONTACT_INFO = "getContactInfo";
 	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final RoleUtil roleUtil;
+	private final UserResponseStrategyConfig userResponseStratConfig;
 	private final AdminRepository adminRepository;
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
+	private final ApplicantRepository applicationRepository;
 
 	public User getUser(String username) {
 		log.info("INFO - Getting user with username: {}", username);
@@ -59,18 +57,6 @@ public class UserUtil {
 				() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
 	}
 
-	public User createNewUser(String username, String password, RoleEnum roleEnum) {
-		User user = User.builder()
-				.username(username)
-				.hashedPassword(this.passwordEncoder.encode(password))
-				.accountEnabled(true)
-				.role(this.roleUtil.getRole(roleEnum))
-				.failedLoginAttempts(0)
-				.status(Status.ACTIVE)
-				.build();
-		return this.userRepository.save(user);
-	}
-
 	public Object getUserInfo(Long id) {
 		Role userRole = getUser(id).getRole();
 		switch (userRole.getName()) {
@@ -83,114 +69,122 @@ public class UserUtil {
 			case STUDENT -> {
 				return this.studentRepository.findByUserId(id);
 			}
+			case APPLICANT -> {
+				return this.applicationRepository.findByUserId(id);
+			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
 	}
 
 	public BasicUserResponse getBasicInfo(Object userInfo) {
-		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
-			Object user = optional.get();
-			switch (user) {
-				case Admin admin -> {
-					return getUserResponse(admin);
-				}
-				case Staff staff -> {
-					return getUserResponse(staff);
-				}
-				case Student student -> {
-					return getUserResponse(student);
-				}
-				default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-			}
+		return extractUserFromOptional(userInfo)
+				.map(this::getUserResponseFromUserObject)
+				.orElseThrow(() -> new IllegalArgumentException(String.format(NOT_FOUND, USER)));
+	}
+
+	private Optional<Object> extractUserFromOptional(Object userInfo) {
+		if (userInfo instanceof Optional<?> optional) {
+			return (Optional<Object>) optional;
 		}
-		throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		return Optional.empty();
+	}
+
+	private BasicUserResponse getUserResponseFromUserObject(Object user) {
+		UserResponseStrategy strategy = this.userResponseStratConfig.responseStrategies().get(user.getClass());
+		if (strategy != null) {
+			return strategy.getUserResponse(user);
+		}
+		else {
+			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		}
 	}
 
 	public <T> BasicUserResponse getUserResponse(T user) {
 		if (user == null) {
 			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
+		return switch (user) {
+			case BasicInfo basicInfo -> handleOtherUser(basicInfo);
+			case Admin admin -> handleAdminUser(admin);
+			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		};
+	}
+
+	private BasicUserResponse handleAdminUser(Admin admin) {
+		User user = admin.getUser();
+		BasicUserResponse.BasicUserResponseBuilder responseBuilder = BasicUserResponse.builder()
+				.basicInfo(BasicInfoResponse.builder()
+						.fullName(admin.fullName())
+						.profilePictureUrl(admin.getProfilePictureUrl())
+						.build());
+		buildCommonBasicInfo(user, responseBuilder);
+		return responseBuilder.build();
+	}
+
+	private BasicUserResponse handleOtherUser(BasicInfo basicInfo) {
+		User user = basicInfo.getUser();
+		BasicUserResponse.BasicUserResponseBuilder responseBuilder = BasicUserResponse.builder()
+				.basicInfo(BasicInfoResponse.builder()
+						.fullName(basicInfo.fullName())
+						.profilePictureUrl(basicInfo.getProfilePictureUrl())
+						.title(basicInfo.getTitle().toString())
+						.gender(basicInfo.getGender().toString())
+						.maritalStatus(basicInfo.getMaritalStatus().toString())
+						.dateOfBirth(basicInfo.getDateOfBirth())
+						.build());
+		buildCommonBasicInfo(user, responseBuilder);
+		getCommonResponse(basicInfo, responseBuilder);
+		return responseBuilder.build();
+	}
+
+	public <T> T loadUserInfoGeneric(Object userInfo, Class<T> infoClass) {
+		return loadUserInfo(userInfo, (user) -> {
+			try {
+				return infoClass.cast(user.getClass().getMethod(GET_CONTACT_INFO).invoke(user));
+			}
+			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+				throw new IllegalArgumentException(ex);
+			}
+		}, (infoClass == ContactInfo.class) ? CONTACT : EMERGENCY_CONTACT);
+	}
+
+	public ContactInfo loadContactInfo(Object userInfo) {
+		return loadUserInfoGeneric(userInfo, ContactInfo.class);
+	}
+
+	public EmergencyContact loadEmergencyContact(Object userInfo) {
+		return loadUserInfoGeneric(userInfo, EmergencyContact.class);
+	}
+	private void buildCommonBasicInfo(User user, BasicUserResponse.BasicUserResponseBuilder response) {
+		response.userId(user.getId())
+				.username(user.getUsername())
+				.status(user.getStatus().toString())
+				.role(user.getRole().getName().name());
+	}
+
+	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response) {
 		try {
-			User linkedUser = (User) user.getClass().getMethod("getUser").invoke(user);
-			BasicUserResponse.BasicUserResponseBuilder response = BasicUserResponse.builder()
-					.id(linkedUser.getId())
-					.profilePicture((String) user.getClass()
-							.getMethod("getProfilePictureUrl").invoke(user))
-					.fullname((String) user.getClass().getMethod("fullName").invoke(user))
-					.username(linkedUser.getUsername())
-					.primaryEmail((String) user.getClass()
-							.getMethod("getPrimaryEmail").invoke(user))
-					.status(linkedUser.getStatus().getValue())
-					.role(linkedUser.getRole().getName().name());
-
-			if (user instanceof Student) {
-				getStudentResponse(user, response);
-			}
-			else if (user instanceof Staff) {
-				getStaffResponse(user, response);
-			}
-
-			return response.build();
+			ContactInfo linkedContactInfo = (ContactInfo) user.getClass()
+					.getMethod(GET_CONTACT_INFO).invoke(user);
+			response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
+			response.primaryEmail((String) user.getClass()
+					.getMethod("getPrimaryEmail").invoke(user));
+			response.memberId((Long) user.getClass().getMethod("getId").invoke(user));
 		}
-		catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
 			throw new IllegalStateException(ex.getMessage());
 		}
 	}
 
-	public ContactInfo loadContactInfo(Object userInfo) {
-		return loadUserInfo(userInfo, (user) -> {
-			try {
-				return (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
-			}
-			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-				throw new IllegalArgumentException(ex);
-			}
-		}, CONTACT);
-	}
-
-	public EmergencyContact loadEmergencyContact(Object userInfo) {
-		return loadUserInfo(userInfo, (user) -> {
-			try {
-				return (EmergencyContact) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
-			}
-			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-				throw new IllegalArgumentException(ex);
-			}
-		}, EMERGENCY_CONTACT);
-	}
-
-	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Enum<Gender> gender = (Enum<Gender>) user.getClass().getMethod("getGender").invoke(user);
-		ContactInfo linkedContactInfo = (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
-		response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
-		response.dateOfBirth((LocalDate) user.getClass().getMethod("getDateOfBirth").invoke(user));
-		response.gender(String.valueOf(gender));
-	}
-
-	private <T> void getStudentResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		getCommonResponse(user, response);
-		response.studentId(Optional.ofNullable((Long) user.getClass().getMethod("getId").invoke(user)));
-	}
-
-	private <T> void getStaffResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		getCommonResponse(user, response);
-		response.staffId(Optional.ofNullable((Long) user.getClass().getMethod("getId").invoke(user)));
-	}
-
 	private <T> T loadUserInfo(Object userInfo, Function<Object, T> mapper, String exceptionMessage) {
-		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
-			Object user = optional.get();
-			if (user instanceof Admin) {
-				throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
-			}
-			else if (user instanceof Staff || user instanceof Student) {
-				return mapper.apply(user);
-			}
+		if (!(userInfo instanceof Optional<?> optional) || optional.isEmpty()) {
+			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
-		throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		Object user = optional.get();
+		if (user instanceof Admin) {
+			throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
+		}
+		return mapper.apply(user);
 	}
 
 }

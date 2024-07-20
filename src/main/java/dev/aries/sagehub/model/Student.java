@@ -22,11 +22,28 @@ public class Student extends BasicInfo {
 	@Id
 	@Column(unique = true, updatable = false, nullable = false)
 	private Long id;
-
+	@Column(unique = true, updatable = false, nullable = false)
+	private String primaryEmail;
 	@OneToOne
 	@JoinColumn(nullable = false)
 	private ContactInfo contactInfo;
 
 	@OneToOne
 	private EmergencyContact emergencyContact;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Student student)) {
+			return false;
+		}
+		return getId() != null && getId().equals(student.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

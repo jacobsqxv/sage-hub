@@ -6,10 +6,15 @@ package dev.aries.sagehub.enums;
  * @author Aries N/A
  */
 public enum RoleEnum {
-
 	/**
-	 * Represents a student role. Students typically have the least amount of access and
+	 * Represents a prospective student role.
+	 * Prospective students typically have the least amount of access and
 	 * permissions.
+	 */
+	APPLICANT,
+	/**
+	 * Represents a student role. Students have more access and
+	 * permissions than prospective students, but less than staff.
 	 */
 	STUDENT,
 
@@ -29,6 +34,16 @@ public enum RoleEnum {
 	 * Represents a super admin role. Super admins have the highest level of access and
 	 * permissions, including full management and configuration capabilities.
 	 */
-	SUPER_ADMIN
+	SUPER_ADMIN;
 
+	@Override
+	public String toString() {
+		return switch (this) {
+			case APPLICANT -> "APPLICANT";
+			case STUDENT -> "STUDENT";
+			case STAFF -> "STAFF";
+			case ADMIN -> "ADMIN";
+			case SUPER_ADMIN -> "SUPER_ADMIN";
+		};
+	}
 }

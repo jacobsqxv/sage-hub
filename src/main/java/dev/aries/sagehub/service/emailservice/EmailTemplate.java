@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Enum representing different types of email templates.
  * Each enum constant is associated with a template name and a subject.
+ *
  * @author Jacobs Agyei
  */
 @Getter
@@ -27,11 +28,21 @@ public enum EmailTemplate {
 	 * <p>
 	 *     <ul>
 	 *         <li>Name: "password-reset-request"</li>
-	 *         <li>Subject: "Password Reset Request"</li>
+	 *         <li>Subject: "Password Reset"</li>
 	 *     </ul>
 	 * </p>
 	 */
-	PASSWORD_RESET_REQUEST("password-reset-request", "Password Reset Request");
+	PASSWORD_RESET_REQUEST("password-reset-request", "Password Reset"),
+	/**
+	 * Template for password reset complete emails.
+	 * <p>
+	 *     <ul>
+	 *         <li>Name: "password-reset-complete"</li>
+	 *         <li>Subject: "Password Reset Complete"</li>
+	 *     </ul>
+	 * </p>
+	 */
+	PASSWORD_RESET_COMPLETE("password-reset-complete", "Password Reset Complete");
 
 	private final String name;
 	private final String subject;

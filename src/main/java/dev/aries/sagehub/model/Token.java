@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import dev.aries.sagehub.enums.TokenType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,10 +28,14 @@ public class Token extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(nullable = false, length = 1000)
 	private String value;
 	@Column(nullable = false)
 	private Long userId;
+	@Column(nullable = false)
 	private LocalDateTime expiresAt;
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private TokenType type;
 
 	@Override

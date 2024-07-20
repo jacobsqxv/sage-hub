@@ -1,15 +1,17 @@
 package dev.aries.sagehub.dto.request;
 
 import dev.aries.sagehub.constant.Patterns;
-import dev.aries.sagehub.constant.ValidationMessage;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
+import static dev.aries.sagehub.constant.ValidationMessage.INVALID_FORMAT;
+import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
+
 public record PasswordChangeRequest(
-		@NotEmpty(message = ValidationMessage.NOT_NULL)
+		@NotEmpty(message = "Current password" + NOT_NULL)
 		String oldPassword,
-		@NotEmpty(message = ValidationMessage.NOT_NULL)
-		@Pattern(regexp = Patterns.PASSWORD, message = ValidationMessage.PASSWORD)
+		@NotEmpty(message = "New password" + NOT_NULL)
+		@Pattern(regexp = Patterns.PASSWORD, message = INVALID_FORMAT + "new password")
 		String newPassword
 ) {
 }

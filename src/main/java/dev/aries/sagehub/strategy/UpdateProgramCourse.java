@@ -24,7 +24,7 @@ public class UpdateProgramCourse implements UpdateStrategy<ProgramCourse, Progra
 	public ProgramCourse update(ProgramCourse entity, ProgramCourseRequest request) {
 		this.checks.checkIfEnumExists(Year.class, String.valueOf(request.period().year()));
 		this.checks.checkIfEnumExists(Semester.class, String.valueOf(request.period().semester()));
-		entity.setAcademicPeriod( new AcademicPeriod(
+		entity.setAcademicPeriod(new AcademicPeriod(
 				request.period().year(),
 				request.period().semester()));
 		entity.setStatus(Status.valueOf(request.status()));

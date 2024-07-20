@@ -1,6 +1,7 @@
 package dev.aries.sagehub.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,7 +26,25 @@ public class ContactInfo extends Auditing {
 	private String secondaryEmail;
 	@Column(nullable = false)
 	private String phoneNumber;
-	private String address;
-	private String city;
-	private String region;
+	@Embedded
+	@Column(nullable = false)
+	private Address address;
+
+	private String postalAddress;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof ContactInfo contactInfo)) {
+			return false;
+		}
+		return getId() != null && getId().equals(contactInfo.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

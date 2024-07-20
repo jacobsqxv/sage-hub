@@ -5,9 +5,11 @@ import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
+import dev.aries.sagehub.util.UserFactory;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class AdminServiceImpl implements AdminService {
 	private final AdminRepository adminRepository;
 	private final Generators generators;
 	private final UserUtil userUtil;
+	private final UserFactory userFactory;
 	private final EmailService emailService;
 
 	/**
@@ -39,9 +42,9 @@ public class AdminServiceImpl implements AdminService {
 	public BasicUserResponse addAdmin(AdminRequest request) {
 		String firstname = request.firstname();
 		String lastname = request.lastname();
-		String username = this.generators.generateUsername(firstname, lastname);
+		Username username = this.generators.generateUsername(firstname, lastname);
 		String password = this.generators.generatePassword();
-		User user = this.userUtil.createNewUser(username, password, RoleEnum.ADMIN);
+		User user = this.userFactory.createNewUser(username, password, RoleEnum.ADMIN);
 		Admin admin = Admin.builder()
 			.firstName(firstname)
 			.middleName(request.middleName())

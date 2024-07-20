@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
 public record ResetPassword(
-		@NotEmpty(message = ValidationMessage.NOT_NULL)
+		@NotEmpty(message = "Username" + ValidationMessage.NOT_NULL)
 		String username,
-		@NotEmpty(message = ValidationMessage.NOT_NULL)
-		@Pattern(regexp = Patterns.PASSWORD, message = ValidationMessage.PASSWORD)
+		@NotEmpty(message = "Password" + ValidationMessage.NOT_NULL)
+		@Pattern(regexp = Patterns.PASSWORD, message = ValidationMessage.INVALID_FORMAT + "password")
 		String password
 ) {
 }

@@ -46,4 +46,20 @@ public class Admin extends Auditing {
 	public String fullName() {
 		return getFullName(this.firstName, this.middleName, this.lastName);
 	}
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Admin admin)) {
+			return false;
+		}
+		return getId() != null && getId().equals(admin.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }

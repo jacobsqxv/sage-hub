@@ -10,10 +10,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,13 +29,18 @@ public class AuthController {
 		return ResponseEntity.ok(this.authService.authenticateUser(request));
 	}
 
+	@PostMapping("/refresh-token")
+	public ResponseEntity<AuthResponse> refreshToken(@RequestParam String token) {
+		return ResponseEntity.ok(this.authService.renewRefreshToken(token));
+	}
+
 	@PostMapping("/reset-password")
 	public ResponseEntity<GenericResponse> resetPasswordRequest(@RequestBody @Valid ResetPasswordRequest request) {
 		return ResponseEntity.ok(this.authService.resetPasswordRequest(request));
 	}
 
-	@PostMapping("/reset-password/{token}")
-	public ResponseEntity<GenericResponse> resetPassword(@PathVariable String token,
+	@PutMapping("/reset-password")
+	public ResponseEntity<GenericResponse> resetPassword(@RequestParam String token,
 						@RequestBody @Valid ResetPassword request) {
 		return ResponseEntity.ok(this.authService.resetPassword(token, request));
 	}

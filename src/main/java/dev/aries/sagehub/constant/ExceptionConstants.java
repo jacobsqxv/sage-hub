@@ -82,6 +82,22 @@ public final class ExceptionConstants {
 	 * Message for email sending failure.
 	 */
 	public static final String EMAIL_SENDING_FAILURE = "There was an error sending the email";
+	/**
+	 * Message for voucher limit reached.
+	 */
+	public static final String VOUCHERS_LIMIT = "Vouchers limit reached for the selected academic year";
+	/**
+	 * Message for voucher invalid.
+	 */
+	public static final String VOUCHER_INVALID = "Voucher has expired or is already used";
+	/**
+	 * Message for token invalid.
+	 */
+	public static final String AUTHENTICATION_FAILED = "Authentication failed";
+	/**
+	 * Message for key generation failure.
+	 */
+	public static final String KEY_GENERATION_FAILED = "Failed to generate key pair";
 
 	/**
 	 * Private constructor to prevent instantiation of this utility class.

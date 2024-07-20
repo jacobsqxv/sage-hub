@@ -18,16 +18,18 @@ public class UpdateStrategyConfig {
 	private final UpdateProgram updateProgram;
 	private final UpdateCourse updateCourse;
 	private final UpdateProgramCourse updateProgramCourse;
+	private final UpdateApplicantBasicInfo updateApplicantBasicInfo;
 
 	@Bean
 	public Map<String, UpdateStrategy> updateStrategies() {
 		Map<String, UpdateStrategy> strategies = new HashMap<>();
-		strategies.put("EmergencyContact", updateEmergencyContact);
-		strategies.put("ContactInfo", updateContactInfo);
-		strategies.put("Department", updateDepartment);
-		strategies.put("Program", updateProgram);
-		strategies.put("Course", updateCourse);
-		strategies.put("ProgramCourse", updateProgramCourse);
+		strategies.put("EmergencyContact", this.updateEmergencyContact);
+		strategies.put("ContactInfo", this.updateContactInfo);
+		strategies.put("Department", this.updateDepartment);
+		strategies.put("Program", this.updateProgram);
+		strategies.put("Course", this.updateCourse);
+		strategies.put("ProgramCourse", this.updateProgramCourse);
+		strategies.put("ApplicantBasicInfo", this.updateApplicantBasicInfo);
 		return strategies;
 	}
 }

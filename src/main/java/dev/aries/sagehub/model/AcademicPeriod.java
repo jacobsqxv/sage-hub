@@ -9,10 +9,11 @@ import jakarta.persistence.Enumerated;
 
 @Embeddable
 public record AcademicPeriod(
-	@Column(nullable = false)
-	Year year,
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	Semester semester
+		@Column(nullable = false)
+		@Enumerated(EnumType.STRING)
+		Year year,
+		@Column(nullable = false)
+		@Enumerated(EnumType.STRING)
+		Semester semester
 ) {
 }

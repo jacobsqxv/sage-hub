@@ -6,6 +6,7 @@ import dev.aries.sagehub.dto.request.ProgramRequest;
 import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
+import dev.aries.sagehub.enums.Degree;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.mapper.ProgramCourseMapper;
 import dev.aries.sagehub.mapper.ProgramMapper;
@@ -13,6 +14,7 @@ import dev.aries.sagehub.model.AcademicPeriod;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.model.Program;
 import dev.aries.sagehub.model.ProgramCourse;
+import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.repository.ProgramRepository;
@@ -43,12 +45,17 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
 		existsByName(request.name().toUpperCase());
+		this.checks.checkIfEnumExists(Degree.class, request.degree());
 		Department department = this.globalUtil.loadDepartment(request.departmentId());
+		Degree degree = Degree.valueOf(request.degree().toUpperCase());
 		Program program = Program.builder()
 				.name(request.name().toUpperCase())
 				.description(request.description())
 				.department(department)
-				.status(Status.PENDING_REVIEW)
+				.cutOff(request.cutOff())
+				.duration(request.duration())
+				.degree(degree)
+				.status(Status.PENDING)
 				.build();
 		this.programRepository.save(program);
 		if (!department.getPrograms().contains(program)) {
@@ -60,7 +67,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public Page<ProgramResponse> getPrograms(GetProgramsPage request, Pageable pageable) {
-		if (this.checks.checkAdmin()) {
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllPrograms(request, pageable);
 		}
 		return getActivePrograms(request, pageable);
@@ -87,7 +95,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public ProgramResponse updateProgram(Long programId, ProgramRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		Program program = this.globalUtil.loadProgram(programId);
 		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateProgram");
 		program = (Program) updateStrategy.update(program, request);
@@ -97,7 +106,8 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	private ProgramCourseResponse addProgramCourses(Long programId, ProgramCourseRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		ProgramCourse programCourse = ProgramCourse.builder()
 				.program(this.globalUtil.loadProgram(programId))
 				.course(this.globalUtil.loadCourse(request.courseId()))
@@ -105,7 +115,7 @@ public class ProgramServiceImpl implements ProgramService {
 						(request.period().year()),
 						request.period().semester()
 				))
-				.status(Status.PENDING_REVIEW)
+				.status(Status.PENDING)
 				.build();
 		this.programCourseRepository.save(programCourse);
 		return this.programCourseMapper.toProgramCourseResponse(programCourse);
@@ -113,7 +123,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public ProgramCourseResponse updateProgramCourses(Long programId, ProgramCourseRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		ProgramCourse programCourse = this.globalUtil.loadProgramCourses(
 				programId, request.courseId(), request.period());
 		if (programCourse == null) {

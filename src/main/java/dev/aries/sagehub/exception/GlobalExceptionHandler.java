@@ -69,7 +69,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
 	}
 
-	@ExceptionHandler(Exception.class)
+	@ExceptionHandler({ KeyUtilException.class, Exception.class })
 	public ResponseEntity<ExceptionResponse> handleOtherExceptions(Exception exp) {
 		logException(exp);
 		Set<String> error = new HashSet<>();

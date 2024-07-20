@@ -1,5 +1,7 @@
 package dev.aries.sagehub.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,8 +23,33 @@ public class EmergencyContact extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(nullable = false)
 	private String fullName;
+	@Column(nullable = false)
 	private String relationship;
+	@Column(nullable = false)
 	private String phoneNumber;
-	private String address;
+	@Column(nullable = false)
+	private String email;
+	@Column(nullable = false)
+	private String occupation;
+	@Embedded
+	@Column(nullable = false)
+	private Address address;
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof EmergencyContact emergencyContact)) {
+			return false;
+		}
+		return getId() != null && getId().equals(emergencyContact.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
+	}
 }
