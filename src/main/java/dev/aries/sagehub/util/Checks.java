@@ -36,16 +36,16 @@ public class Checks {
 	}
 
 	public void isAdminOrLoggedIn(Long id) {
-		if (!(checkAdmin() || currentlyLoggedInUser().getId().equals(id))) {
+		User user = currentlyLoggedInUser();
+		if (!(isAdmin(user.getRole().getName()) || user.getId().equals(id))) {
 			log.info("INFO - Unauthorized access to this resource");
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
 
-	public void isAdmin() {
-		RoleEnum loggedInUserRole = currentlyLoggedInUser().getRole().getName();
-		if (!(loggedInUserRole.equals(RoleEnum.ADMIN) ||
-				loggedInUserRole.equals(RoleEnum.SUPER_ADMIN))) {
+	public void checkAdmins(RoleEnum role) {
+		if (!(role.equals(RoleEnum.ADMIN) ||
+				role.equals(RoleEnum.SUPER_ADMIN))) {
 			log.info("INFO - Unauthorized access");
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
@@ -63,8 +63,7 @@ public class Checks {
 		return this.passwordEncoder.matches(password, user.getHashedPassword());
 	}
 
-	public boolean checkAdmin() {
-		RoleEnum loggedInUserRole = currentlyLoggedInUser().getRole().getName();
-		return loggedInUserRole.equals(RoleEnum.ADMIN) || loggedInUserRole.equals(RoleEnum.SUPER_ADMIN);
+	public boolean isAdmin(RoleEnum role) {
+		return role.equals(RoleEnum.ADMIN) || role.equals(RoleEnum.SUPER_ADMIN);
 	}
 }

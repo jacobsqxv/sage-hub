@@ -1,7 +1,9 @@
 package dev.aries.sagehub.service.emailservice;
 
+import dev.aries.sagehub.model.attribute.Username;
+
 public interface EmailService {
-	void sendAccountCreatedEmail(String username, String password, String recipient);
+	void sendAccountCreatedEmail(Username username, String password, String recipient);
 
 	void sendPasswordResetEmail(String recipient, String token);
 

@@ -1,5 +1,6 @@
 package dev.aries.sagehub.service.emailservice;
 
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +17,10 @@ public class EmailServiceImpl implements EmailService {
 	private String baseUrl;
 
 	@Override
-	public void sendAccountCreatedEmail(String username, String password, String recipient) {
+	public void sendAccountCreatedEmail(Username username, String password, String recipient) {
 		EmailDetails emailDetails = EmailDetails
 				.builder()
-				.username(username)
+				.username(username.value())
 				.password(password)
 				.recipient(recipient)
 				.template(EmailTemplate.ACCOUNT_CREATION)

@@ -20,6 +20,8 @@ import dev.aries.sagehub.model.EmergencyContact;
 import dev.aries.sagehub.model.Staff;
 import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.ContactInfoRepository;
 import dev.aries.sagehub.repository.EmergencyContactRepository;
 import dev.aries.sagehub.repository.StaffRepository;
@@ -30,6 +32,7 @@ import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
+import dev.aries.sagehub.util.UserFactory;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +69,7 @@ public class UserServiceImpl implements UserService {
 	private final EmergencyContactRepository emergencyContactRepository;
 	private final EmailService emailService;
 	private final AddressMapper addressMapper;
+	private final UserFactory userFactory;
 
 	/**
 	 * Changes the password of a user.
@@ -209,22 +213,22 @@ public class UserServiceImpl implements UserService {
 	 * @throws IllegalArgumentException if the role is not "STUDENT" or "STAFF".
 	 */
 	private BasicInfo buildInfo(AddUserRequest request, String role) {
-		String username = this.generators.generateUsername(request.firstname(), request.lastname());
+		Username username = this.generators.generateUsername(request.firstname(), request.lastname());
 		String password = this.generators.generatePassword();
-		User user = this.userUtil.createNewUser(username, password, RoleEnum.valueOf(role));
+		User user = this.userFactory.createNewUser(username, password, RoleEnum.valueOf(role));
 		Long id = addContactInfo(request.contactInfo());
 		ContactInfo contactInfo = this.contactInfoRepository.findById(id)
 				.orElseThrow();
-		String primaryEmail = this.generators.generateUserEmail(user.getUsername(), role);
+		Email primaryEmail = this.generators.generateUserEmail(user.getUsername(), role);
 		BasicInfo.BasicInfoBuilder<?, ?> builder = switch (role) {
 			case "STUDENT" -> Student.builder()
 					.id(this.generators.generateUniqueId(true))
-					.primaryEmail(primaryEmail)
+					.primaryEmail(primaryEmail.value())
 					.contactInfo(contactInfo)
 					.user(user);
 			case "STAFF" -> Staff.builder()
 					.id(this.generators.generateUniqueId(false))
-					.primaryEmail(primaryEmail)
+					.primaryEmail(primaryEmail.value())
 					.contactInfo(contactInfo)
 					.user(user);
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));

@@ -14,6 +14,7 @@ import dev.aries.sagehub.model.AcademicPeriod;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.model.Program;
 import dev.aries.sagehub.model.ProgramCourse;
+import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.repository.ProgramRepository;
@@ -66,7 +67,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public Page<ProgramResponse> getPrograms(GetProgramsPage request, Pageable pageable) {
-		if (this.checks.checkAdmin()) {
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllPrograms(request, pageable);
 		}
 		return getActivePrograms(request, pageable);
@@ -93,7 +95,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public ProgramResponse updateProgram(Long programId, ProgramRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		Program program = this.globalUtil.loadProgram(programId);
 		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateProgram");
 		program = (Program) updateStrategy.update(program, request);
@@ -103,7 +106,8 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	private ProgramCourseResponse addProgramCourses(Long programId, ProgramCourseRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		ProgramCourse programCourse = ProgramCourse.builder()
 				.program(this.globalUtil.loadProgram(programId))
 				.course(this.globalUtil.loadCourse(request.courseId()))
@@ -119,7 +123,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public ProgramCourseResponse updateProgramCourses(Long programId, ProgramCourseRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		ProgramCourse programCourse = this.globalUtil.loadProgramCourses(
 				programId, request.courseId(), request.period());
 		if (programCourse == null) {

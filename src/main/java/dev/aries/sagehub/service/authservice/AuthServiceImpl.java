@@ -71,12 +71,12 @@ public class AuthServiceImpl implements AuthService {
 	public AuthResponse authenticateUser(AuthRequest request) {
 		Integer countOfFailedAttempts;
 		Authentication authentication;
-		User user = this.userUtil.getUser(request.username());
+		User user = this.userUtil.getUser(request.username().value());
 		checkLockedAccount(user);
 		try {
 		authentication = this.daoAuthProvider
 			.authenticate(new UsernamePasswordAuthenticationToken(
-					request.username(), request.password()));
+					request.username().value(), request.password()));
 		user = this.userUtil.getUser(authentication.getName());
 		}
 		catch (BadCredentialsException ex) {
@@ -146,7 +146,7 @@ public class AuthServiceImpl implements AuthService {
 				.expiresAt(LocalDateTime.now().plusMinutes(15))
 				.build();
 		this.tokenRepository.save(token);
-		String recipient = this.userUtil.getPrimaryEmail(user.getId());
+		String recipient = getRecipient(user.getId());
 		this.emailService.sendPasswordResetEmail(recipient, value);
 		log.info("INFO - Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
@@ -162,7 +162,7 @@ public class AuthServiceImpl implements AuthService {
 		}
 		user.setHashedPassword(this.passwordEncoder.encode(request.password()));
 		this.userRepository.save(user);
-		String recipient = this.userUtil.getPrimaryEmail(user.getId());
+		String recipient = getRecipient(user.getId());
 		this.emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}
@@ -175,5 +175,13 @@ public class AuthServiceImpl implements AuthService {
 		if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
 			throw new IllegalArgumentException(ExceptionConstants.EXPIRED_TOKEN);
 		}
+	}
+
+	private String getRecipient(Long userId) {
+		User user = this.userUtil.getUser(userId);
+		if (this.checks.isAdmin(user.getRole().getName())) {
+			return this.userUtil.getBasicInfo(userId).primaryEmail();
+		}
+		return this.userUtil.getBasicInfo(userId).secondaryEmail();
 	}
 }

@@ -25,11 +25,12 @@ import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
+import dev.aries.sagehub.strategy.response.UserResponseStrategy;
+import dev.aries.sagehub.strategy.response.UserResponseStrategyConfig;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
@@ -45,8 +46,7 @@ public class UserUtil {
 	private static final String USER = "User";
 	private static final String GET_CONTACT_INFO = "getContactInfo";
 	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final RoleUtil roleUtil;
+	private final UserResponseStrategyConfig userResponseStratConfig;
 	private final AdminRepository adminRepository;
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
@@ -63,41 +63,6 @@ public class UserUtil {
 		log.info("INFO - Getting user with user ID: {}", id);
 		return this.userRepository.findById(id).orElseThrow(
 				() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
-	}
-
-	public String getPrimaryEmail(Long id) {
-		Object userInfo = getUserInfo(id);
-		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
-			Object user = optional.get();
-			switch (user) {
-				case Admin admin -> {
-					return getUserResponse(admin).primaryEmail();
-				}
-				case Staff staff -> {
-					return getUserResponse(staff).secondaryEmail();
-				}
-				case Student student -> {
-					return getUserResponse(student).secondaryEmail();
-				}
-				case Applicant applicant -> {
-					return getUserResponse(applicant).secondaryEmail();
-				}
-				default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-			}
-		}
-		throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-	}
-
-	public User createNewUser(String username, String password, RoleEnum roleEnum) {
-		User user = User.builder()
-				.username(username)
-				.hashedPassword(this.passwordEncoder.encode(password))
-				.accountEnabled(true)
-				.role(this.roleUtil.getRole(roleEnum))
-				.failedLoginAttempts(0)
-				.status(AccountStatus.ACTIVE)
-				.build();
-		return this.userRepository.save(user);
 	}
 
 	public Object getUserInfo(Long id) {
@@ -120,25 +85,26 @@ public class UserUtil {
 	}
 
 	public BasicUserResponse getBasicInfo(Object userInfo) {
-		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
-			Object user = optional.get();
-			switch (user) {
-				case Admin admin -> {
-					return getUserResponse(admin);
-				}
-				case Staff staff -> {
-					return getUserResponse(staff);
-				}
-				case Student student -> {
-					return getUserResponse(student);
-				}
-				case Applicant applicant -> {
-					return getUserResponse(applicant);
-				}
-				default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-			}
+		return extractUserFromOptional(userInfo)
+				.map(this::getUserResponseFromUserObject)
+				.orElseThrow(() -> new IllegalArgumentException(String.format(NOT_FOUND, USER)));
+	}
+
+	private Optional<Object> extractUserFromOptional(Object userInfo) {
+		if (userInfo instanceof Optional<?> optional) {
+			return (Optional<Object>) optional;
 		}
-		throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		return Optional.empty();
+	}
+
+	private BasicUserResponse getUserResponseFromUserObject(Object user) {
+		UserResponseStrategy strategy = this.userResponseStratConfig.responseStrategies().get(user.getClass());
+		if (strategy != null) {
+			return strategy.getUserResponse(user);
+		}
+		else {
+			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		}
 	}
 
 	public <T> BasicUserResponse getUserResponse(T user) {
@@ -154,15 +120,14 @@ public class UserUtil {
 							.getMethod("getPrimaryEmail").invoke(user))
 					.status(linkedUser.getStatus().toString())
 					.role(linkedUser.getRole().getName().name());
-
-			if (user instanceof Student || user instanceof Staff || user instanceof Applicant) {
-				getCommonResponse(user, response);
-			}
-			else if (user instanceof Admin) {
+			if (user instanceof Admin) {
 				String fullName = (String) user.getClass().getMethod("fullName").invoke(user);
 				response.basicInfo(BasicInfoResponse.builder()
 						.fullName(fullName)
 						.build());
+			}
+			else {
+				getCommonResponse(user, response);
 			}
 			return response.build();
 		}
@@ -212,16 +177,17 @@ public class UserUtil {
 	}
 
 	private <T> T loadUserInfo(Object userInfo, Function<Object, T> mapper, String exceptionMessage) {
-		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
-			Object user = optional.get();
-			if (user instanceof Admin) {
-				throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
-			}
-			else if (user instanceof Staff || user instanceof Student || user instanceof Applicant) {
-				return mapper.apply(user);
-			}
+		if (!(userInfo instanceof Optional<?> optional)) {
+			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
-		throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		if (optional.isEmpty()) {
+			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		}
+		Object user = optional.get();
+		if (user instanceof Admin) {
+			throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
+		}
+		return mapper.apply(user);
 	}
 
 }

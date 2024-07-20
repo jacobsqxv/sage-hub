@@ -9,12 +9,14 @@ import dev.aries.sagehub.model.AcademicYear;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.Role;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.AcademicYearRepository;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.RoleRepository;
 import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
+import dev.aries.sagehub.util.UserFactory;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private final RoleRepository roleRepository;
 	private final AdminRepository adminRepository;
 	private final UserUtil userUtil;
+	private final UserFactory userFactory;
 	private final UserRepository userRepository;
 	private final Generators generators;
 	private final EmailService emailService;
@@ -78,9 +81,9 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private void loadSuperAdmin() {
 		String firstName = "Super";
 		String lastName = "Admin";
-		String username = this.generators.generateUsername(firstName, lastName);
+		Username username = this.generators.generateUsername(firstName, lastName);
 		String password = this.generators.generatePassword();
-		User user = this.userUtil.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
+		User user = this.userFactory.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
 		Admin superAdmin = Admin.builder()
 				.firstName(firstName)
 				.lastName(lastName)

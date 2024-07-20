@@ -6,6 +6,7 @@ public final class ValidationMessage {
 	public static final String INVALID_FORMAT = "Invalid format for ";
 	public static final String INVALID_NUMBER = " must be a positive number";
 	public static final String MAX_VALUE = " must be less than or equal to specified value";
+	public static final String NOT_EMPTY = " must not be empty or blank";
 
 	private ValidationMessage() {
 		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);

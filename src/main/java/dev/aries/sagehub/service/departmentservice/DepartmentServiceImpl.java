@@ -6,6 +6,7 @@ import dev.aries.sagehub.dto.search.GetDepartmentsPage;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.mapper.DepartmentMapper;
 import dev.aries.sagehub.model.Department;
+import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.Checks;
@@ -52,7 +53,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	@Override
 	public Page<DepartmentResponse> getDepartments(GetDepartmentsPage request, Pageable pageable) {
-		if (this.checks.checkAdmin()) {
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllDepartments(request, pageable);
 		}
 		return getActiveDepartments(request, pageable);
@@ -73,7 +75,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	@Override
 	public DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request) {
-		this.checks.isAdmin();
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		this.checks.checkAdmins(loggedInUser.getRole().getName());
 		Department department = this.globalUtil.loadDepartment(departmentId);
 		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateDepartment");
 		department = (Department) updateStrategy.update(department, request);

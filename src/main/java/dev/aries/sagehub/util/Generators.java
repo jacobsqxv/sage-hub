@@ -3,6 +3,8 @@ package dev.aries.sagehub.util;
 import java.security.SecureRandom;
 import java.util.Calendar;
 
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.CourseRepository;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.StaffRepository;
@@ -64,7 +66,7 @@ public class Generators {
 		return idBuilder.toString();
 	}
 
-	public String generateUsername(String firstName, String lastName) {
+	public Username generateUsername(String firstName, String lastName) {
 		lastName = lastName.replace("-", "");
 		String username = String.format("%s%s", firstName.charAt(0), lastName).toLowerCase();
 		int suffix = 1;
@@ -72,12 +74,13 @@ public class Generators {
 			username = username.replaceAll("\\d+$", "");
 			username = String.format("%s%d", username, suffix++);
 		}
-		return username;
+		return new Username(username);
 	}
 
-	public String generateUserEmail(String username, String domain) {
+	public Email generateUserEmail(String username, String domain) {
 		domain = domain.toLowerCase();
-		return String.format("%s.%s%s@sagehub.xyz", username, domain.substring(0, 2), domain.charAt(3));
+		String email = String.format("%s.%s%s@sagehub.xyz", username, domain.substring(0, 2), domain.charAt(3));
+		return new Email(email);
 	}
 
 	public Long generateUniqueId(boolean isStudent) {
