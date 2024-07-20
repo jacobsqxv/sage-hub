@@ -1,34 +1,29 @@
 package dev.aries.sagehub.strategy;
 
+import java.util.Optional;
+
 import dev.aries.sagehub.dto.request.ApplicationRequest;
 import dev.aries.sagehub.enums.Gender;
 import dev.aries.sagehub.enums.MaritalStatus;
 import dev.aries.sagehub.enums.Title;
-import dev.aries.sagehub.model.Application;
+import dev.aries.sagehub.model.Applicant;
 
 import org.springframework.stereotype.Component;
 
 @Component
-public class UpdateApplicantBasicInfo implements UpdateStrategy<Application, ApplicationRequest> {
+public class UpdateApplicantBasicInfo implements UpdateStrategy<Applicant, ApplicationRequest> {
 
 	@Override
-	public Application update(Application entity, ApplicationRequest request) {
-		entity.setProfilePictureUrl((request.profilePicture() != null) ?
-				request.profilePicture() : entity.getProfilePictureUrl());
-		entity.setTitle((request.title() != null) ?
-				Title.valueOf(request.title()) : entity.getTitle());
-		entity.setFirstName((request.firstname() != null) ?
-				request.firstname() : entity.getFirstName());
-		entity.setLastName((request.lastname() != null) ?
-				request.lastname() : entity.getLastName());
-		entity.setMiddleName((request.middleName() != null) ?
-				request.middleName() : entity.getMiddleName());
-		entity.setMaritalStatus((request.maritalStatus() != null) ?
-				MaritalStatus.valueOf(request.maritalStatus()) : entity.getMaritalStatus());
-		entity.setGender((request.gender() != null) ?
-				Gender.valueOf(request.gender()) : entity.getGender());
-		entity.setDateOfBirth((request.dateOfBirth() != null) ?
-				request.dateOfBirth() : entity.getDateOfBirth());
+	public Applicant update(Applicant entity, ApplicationRequest request) {
+		Optional.ofNullable(request.profilePicture()).ifPresent(entity::setProfilePictureUrl);
+		Optional.ofNullable(request.title()).map(Title::valueOf).ifPresent(entity::setTitle);
+		Optional.ofNullable(request.firstname()).ifPresent(entity::setFirstName);
+		Optional.ofNullable(request.lastname()).ifPresent(entity::setLastName);
+		Optional.ofNullable(request.middleName()).ifPresent(entity::setMiddleName);
+		Optional.ofNullable(request.maritalStatus()).map(MaritalStatus::valueOf)
+				.ifPresent(entity::setMaritalStatus);
+		Optional.ofNullable(request.gender()).map(Gender::valueOf).ifPresent(entity::setGender);
+		Optional.ofNullable(request.dateOfBirth()).ifPresent(entity::setDateOfBirth);
 		return entity;
 	}
 }
