@@ -95,6 +95,11 @@ public final class ExceptionConstants {
 	 */
 	public static final String AUTHENTICATION_FAILED = "Authentication failed";
 	/**
+	 * Message for key generation failure.
+	 */
+	public static final String KEY_GENERATION_FAILED = "Failed to generate key pair";
+
+	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.
 	 */

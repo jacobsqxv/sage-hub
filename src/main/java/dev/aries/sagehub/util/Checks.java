@@ -29,7 +29,7 @@ public class Checks {
 		}
 	}
 
-	private User currentlyLoggedInUser() {
+	public User currentlyLoggedInUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String username = authentication.getName();
 		return this.userUtil.getUser(username);
@@ -53,8 +53,8 @@ public class Checks {
 
 	public void isCurrentlyLoggedInUser(Long id) {
 		User user = currentlyLoggedInUser();
-		if (!user.getUsername().equals(this.userUtil.getUser(id).getUsername())) {
-			log.info("INFO - Unauthorized access to information for {}", user.getUsername());
+		if (!user.getId().equals(id)) {
+			log.info("INFO - Unauthorized access to information for this user");
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}

@@ -68,7 +68,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	private Page<DepartmentResponse> loadDepartments(GetDepartmentsPage request, String status, Pageable pageable) {
 		return this.departmentRepository.findAll(request.name(), request.code(), status, pageable)
-				.map(this.departmentMapper::toResponse);
+				.map(this.departmentMapper::toPageResponse);
 	}
 
 	@Override

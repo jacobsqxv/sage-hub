@@ -13,6 +13,7 @@ import dev.aries.sagehub.enums.MaritalStatus;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.enums.Title;
 import dev.aries.sagehub.model.Admin;
+import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.ContactInfo;
 import dev.aries.sagehub.model.EmergencyContact;
 import dev.aries.sagehub.model.Role;
@@ -20,7 +21,7 @@ import dev.aries.sagehub.model.Staff;
 import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
-import dev.aries.sagehub.repository.ApplicationRepository;
+import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
@@ -49,7 +50,7 @@ public class UserUtil {
 	private final AdminRepository adminRepository;
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
-	private final ApplicationRepository applicationRepository;
+	private final ApplicantRepository applicationRepository;
 
 	public User getUser(String username) {
 		log.info("INFO - Getting user with username: {}", username);
@@ -62,6 +63,29 @@ public class UserUtil {
 		log.info("INFO - Getting user with user ID: {}", id);
 		return this.userRepository.findById(id).orElseThrow(
 				() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
+	}
+
+	public String getPrimaryEmail(Long id) {
+		Object userInfo = getUserInfo(id);
+		if (userInfo instanceof Optional<?> optional && optional.isPresent()) {
+			Object user = optional.get();
+			switch (user) {
+				case Admin admin -> {
+					return getUserResponse(admin).primaryEmail();
+				}
+				case Staff staff -> {
+					return getUserResponse(staff).secondaryEmail();
+				}
+				case Student student -> {
+					return getUserResponse(student).secondaryEmail();
+				}
+				case Applicant applicant -> {
+					return getUserResponse(applicant).secondaryEmail();
+				}
+				default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+			}
+		}
+		throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 	}
 
 	public User createNewUser(String username, String password, RoleEnum roleEnum) {
@@ -88,7 +112,7 @@ public class UserUtil {
 			case STUDENT -> {
 				return this.studentRepository.findByUserId(id);
 			}
-			case PROSPECTIVE_STUDENT -> {
+			case APPLICANT -> {
 				return this.applicationRepository.findByUserId(id);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
@@ -107,6 +131,9 @@ public class UserUtil {
 				}
 				case Student student -> {
 					return getUserResponse(student);
+				}
+				case Applicant applicant -> {
+					return getUserResponse(applicant);
 				}
 				default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 			}
@@ -128,7 +155,7 @@ public class UserUtil {
 					.status(linkedUser.getStatus().toString())
 					.role(linkedUser.getRole().getName().name());
 
-			if (user instanceof Student || user instanceof Staff) {
+			if (user instanceof Student || user instanceof Staff || user instanceof Applicant) {
 				getCommonResponse(user, response);
 			}
 			else if (user instanceof Admin) {
@@ -190,7 +217,7 @@ public class UserUtil {
 			if (user instanceof Admin) {
 				throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
 			}
-			else if (user instanceof Staff || user instanceof Student) {
+			else if (user instanceof Staff || user instanceof Student || user instanceof Applicant) {
 				return mapper.apply(user);
 			}
 		}
