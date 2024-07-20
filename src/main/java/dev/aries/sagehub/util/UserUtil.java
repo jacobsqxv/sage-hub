@@ -125,10 +125,9 @@ public class UserUtil {
 				response.basicInfo(BasicInfoResponse.builder()
 						.fullName(fullName)
 						.build());
+				return response.build();
 			}
-			else {
-				getCommonResponse(user, response);
-			}
+			getCommonResponse(user, response);
 			return response.build();
 		}
 		catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
@@ -177,10 +176,7 @@ public class UserUtil {
 	}
 
 	private <T> T loadUserInfo(Object userInfo, Function<Object, T> mapper, String exceptionMessage) {
-		if (!(userInfo instanceof Optional<?> optional)) {
-			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-		}
-		if (optional.isEmpty()) {
+		if (!(userInfo instanceof Optional<?> optional) || optional.isEmpty()) {
 			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
 		Object user = optional.get();
