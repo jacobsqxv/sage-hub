@@ -21,6 +21,11 @@ public record EmergencyContactRequest(
 		@Pattern(regexp = Patterns.PHONE_NUMBER, message = INVALID_FORMAT + "phone number")
 		@NotEmpty(message = "Phone number" + NOT_NULL)
 		String phoneNumber,
+		@NotEmpty(message = "Email" + NOT_NULL)
+		@Pattern(regexp = Patterns.EMAIL, message = INVALID_FORMAT + "email")
+		String email,
+		@NotNull(message = "Occupation" + NOT_NULL)
+		String occupation,
 		@Valid
 		AddressUpdateRequest address
 ) {
