@@ -1,24 +1,16 @@
 package dev.aries.sagehub.util;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
 
 import dev.aries.sagehub.dto.response.BasicInfoResponse;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
-import dev.aries.sagehub.enums.AccountStatus;
-import dev.aries.sagehub.enums.Gender;
-import dev.aries.sagehub.enums.MaritalStatus;
-import dev.aries.sagehub.enums.RoleEnum;
-import dev.aries.sagehub.enums.Title;
 import dev.aries.sagehub.model.Admin;
-import dev.aries.sagehub.model.Applicant;
+import dev.aries.sagehub.model.BasicInfo;
 import dev.aries.sagehub.model.ContactInfo;
 import dev.aries.sagehub.model.EmergencyContact;
 import dev.aries.sagehub.model.Role;
-import dev.aries.sagehub.model.Staff;
-import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.ApplicantRepository;
@@ -111,28 +103,38 @@ public class UserUtil {
 		if (user == null) {
 			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
-		try {
-			User linkedUser = (User) user.getClass().getMethod("getUser").invoke(user);
-			BasicUserResponse.BasicUserResponseBuilder response = BasicUserResponse.builder()
-					.userId(linkedUser.getId())
-					.username(linkedUser.getUsername())
-					.primaryEmail((String) user.getClass()
-							.getMethod("getPrimaryEmail").invoke(user))
-					.status(linkedUser.getStatus().toString())
-					.role(linkedUser.getRole().getName().name());
-			if (user instanceof Admin) {
-				String fullName = (String) user.getClass().getMethod("fullName").invoke(user);
-				response.basicInfo(BasicInfoResponse.builder()
-						.fullName(fullName)
+		return switch (user) {
+			case BasicInfo basicInfo -> handleOtherUser(basicInfo);
+			case Admin admin -> handleAdminUser(admin);
+			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
+		};
+	}
+
+	private BasicUserResponse handleAdminUser(Admin admin) {
+		User user = admin.getUser();
+		BasicUserResponse.BasicUserResponseBuilder responseBuilder = BasicUserResponse.builder()
+				.basicInfo(BasicInfoResponse.builder()
+						.fullName(admin.fullName())
+						.profilePictureUrl(admin.getProfilePictureUrl())
 						.build());
-				return response.build();
-			}
-			getCommonResponse(user, response);
-			return response.build();
-		}
-		catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-			throw new IllegalStateException(ex.getMessage());
-		}
+		buildCommonBasicInfo(user, responseBuilder);
+		return responseBuilder.build();
+	}
+
+	private BasicUserResponse handleOtherUser(BasicInfo basicInfo) {
+		User user = basicInfo.getUser();
+		BasicUserResponse.BasicUserResponseBuilder responseBuilder = BasicUserResponse.builder()
+				.basicInfo(BasicInfoResponse.builder()
+						.fullName(basicInfo.fullName())
+						.profilePictureUrl(basicInfo.getProfilePictureUrl())
+						.title(basicInfo.getTitle().toString())
+						.gender(basicInfo.getGender().toString())
+						.maritalStatus(basicInfo.getMaritalStatus().toString())
+						.dateOfBirth(basicInfo.getDateOfBirth())
+						.build());
+		buildCommonBasicInfo(user, responseBuilder);
+		getCommonResponse(basicInfo, responseBuilder);
+		return responseBuilder.build();
 	}
 
 	public <T> T loadUserInfoGeneric(Object userInfo, Class<T> infoClass) {
@@ -153,26 +155,25 @@ public class UserUtil {
 	public EmergencyContact loadEmergencyContact(Object userInfo) {
 		return loadUserInfoGeneric(userInfo, EmergencyContact.class);
 	}
+	private void buildCommonBasicInfo(User user, BasicUserResponse.BasicUserResponseBuilder response) {
+		response.userId(user.getId())
+				.username(user.getUsername())
+				.status(user.getStatus().toString())
+				.role(user.getRole().getName().name());
+	}
 
-	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Gender gender = (Gender) user.getClass().getMethod("getGender").invoke(user);
-		Title title = (Title) user.getClass().getMethod("getTitle").invoke(user);
-		MaritalStatus maritalStatus = (MaritalStatus) user.getClass()
-				.getMethod("getMaritalStatus").invoke(user);
-		ContactInfo linkedContactInfo = (ContactInfo) user.getClass().getMethod(GET_CONTACT_INFO).invoke(user);
-		response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
-		BasicInfoResponse basicInfoResponse = BasicInfoResponse.builder()
-				.profilePictureUrl((String) user.getClass()
-						.getMethod("getProfilePictureUrl").invoke(user))
-				.title(String.valueOf(title))
-				.fullName((String) user.getClass().getMethod("fullName").invoke(user))
-				.gender(String.valueOf(gender))
-				.maritalStatus(String.valueOf(maritalStatus))
-				.dateOfBirth((LocalDate) user.getClass().getMethod("getDateOfBirth").invoke(user))
-				.build();
-		response.basicInfo(basicInfoResponse);
-		response.memberId((Long) user.getClass().getMethod("getId").invoke(user));
+	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response) {
+		try {
+			ContactInfo linkedContactInfo = (ContactInfo) user.getClass()
+					.getMethod(GET_CONTACT_INFO).invoke(user);
+			response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
+			response.primaryEmail((String) user.getClass()
+					.getMethod("getPrimaryEmail").invoke(user));
+			response.memberId((Long) user.getClass().getMethod("getId").invoke(user));
+		}
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+			throw new IllegalStateException(ex.getMessage());
+		}
 	}
 
 	private <T> T loadUserInfo(Object userInfo, Function<Object, T> mapper, String exceptionMessage) {
