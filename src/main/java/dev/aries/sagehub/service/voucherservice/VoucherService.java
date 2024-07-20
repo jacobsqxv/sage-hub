@@ -14,5 +14,5 @@ public interface VoucherService {
 
 	Page<VoucherResponse> getVouchers(GetVouchersPage request, Pageable pageable);
 
-	GenericResponse verifyVoucher(VoucherRequest request);
+	void verifyVoucher(VoucherRequest request);
 }
