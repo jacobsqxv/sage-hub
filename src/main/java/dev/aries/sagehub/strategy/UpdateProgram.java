@@ -1,6 +1,7 @@
 package dev.aries.sagehub.strategy;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ProgramRequest;
@@ -30,8 +31,9 @@ public class UpdateProgram implements UpdateStrategy<Program, ProgramRequest> {
 		this.checks.checkIfEnumExists(Status.class, request.status());
 		this.checks.checkIfEnumExists(Degree.class, request.degree());
 		Department department = checkDepartment(request.departmentId());
-		entity.setDescription((request.description() != null) ?
-				request.description() : entity.getDescription());
+		Optional.ofNullable(request.description()).ifPresent(entity::setDescription);
+		Optional.ofNullable(request.duration()).ifPresent(entity::setDuration);
+		Optional.ofNullable(request.cutOff()).ifPresent(entity::setCutOff);
 		entity.setDegree(Degree.valueOf(request.degree()));
 		entity.setDepartment(department);
 		entity.setStatus(Status.valueOf(request.status()));
