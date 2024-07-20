@@ -11,7 +11,7 @@ public enum RoleEnum {
 	 * Prospective students typically have the least amount of access and
 	 * permissions.
 	 */
-	PROSPECTIVE_STUDENT,
+	APPLICANT,
 	/**
 	 * Represents a student role. Students have more access and
 	 * permissions than prospective students, but less than staff.
@@ -39,11 +39,11 @@ public enum RoleEnum {
 	@Override
 	public String toString() {
 		return switch (this) {
-			case PROSPECTIVE_STUDENT -> "PROSPECTIVE STUDENT";
+			case APPLICANT -> "APPLICANT";
 			case STUDENT -> "STUDENT";
 			case STAFF -> "STAFF";
 			case ADMIN -> "ADMIN";
-			case SUPER_ADMIN -> "SUPER ADMIN";
+			case SUPER_ADMIN -> "SUPER_ADMIN";
 		};
 	}
 }

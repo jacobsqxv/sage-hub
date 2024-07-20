@@ -28,11 +28,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Application extends BasicInfo {
+public class Applicant extends BasicInfo {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(nullable = false)
+	@Column(unique = true, updatable = false, nullable = false)
 	private Long applicantId;
 	@OneToOne
 	private ContactInfo contactInfo;
@@ -40,7 +40,7 @@ public class Application extends BasicInfo {
 	private EmergencyContact guardianInfo;
 	@OneToMany(fetch = FetchType.LAZY)
 	@JoinColumn(name = "applicant_results")
-	private List<ApplicantResult> result;
+	private List<ApplicantResult> results;
 	@ManyToMany(fetch = FetchType.LAZY)
 	private List<Program> programChoices;
 	@Column(nullable = false)
@@ -55,7 +55,7 @@ public class Application extends BasicInfo {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof Application applicant)) {
+		if (!(o instanceof Applicant applicant)) {
 			return false;
 		}
 		return getId() != null && getId().equals(applicant.getId());

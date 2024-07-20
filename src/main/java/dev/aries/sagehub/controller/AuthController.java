@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +27,11 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthRequest request) {
 		return ResponseEntity.ok(this.authService.authenticateUser(request));
+	}
+
+	@PostMapping("/refresh-token")
+	public ResponseEntity<AuthResponse> refreshToken(@RequestParam String token) {
+		return ResponseEntity.ok(this.authService.renewRefreshToken(token));
 	}
 
 	@PostMapping("/reset-password")

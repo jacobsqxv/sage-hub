@@ -90,7 +90,10 @@ public final class ExceptionConstants {
 	 * Message for voucher invalid.
 	 */
 	public static final String VOUCHER_INVALID = "Voucher has expired or is already used";
-
+	/**
+	 * Message for token invalid.
+	 */
+	public static final String AUTHENTICATION_FAILED = "Authentication failed";
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.

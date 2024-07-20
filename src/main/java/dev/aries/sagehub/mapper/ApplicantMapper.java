@@ -1,8 +1,9 @@
 package dev.aries.sagehub.mapper;
 
 import dev.aries.sagehub.dto.response.ApplicationResponse;
+import dev.aries.sagehub.dto.response.BasicApplicationResponse;
 import dev.aries.sagehub.dto.response.BasicInfoResponse;
-import dev.aries.sagehub.model.Application;
+import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.BasicInfo;
 import lombok.RequiredArgsConstructor;
 
@@ -17,8 +18,9 @@ public class ApplicationMapper {
 	private final EmergencyContactMapper emergencyContactMapper;
 	private final ContactInfoMapper contactInfoMapper;
 
-	public ApplicationResponse toApplicationResponse(Application applicant) {
+	public ApplicationResponse toApplicationResponse(Applicant applicant) {
 		return new ApplicationResponse(
+				applicant.getId(),
 				applicant.getId(),
 				applicant.getApplyingForYear().getYear(),
 				toBasicInfoResponse(applicant),
@@ -36,7 +38,7 @@ public class ApplicationMapper {
 		);
 	}
 
-	private BasicInfoResponse toBasicInfoResponse(Application applicant) {
+	private BasicInfoResponse toBasicInfoResponse(Applicant applicant) {
 		BasicInfo basicInfo = BasicInfo.builder()
 				.profilePictureUrl(applicant.getProfilePictureUrl())
 				.firstName(applicant.getFirstName())
@@ -48,5 +50,15 @@ public class ApplicationMapper {
 				.dateOfBirth(applicant.getDateOfBirth())
 				.build();
 		return this.basicInfoMapper.toBasicInfoResponse(basicInfo);
+	}
+
+	public BasicApplicationResponse toBasicApplicationResponse(Applicant applicant) {
+		return new BasicApplicationResponse(
+				applicant.getId(),
+				applicant.getApplyingForYear().getYear(),
+				toBasicInfoResponse(applicant),
+				applicant.getStatus().name(),
+				applicant.isSubmitted()
+		);
 	}
 }
