@@ -18,7 +18,17 @@ public class ProgramMapper {
 				program.getDegree().toString(),
 				program.getDescription(),
 				program.getDuration(),
+				program.getCutOff(),
 				program.getStatus().toString()
 		);
+	}
+
+	public ProgramResponse toBasicProgramResponse(Program program) {
+		return ProgramResponse.builder()
+				.id(program.getId())
+				.name(program.getName())
+				.degree(program.getDegree().toString())
+				.duration(program.getDuration())
+				.build();
 	}
 }

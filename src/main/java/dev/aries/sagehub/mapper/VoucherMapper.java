@@ -12,6 +12,7 @@ public class VoucherMapper {
 				voucher.getId(),
 				voucher.getSerialNumber(),
 				voucher.getPin(),
+				voucher.getAcademicYear().getYear(),
 				voucher.getStatus().toString()
 		);
 	}

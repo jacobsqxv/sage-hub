@@ -1,8 +1,8 @@
 package dev.aries.sagehub.mapper;
 
+import java.util.ArrayList;
+
 import dev.aries.sagehub.dto.response.DepartmentResponse;
-import dev.aries.sagehub.dto.response.wrapper.BasicDepartmentResponse;
-import dev.aries.sagehub.dto.response.wrapper.DepartmentProgramResponse;
 import dev.aries.sagehub.model.Department;
 import lombok.RequiredArgsConstructor;
 
@@ -14,31 +14,27 @@ public class DepartmentMapper {
 	private final ProgramMapper programMapper;
 
 	public DepartmentResponse toResponse(Department department) {
-		if (department.getPrograms() == null) {
-			return new DepartmentResponse(toBasicDepartmentResponse(department));
-		}
-		return new DepartmentResponse(toDepartmentProgramResponse(department));
-	}
-
-	private DepartmentProgramResponse toDepartmentProgramResponse(Department department) {
-		return new DepartmentProgramResponse(
-				department.getId(),
-				department.getCode(),
-				department.getName(),
-				department.getPrograms().stream()
+		DepartmentResponse.DepartmentResponseBuilder response = DepartmentResponse.builder();
+		response.id(department.getId())
+				.code(department.getCode())
+				.name(department.getName())
+				.status(department.getStatus().toString())
+				.programs(new ArrayList<>());
+		if (department.getPrograms() != null) {
+			response.programs(department.getPrograms().stream()
 						.map(this.programMapper::toProgramResponse)
-						.toList(),
-				department.getStatus().toString()
-		);
+						.toList());
+		}
+		return response.build();
 	}
 
-	public BasicDepartmentResponse toBasicDepartmentResponse(Department department) {
-		return new BasicDepartmentResponse(
-				department.getId(),
-				department.getCode(),
-				department.getName(),
-				"No programs offered in this department",
-				department.getStatus().toString()
-		);
+	public DepartmentResponse toPageResponse(Department department) {
+		return DepartmentResponse.builder()
+				.id(department.getId())
+				.code(department.getCode())
+				.name(department.getName())
+				.status(department.getStatus().toString())
+				.build();
 	}
+
 }

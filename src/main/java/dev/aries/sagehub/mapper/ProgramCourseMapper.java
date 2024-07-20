@@ -15,8 +15,8 @@ public class ProgramCourseMapper {
 	public ProgramCourseResponse toProgramCourseResponse(ProgramCourse programCourse) {
 		return new ProgramCourseResponse(
 				programCourse.getId(),
-				programMapper.toProgramResponse(programCourse.getProgram()),
-				courseMapper.toCourseResponse(programCourse.getCourse()),
+				this.programMapper.toProgramResponse(programCourse.getProgram()),
+				this.courseMapper.toCourseResponse(programCourse.getCourse()),
 				programCourse.getAcademicPeriod().year().toString(),
 				programCourse.getAcademicPeriod().semester().toString(),
 				programCourse.getStatus().toString()
