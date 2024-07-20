@@ -61,7 +61,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 				RoleEnum.ADMIN, "Admin role",
 				RoleEnum.STAFF, "Staff role",
 				RoleEnum.STUDENT, "Student role",
-				RoleEnum.PROSPECTIVE_STUDENT, "Prospective Student role");
+				RoleEnum.APPLICANT, "Prospective Student role");
 
 		Arrays.stream(roles).forEach((role) -> {
 			if (!this.roleRepository.existsByName(role)) {
