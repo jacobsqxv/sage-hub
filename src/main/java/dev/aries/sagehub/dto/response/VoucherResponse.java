@@ -4,6 +4,7 @@ public record VoucherResponse(
 		Long id,
 		Long serialNumber,
 		String pin,
+		Integer year,
 		String status
 ) {
 }
