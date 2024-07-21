@@ -10,7 +10,7 @@ public record ApplicantResultsResponse(
 		String schoolName,
 		String type,
 		Integer year,
-		Integer indexNumber,
+		String indexNumber,
 		Set<SubjectScoreResponse> scores
 ) {
 }
