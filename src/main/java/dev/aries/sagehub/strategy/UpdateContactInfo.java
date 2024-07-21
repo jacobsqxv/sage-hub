@@ -12,10 +12,10 @@ public class UpdateContactInfo implements UpdateStrategy<ContactInfo, ContactInf
 
 	@Override
 	public ContactInfo update(ContactInfo entity, ContactInfoRequest request) {
-		entity.setSecondaryEmail((request.secondaryEmail() != null) ? request.secondaryEmail() : entity
+		entity.setSecondaryEmail((request.secondaryEmail() != null) ? request.secondaryEmail().value() : entity
 				.getSecondaryEmail());
 		entity.setPhoneNumber((request.phoneNumber() != null) ?
-				request.phoneNumber() : entity.getPhoneNumber());
+				request.phoneNumber().value() : entity.getPhoneNumber());
 		entity.setAddress(updateAddress(entity.getAddress(), request.address()));
 		entity.setPostalAddress((request.postalAddress() != null) ?
 				request.postalAddress() : entity.getPostalAddress());
