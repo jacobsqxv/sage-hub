@@ -1,10 +1,12 @@
 package dev.aries.sagehub.service.adminservice;
 
 import dev.aries.sagehub.dto.request.AdminRequest;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
+import dev.aries.sagehub.dto.response.AdminResponse;
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.mapper.UserMapper;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.service.emailservice.EmailService;
@@ -29,7 +31,7 @@ public class AdminServiceImpl implements AdminService {
 
 	private final AdminRepository adminRepository;
 	private final Generators generators;
-	private final UserUtil userUtil;
+	private final UserMapper userMapper;
 	private final UserFactory userFactory;
 	private final EmailService emailService;
 
@@ -39,24 +41,24 @@ public class AdminServiceImpl implements AdminService {
 	 * @return a BasicUserResponse containing the new admin's information.
 	 */
 	@Override
-	public BasicUserResponse addAdmin(AdminRequest request) {
+	public AdminResponse addAdmin(AdminRequest request) {
 		String firstname = request.firstname();
 		String lastname = request.lastname();
 		Username username = this.generators.generateUsername(firstname, lastname);
-		String password = this.generators.generatePassword();
+		Password password = this.generators.generatePassword(8);
 		User user = this.userFactory.createNewUser(username, password, RoleEnum.ADMIN);
 		Admin admin = Admin.builder()
 			.firstName(firstname)
 			.middleName(request.middleName())
 			.lastName(lastname)
-			.primaryEmail(request.primaryEmail())
+			.primaryEmail(request.primaryEmail().value())
 			.profilePictureUrl(request.profilePicture())
 			.user(user)
 			.build();
 		this.adminRepository.save(admin);
 		this.emailService.sendAccountCreatedEmail(username, password, request.primaryEmail());
 		log.info("INFO - New admin added with ID: {}", admin.getUser().getUsername());
-		return this.userUtil.getUserResponse(admin);
+		return this.userMapper.toAdminResponse(admin);
 	}
 
 }

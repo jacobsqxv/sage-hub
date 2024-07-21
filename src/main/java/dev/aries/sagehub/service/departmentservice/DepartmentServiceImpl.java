@@ -48,6 +48,12 @@ public class DepartmentServiceImpl implements DepartmentService {
 	@Override
 	public DepartmentResponse getDepartment(Long departmentId) {
 		Department department = this.globalUtil.loadDepartment(departmentId);
+		User loggedInUser = this.checks.currentlyLoggedInUser();
+		if (!this.checks.isAdmin(loggedInUser.getRole().getName())) {
+			department.setPrograms(department.getPrograms().stream()
+					.filter((program) -> program.getStatus() == Status.ACTIVE)
+					.toList());
+		}
 		return this.departmentMapper.toResponse(department);
 	}
 

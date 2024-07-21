@@ -1,10 +1,10 @@
 package dev.aries.sagehub.service.adminservice;
 
 import dev.aries.sagehub.dto.request.AdminRequest;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
+import dev.aries.sagehub.dto.response.AdminResponse;
 
 public interface AdminService {
 
-	BasicUserResponse addAdmin(AdminRequest request);
+	AdminResponse addAdmin(AdminRequest request);
 
 }
