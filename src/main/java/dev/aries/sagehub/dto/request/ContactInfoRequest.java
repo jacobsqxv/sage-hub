@@ -1,23 +1,20 @@
 package dev.aries.sagehub.dto.request;
 
 import dev.aries.sagehub.constant.Patterns;
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.PhoneNumber;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-
-import org.springframework.validation.annotation.Validated;
 
 import static dev.aries.sagehub.constant.ValidationMessage.INVALID_FORMAT;
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
-@Validated
 public record ContactInfoRequest(
-		@NotEmpty(message = "Email" + NOT_NULL)
-		@Pattern(regexp = Patterns.EMAIL, message = INVALID_FORMAT + "email")
-		String secondaryEmail,
-		@NotEmpty(message = "Phone number" + NOT_NULL)
-		@Pattern(regexp = Patterns.PHONE_NUMBER, message = INVALID_FORMAT + "phone number")
-		String phoneNumber,
+		@NotNull(message = "Email" + NOT_NULL)
+		Email secondaryEmail,
+		@NotNull(message = "Phone number" + NOT_NULL)
+		PhoneNumber phoneNumber,
 		@Valid
 		AddressUpdateRequest address,
 		@Pattern(regexp = Patterns.POSTAL_ADDRESS, message = INVALID_FORMAT + "postal address")

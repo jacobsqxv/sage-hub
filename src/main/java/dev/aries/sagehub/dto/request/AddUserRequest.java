@@ -1,38 +1,19 @@
 package dev.aries.sagehub.dto.request;
 
-import java.time.LocalDate;
-
-import dev.aries.sagehub.constant.Patterns;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
 
-import org.springframework.validation.annotation.Validated;
-
-import static dev.aries.sagehub.constant.ValidationMessage.DATE_OF_BIRTH;
-import static dev.aries.sagehub.constant.ValidationMessage.INVALID_FORMAT;
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
-@Validated
 public record AddUserRequest(
-		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "first name")
-		String firstname,
-		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "middle name")
-		String middleName,
-		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "last name")
-		@NotEmpty(message = "Last name" + NOT_NULL)
-		String lastname,
-		String profilePicture,
+		@NotNull(message = "Basic info" + NOT_NULL)
+		@Valid
+		BasicInfoRequest basicInfo,
+		@NotNull(message = "Contact info"  + NOT_NULL)
 		@Valid
 		ContactInfoRequest contactInfo,
-		@NotEmpty(message = "Title" + NOT_NULL)
-		String title,
-		@NotEmpty(message = "Marital status" + NOT_NULL)
-		String maritalStatus,
-		@NotEmpty(message = "Gender" + NOT_NULL)
-		String gender,
-		@Past(message = DATE_OF_BIRTH)
-		LocalDate dateOfBirth
+		@NotNull(message = "Emergency contact"  + NOT_NULL)
+		@Valid
+		EmergencyContactRequest emergencyContact
 ) {
 }
