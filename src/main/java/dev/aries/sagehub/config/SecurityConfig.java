@@ -41,7 +41,6 @@ public class SecurityConfig {
 
 	private static final String[] WHITELIST = {
 			"/api/v1/auth/**",
-			"/api/v1/applications/login",
 	};
 	private final UserDetailsService userDetailsService;
 	private final KeyUtils keyUtils;
