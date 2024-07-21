@@ -8,20 +8,29 @@ import dev.aries.sagehub.constant.ResponseMessage;
 import dev.aries.sagehub.dto.request.AuthRequest;
 import dev.aries.sagehub.dto.request.ResetPassword;
 import dev.aries.sagehub.dto.request.ResetPasswordRequest;
+import dev.aries.sagehub.dto.request.VoucherRequest;
 import dev.aries.sagehub.dto.response.AuthResponse;
 import dev.aries.sagehub.dto.response.AuthToken;
 import dev.aries.sagehub.dto.response.GenericResponse;
+import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.mapper.UserMapper;
+import dev.aries.sagehub.model.Admin;
+import dev.aries.sagehub.model.BaseUser;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Password;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.TokenRepository;
 import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.security.TokenService;
 import dev.aries.sagehub.service.emailservice.EmailService;
+import dev.aries.sagehub.service.voucherservice.VoucherService;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
+import dev.aries.sagehub.util.UserFactory;
 import dev.aries.sagehub.util.UserUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -58,11 +67,13 @@ public class AuthServiceImpl implements AuthService {
 	private final EmailService emailService;
 	private final Generators generator;
 	private final Checks checks;
+	private final UserFactory userFactory;
 	private final UserRepository userRepository;
 	private final TokenRepository tokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final UserMapper userMapper;
 	private static final Integer STATUS_OK = HttpStatus.OK.value();
+	private final VoucherService voucherService;
 
 	/**
 	 * {@inheritDoc}
@@ -71,13 +82,13 @@ public class AuthServiceImpl implements AuthService {
 	public AuthResponse authenticateUser(AuthRequest request) {
 		Integer countOfFailedAttempts;
 		Authentication authentication;
-		User user = this.userUtil.getUser(request.username().value());
+		User user = this.userUtil.getUser(request.username());
 		checkLockedAccount(user);
 		try {
 		authentication = this.daoAuthProvider
 			.authenticate(new UsernamePasswordAuthenticationToken(
-					request.username().value(), request.password()));
-		user = this.userUtil.getUser(authentication.getName());
+					request.username().value(), request.password().value()));
+		user = this.userUtil.getUser(new Username(authentication.getName()));
 		}
 		catch (BadCredentialsException ex) {
 			countOfFailedAttempts = user.getFailedLoginAttempts() + 1;
@@ -102,11 +113,27 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
+	public AuthResponse loginWithVoucher(VoucherRequest request) {
+		Username username = new Username(String.valueOf(request.serialNumber()));
+		Password password = new Password(request.pin());
+		if (!this.userUtil.userExists(username)) {
+			this.voucherService.verifyVoucher(request);
+			User user = this.userFactory.createNewUser(
+					username,
+					password, RoleEnum.APPLICANT);
+			this.userRepository.save(user);
+			log.info("INFO - New user with username {} created successfully", username);
+		}
+		AuthRequest authRequest = new AuthRequest(username, password);
+		return authenticateUser(authRequest);
+	}
+
+	@Override
 	public AuthResponse renewRefreshToken(String token) {
 		try {
 			Authentication authentication = this.jwtAuthProvider
 					.authenticate(new BearerTokenAuthenticationToken(token));
-			User user = this.userUtil.getUser(authentication.getName());
+			User user = this.userUtil.getUser(new Username(authentication.getName()));
 			AuthToken authToken = this.tokenService.generateToken(authentication);
 			this.tokenService.updateRefreshToken(user.getId(), token, authToken.refreshToken());
 			return new AuthResponse(
@@ -146,7 +173,7 @@ public class AuthServiceImpl implements AuthService {
 				.expiresAt(LocalDateTime.now().plusMinutes(15))
 				.build();
 		this.tokenRepository.save(token);
-		String recipient = getRecipient(user.getId());
+		Email recipient = new Email(getRecipient(user.getId()));
 		this.emailService.sendPasswordResetEmail(recipient, value);
 		log.info("INFO - Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
@@ -162,7 +189,7 @@ public class AuthServiceImpl implements AuthService {
 		}
 		user.setHashedPassword(this.passwordEncoder.encode(request.password()));
 		this.userRepository.save(user);
-		String recipient = getRecipient(user.getId());
+		Email recipient = new Email(getRecipient(user.getId()));
 		this.emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}
@@ -179,9 +206,12 @@ public class AuthServiceImpl implements AuthService {
 
 	private String getRecipient(Long userId) {
 		User user = this.userUtil.getUser(userId);
+		Object userInfo = this.userUtil.getUserInfo(userId);
 		if (this.checks.isAdmin(user.getRole().getName())) {
-			return this.userUtil.getBasicInfo(userId).primaryEmail();
+			return ((Admin) userInfo).getPrimaryEmail();
 		}
-		return this.userUtil.getBasicInfo(userId).secondaryEmail();
+		else {
+			return ((BaseUser) userInfo).getContactInfo().getSecondaryEmail();
+		}
 	}
 }

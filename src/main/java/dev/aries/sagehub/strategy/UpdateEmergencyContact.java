@@ -15,9 +15,9 @@ public class UpdateEmergencyContact implements UpdateStrategy<EmergencyContact, 
 	@Override
 	public EmergencyContact update(EmergencyContact entity, EmergencyContactRequest request) {
 		Optional.ofNullable(request.fullName()).ifPresent(entity::setFullName);
-		Optional.ofNullable(request.phoneNumber()).ifPresent(entity::setPhoneNumber);
+		Optional.ofNullable(request.phoneNumber().value()).ifPresent(entity::setPhoneNumber);
 		Optional.ofNullable(request.relationship()).ifPresent(entity::setRelationship);
-		Optional.ofNullable(request.email()).ifPresent(entity::setEmail);
+		Optional.ofNullable(request.email().value()).ifPresent(entity::setEmail);
 		Optional.ofNullable(request.occupation()).ifPresent(entity::setOccupation);
 		entity.setAddress(updateAddress(entity.getAddress(), request.address()));
 		return entity;

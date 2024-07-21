@@ -1,5 +1,7 @@
 package dev.aries.sagehub.service.emailservice;
 
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,10 @@ public class EmailServiceImpl implements EmailService {
 	private String baseUrl;
 
 	@Override
-	public void sendAccountCreatedEmail(Username username, String password, String recipient) {
+	public void sendAccountCreatedEmail(Username username, Password password, Email recipient) {
 		EmailDetails emailDetails = EmailDetails
 				.builder()
-				.username(username.value())
+				.username(username)
 				.password(password)
 				.recipient(recipient)
 				.template(EmailTemplate.ACCOUNT_CREATION)
@@ -29,8 +31,8 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
-	public void sendPasswordResetEmail(String recipient, String token) {
-		String passwordResetUrl = baseUrl + "auth/reset-password?token=";
+	public void sendPasswordResetEmail(Email recipient, String token) {
+		String passwordResetUrl = this.baseUrl + "auth/reset-password?token=";
 		EmailDetails emailDetails = EmailDetails
 				.builder()
 				.recipient(recipient)
@@ -41,7 +43,7 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
-	public void sendPasswordResetCompleteEmail(String recipient, String url) {
+	public void sendPasswordResetCompleteEmail(Email recipient, String url) {
 		EmailDetails emailDetails = EmailDetails
 				.builder()
 				.recipient(recipient)

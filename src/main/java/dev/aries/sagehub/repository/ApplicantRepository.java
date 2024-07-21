@@ -9,5 +9,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ApplicantRepository extends JpaRepository<Applicant, Long> {
 	Optional<Applicant> findByUserId(Long id);
 
-	boolean existsByIdAndUserId(Long applicationId, Long userId);
+	boolean existsByIdAndUserId(Long applicantId, Long userId);
+
+	boolean existsByUserId(Long userId);
+
+	boolean existsByUserIdAndResultsId(Long userId, Long resultsId);
 }

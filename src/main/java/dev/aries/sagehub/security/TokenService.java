@@ -12,6 +12,7 @@ import dev.aries.sagehub.dto.response.AuthToken;
 import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.TokenRepository;
 import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class TokenService {
 				.toList();
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer("SageHub")
+				.claim("type", TokenType.ACCESS_TOKEN.toString())
 				.issuedAt(now)
 				.expiresAt(now.plus(15, ChronoUnit.MINUTES))
 				.subject(authentication.getName())
@@ -60,12 +62,12 @@ public class TokenService {
 				.toList();
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer("SageHub")
+				.claim("type", TokenType.REFRESH_TOKEN.toString())
 				.issuedAt(now)
 				.expiresAt(now.plus(30, ChronoUnit.DAYS))
 				.subject(authentication.getName())
 				.claim("scope", authorities)
 				.build();
-
 		return this.refreshTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 	}
 
@@ -93,7 +95,7 @@ public class TokenService {
 		else {
 			refreshToken = generateRefreshToken(authentication);
 		}
-		User user = this.userUtil.getUser(authentication.getName());
+		User user = this.userUtil.getUser(new Username((authentication.getName())));
 		AuthToken token = new AuthToken(accessToken, refreshToken);
 		if (!refreshTokenExists(user.getId(), refreshToken)) {
 			Token newToken = Token.builder()

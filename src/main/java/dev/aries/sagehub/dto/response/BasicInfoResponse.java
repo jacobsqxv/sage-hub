@@ -6,6 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record BasicInfoResponse(
+		Long id,
 		String profilePictureUrl,
 		String title,
 		String fullName,

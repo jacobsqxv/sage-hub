@@ -2,19 +2,19 @@ package dev.aries.sagehub.strategy;
 
 import java.util.Optional;
 
-import dev.aries.sagehub.dto.request.ApplicationRequest;
+import dev.aries.sagehub.dto.request.BasicInfoRequest;
 import dev.aries.sagehub.enums.Gender;
 import dev.aries.sagehub.enums.MaritalStatus;
 import dev.aries.sagehub.enums.Title;
-import dev.aries.sagehub.model.Applicant;
+import dev.aries.sagehub.model.BasicInfo;
 
 import org.springframework.stereotype.Component;
 
 @Component
-public class UpdateApplicantBasicInfo implements UpdateStrategy<Applicant, ApplicationRequest> {
+public class UpdateBasicInfo implements UpdateStrategy<BasicInfo, BasicInfoRequest> {
 
 	@Override
-	public Applicant update(Applicant entity, ApplicationRequest request) {
+	public BasicInfo update(BasicInfo entity, BasicInfoRequest request) {
 		Optional.ofNullable(request.profilePicture()).ifPresent(entity::setProfilePictureUrl);
 		Optional.ofNullable(request.title()).map(Title::valueOf).ifPresent(entity::setTitle);
 		Optional.ofNullable(request.firstname()).ifPresent(entity::setFirstName);

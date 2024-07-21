@@ -1,7 +1,6 @@
 package dev.aries.sagehub.dto.response;
 
-public record BasicApplicationResponse(
-		Long id,
+public record BasicApplicantResponse(
 		Long applicantId,
 		Integer applyingForYear,
 		BasicInfoResponse basicInfo,

@@ -3,10 +3,12 @@ package dev.aries.sagehub.model;
 import java.util.Set;
 
 import dev.aries.sagehub.enums.ResultType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,8 +37,8 @@ public class ApplicantResult extends Auditing {
 	@Column(nullable = false)
 	private Integer year;
 	@Column(nullable = false)
-	private Integer indexNumber;
-	@OneToMany
+	private String indexNumber;
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "result", orphanRemoval = true)
 	private Set<SubjectScore> scores;
 
 	@Override

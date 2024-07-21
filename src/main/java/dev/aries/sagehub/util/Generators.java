@@ -3,7 +3,9 @@ package dev.aries.sagehub.util;
 import java.security.SecureRandom;
 import java.util.Calendar;
 
+import dev.aries.sagehub.constant.Patterns;
 import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.CourseRepository;
 import dev.aries.sagehub.repository.DepartmentRepository;
@@ -37,7 +39,8 @@ public class Generators {
 	private static final CharacterRule alphabetical = new CharacterRule(EnglishCharacterData.Alphabetical);
 	private final CourseRepository courseRepository;
 
-	public String generatePassword() {
+	public Password generatePassword(int length) {
+		length = Math.max(length, 8);
 		CharacterData specialChars = new CharacterData() {
 			public String getErrorCode() {
 				return UNEXPECTED_VALUE;
@@ -49,7 +52,11 @@ public class Generators {
 		};
 		CharacterRule splCharRule = new CharacterRule(specialChars);
 		PasswordGenerator passwordGenerator = new PasswordGenerator();
-		return passwordGenerator.generatePassword(12, digits, alphabetical, splCharRule);
+		String password;
+		do {
+			password = passwordGenerator.generatePassword(length, digits, alphabetical, splCharRule);
+		} while (!password.matches(Patterns.PASSWORD));
+		return new Password(password);
 	}
 
 	private String generateId(boolean isStudent) {

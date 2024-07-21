@@ -1,10 +1,12 @@
 package dev.aries.sagehub.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,7 +42,8 @@ public class Admin extends Auditing {
 	@Column(nullable = false)
 	private String primaryEmail;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(nullable = false)
 	private User user;
 
 	public String fullName() {

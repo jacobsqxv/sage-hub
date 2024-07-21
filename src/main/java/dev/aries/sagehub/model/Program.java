@@ -9,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -44,7 +45,7 @@ public class Program extends Auditing {
 	private Integer duration;
 	@Column(nullable = false)
 	private Integer cutOff;
-	@OneToMany(orphanRemoval = true)
+	@OneToMany(mappedBy = "program", orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<ProgramCourse> courses;
 	@Column(nullable = false)

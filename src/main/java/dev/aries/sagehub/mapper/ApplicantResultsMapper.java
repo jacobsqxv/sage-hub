@@ -18,7 +18,7 @@ public class ApplicantResultsMapper {
 		return new ApplicantResultsResponse(
 				applicantResult.getId(),
 				applicantResult.getSchoolName(),
-				applicantResult.getType().getValue(),
+				applicantResult.getType().toString(),
 				applicantResult.getYear(),
 				applicantResult.getIndexNumber(),
 				applicantResult.getScores().stream()
@@ -32,7 +32,7 @@ public class ApplicantResultsMapper {
 				.schoolName(applicantResult.schoolName())
 				.type(ResultType.valueOf(applicantResult.resultType().toUpperCase()))
 				.year(applicantResult.year())
-				.indexNumber(applicantResult.indexNumber())
+				.indexNumber(applicantResult.indexNumber().value())
 				.scores(applicantResult.subjectScores().stream()
 						.map(this.subjectScoreMapper::toSubjectScore)
 						.collect(Collectors.toSet()))

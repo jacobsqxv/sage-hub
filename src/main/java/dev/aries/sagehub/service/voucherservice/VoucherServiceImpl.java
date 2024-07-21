@@ -14,6 +14,7 @@ import dev.aries.sagehub.enums.VoucherStatus;
 import dev.aries.sagehub.mapper.VoucherMapper;
 import dev.aries.sagehub.model.AcademicYear;
 import dev.aries.sagehub.model.Voucher;
+import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.repository.AcademicYearRepository;
 import dev.aries.sagehub.repository.VoucherRepository;
 import dev.aries.sagehub.util.Generators;
@@ -42,10 +43,10 @@ public class VoucherServiceImpl implements VoucherService {
 		List<Voucher> vouchers = new ArrayList<>();
 		for (int i = 0; i < request.quantity(); i++) {
 			Long serialNumber = this.generators.generateUniqueId(true);
-			String pin = this.generators.generateToken(10);
+			Password pin = this.generators.generatePassword(8);
 			vouchers.add(Voucher.builder()
 					.serialNumber(serialNumber)
-					.pin(pin)
+					.pin(pin.value())
 					.academicYear(year)
 					.status(VoucherStatus.ACTIVE)
 					.build());

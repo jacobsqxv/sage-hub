@@ -9,6 +9,8 @@ import dev.aries.sagehub.model.AcademicYear;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.Role;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.AcademicYearRepository;
 import dev.aries.sagehub.repository.AdminRepository;
@@ -17,7 +19,6 @@ import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserFactory;
-import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +33,6 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 
 	private final RoleRepository roleRepository;
 	private final AdminRepository adminRepository;
-	private final UserUtil userUtil;
 	private final UserFactory userFactory;
 	private final UserRepository userRepository;
 	private final Generators generators;
@@ -82,18 +82,19 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 		String firstName = "Super";
 		String lastName = "Admin";
 		Username username = this.generators.generateUsername(firstName, lastName);
-		String password = this.generators.generatePassword();
+		Password password = this.generators.generatePassword(8);
+		Email email = new Email("sagehub.superadmin@mockinbox.com");
 		User user = this.userFactory.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
 		Admin superAdmin = Admin.builder()
 				.firstName(firstName)
 				.lastName(lastName)
-				.primaryEmail("sagehub.superadmin@mockinbox.com")
+				.primaryEmail(email.value())
 				.profilePictureUrl("https://www.gravatar.com/avatar.jpg")
 				.user(user)
 				.build();
 		this.adminRepository.save(superAdmin);
-		this.emailService.sendAccountCreatedEmail(username, password, superAdmin.getPrimaryEmail());
-		log.info("INFO - Super admin added with username: {} and password: {}", username, password);
+		this.emailService.sendAccountCreatedEmail(username, password, email);
+		log.info("INFO - Super admin added:: username: {} | password: {}", username.value(), password.value());
 	}
 
 	private void checkSuperAdmin() {

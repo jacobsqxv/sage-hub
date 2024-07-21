@@ -32,7 +32,7 @@ public class User extends Auditing {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(unique = true, updatable = false, nullable = false)
+	@Column(unique = true, nullable = false)
 	private String username;
 	@Column(nullable = false)
 	private String hashedPassword;

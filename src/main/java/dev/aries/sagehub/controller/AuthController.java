@@ -3,6 +3,7 @@ package dev.aries.sagehub.controller;
 import dev.aries.sagehub.dto.request.AuthRequest;
 import dev.aries.sagehub.dto.request.ResetPassword;
 import dev.aries.sagehub.dto.request.ResetPasswordRequest;
+import dev.aries.sagehub.dto.request.VoucherRequest;
 import dev.aries.sagehub.dto.response.AuthResponse;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.service.authservice.AuthService;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +29,12 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthRequest request) {
 		return ResponseEntity.ok(this.authService.authenticateUser(request));
+	}
+
+	@PostMapping("/voucher-login")
+	@PreAuthorize("isAnonymous()")
+	public ResponseEntity<AuthResponse> loginWithVoucher(@RequestBody @Valid VoucherRequest request) {
+		return ResponseEntity.ok(this.authService.loginWithVoucher(request));
 	}
 
 	@PostMapping("/refresh-token")
