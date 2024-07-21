@@ -1,7 +1,7 @@
 package dev.aries.sagehub.enums;
 
 /**
- * Enum {@code ApplicationStatus} represents the various stages an application can be in
+ * Enum {@code ApplicantStatus} represents the various stages an application can be in
  * within the application process. It is used to track the progress and current state
  * of an application through the system's workflow.
  * <p>States include:</p>
@@ -13,7 +13,7 @@ package dev.aries.sagehub.enums;
  * </ul>
  * @author Jacobs Agyei
  */
-public enum ApplicationStatus {
+public enum ApplicantStatus {
 	/**
 	 * This represents the pending state.
 	 */
