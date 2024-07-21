@@ -98,7 +98,10 @@ public final class ExceptionConstants {
 	 * Message for key generation failure.
 	 */
 	public static final String KEY_GENERATION_FAILED = "Failed to generate key pair";
-
+	/**
+	 * Message for entity already exists.
+	 */
+	public static final String ALREADY_EXISTS = "% already exists";
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.
