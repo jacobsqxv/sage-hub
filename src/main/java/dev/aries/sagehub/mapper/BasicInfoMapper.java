@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class BasicInfoMapper {
 	public BasicInfoResponse toBasicInfoResponse(BasicInfo basicInfo) {
 		return new BasicInfoResponse(
+				basicInfo.getId(),
 				basicInfo.getProfilePictureUrl(),
 				basicInfo.getTitle().toString(),
 				basicInfo.fullName(),
