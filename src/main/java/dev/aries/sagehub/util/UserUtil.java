@@ -1,24 +1,14 @@
 package dev.aries.sagehub.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
-import java.util.function.Function;
 
-import dev.aries.sagehub.dto.response.BasicInfoResponse;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
-import dev.aries.sagehub.model.Admin;
-import dev.aries.sagehub.model.BasicInfo;
-import dev.aries.sagehub.model.ContactInfo;
-import dev.aries.sagehub.model.EmergencyContact;
 import dev.aries.sagehub.model.Role;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
-import dev.aries.sagehub.strategy.response.UserResponseStrategy;
-import dev.aries.sagehub.strategy.response.UserResponseStrategyConfig;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,27 +16,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
-import static dev.aries.sagehub.constant.ExceptionConstants.NO_INFO_FOUND;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class UserUtil {
 
-	private static final String CONTACT = "contact";
-	private static final String EMERGENCY_CONTACT = "emergency contact";
 	private static final String USER = "User";
-	private static final String GET_CONTACT_INFO = "getContactInfo";
 	private final UserRepository userRepository;
-	private final UserResponseStrategyConfig userResponseStratConfig;
 	private final AdminRepository adminRepository;
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
-	private final ApplicantRepository applicationRepository;
+	private final ApplicantRepository applicantRepository;
 
-	public User getUser(String username) {
-		log.info("INFO - Getting user with username: {}", username);
-		return this.userRepository.findByUsername(username)
+	public User getUser(Username username) {
+		log.info("INFO - Getting user with username: {}", username.value());
+		return this.userRepository.findByUsername(username.value())
 				.orElseThrow(
 						() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
 	}
@@ -55,6 +40,11 @@ public class UserUtil {
 		log.info("INFO - Getting user with user ID: {}", id);
 		return this.userRepository.findById(id).orElseThrow(
 				() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
+	}
+
+	public boolean userExists(Username username) {
+		return this.userRepository
+				.existsByUsername(username.value());
 	}
 
 	public Object getUserInfo(Long id) {
@@ -70,121 +60,9 @@ public class UserUtil {
 				return this.studentRepository.findByUserId(id);
 			}
 			case APPLICANT -> {
-				return this.applicationRepository.findByUserId(id);
+				return this.applicantRepository.findByUserId(id);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}
 	}
-
-	public BasicUserResponse getBasicInfo(Object userInfo) {
-		return extractUserFromOptional(userInfo)
-				.map(this::getUserResponseFromUserObject)
-				.orElseThrow(() -> new IllegalArgumentException(String.format(NOT_FOUND, USER)));
-	}
-
-	private Optional<Object> extractUserFromOptional(Object userInfo) {
-		if (userInfo instanceof Optional<?> optional) {
-			return (Optional<Object>) optional;
-		}
-		return Optional.empty();
-	}
-
-	private BasicUserResponse getUserResponseFromUserObject(Object user) {
-		UserResponseStrategy strategy = this.userResponseStratConfig.responseStrategies().get(user.getClass());
-		if (strategy != null) {
-			return strategy.getUserResponse(user);
-		}
-		else {
-			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-		}
-	}
-
-	public <T> BasicUserResponse getUserResponse(T user) {
-		if (user == null) {
-			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-		}
-		return switch (user) {
-			case BasicInfo basicInfo -> handleOtherUser(basicInfo);
-			case Admin admin -> handleAdminUser(admin);
-			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-		};
-	}
-
-	private BasicUserResponse handleAdminUser(Admin admin) {
-		User user = admin.getUser();
-		BasicUserResponse.BasicUserResponseBuilder responseBuilder = BasicUserResponse.builder()
-				.basicInfo(BasicInfoResponse.builder()
-						.fullName(admin.fullName())
-						.profilePictureUrl(admin.getProfilePictureUrl())
-						.build());
-		buildCommonBasicInfo(user, responseBuilder);
-		return responseBuilder.build();
-	}
-
-	private BasicUserResponse handleOtherUser(BasicInfo basicInfo) {
-		User user = basicInfo.getUser();
-		BasicUserResponse.BasicUserResponseBuilder responseBuilder = BasicUserResponse.builder()
-				.basicInfo(BasicInfoResponse.builder()
-						.fullName(basicInfo.fullName())
-						.profilePictureUrl(basicInfo.getProfilePictureUrl())
-						.title(basicInfo.getTitle().toString())
-						.gender(basicInfo.getGender().toString())
-						.maritalStatus(basicInfo.getMaritalStatus().toString())
-						.dateOfBirth(basicInfo.getDateOfBirth())
-						.build());
-		buildCommonBasicInfo(user, responseBuilder);
-		getCommonResponse(basicInfo, responseBuilder);
-		return responseBuilder.build();
-	}
-
-	public <T> T loadUserInfoGeneric(Object userInfo, Class<T> infoClass) {
-		return loadUserInfo(userInfo, (user) -> {
-			try {
-				return infoClass.cast(user.getClass().getMethod(GET_CONTACT_INFO).invoke(user));
-			}
-			catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-				throw new IllegalArgumentException(ex);
-			}
-		}, (infoClass == ContactInfo.class) ? CONTACT : EMERGENCY_CONTACT);
-	}
-
-	public ContactInfo loadContactInfo(Object userInfo) {
-		return loadUserInfoGeneric(userInfo, ContactInfo.class);
-	}
-
-	public EmergencyContact loadEmergencyContact(Object userInfo) {
-		return loadUserInfoGeneric(userInfo, EmergencyContact.class);
-	}
-	private void buildCommonBasicInfo(User user, BasicUserResponse.BasicUserResponseBuilder response) {
-		response.userId(user.getId())
-				.username(user.getUsername())
-				.status(user.getStatus().toString())
-				.role(user.getRole().getName().name());
-	}
-
-	private <T> void getCommonResponse(T user, BasicUserResponse.BasicUserResponseBuilder response) {
-		try {
-			ContactInfo linkedContactInfo = (ContactInfo) user.getClass()
-					.getMethod(GET_CONTACT_INFO).invoke(user);
-			response.secondaryEmail(linkedContactInfo.getSecondaryEmail());
-			response.primaryEmail((String) user.getClass()
-					.getMethod("getPrimaryEmail").invoke(user));
-			response.memberId((Long) user.getClass().getMethod("getId").invoke(user));
-		}
-		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-			throw new IllegalStateException(ex.getMessage());
-		}
-	}
-
-	private <T> T loadUserInfo(Object userInfo, Function<Object, T> mapper, String exceptionMessage) {
-		if (!(userInfo instanceof Optional<?> optional) || optional.isEmpty()) {
-			throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
-		}
-		Object user = optional.get();
-		if (user instanceof Admin) {
-			throw new EntityNotFoundException(String.format(NO_INFO_FOUND, exceptionMessage));
-		}
-		return mapper.apply(user);
-	}
-
 }
