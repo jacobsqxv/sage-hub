@@ -6,15 +6,15 @@ import dev.aries.sagehub.constant.ValidationMessage;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public record Email(String value) {
-	public Email {
-		if (!value.matches(Patterns.EMAIL)) {
-			throw new IllegalArgumentException(ValidationMessage.INVALID_FORMAT + "email");
+public record IDNumber(String value) {
+	public IDNumber {
+		if (!value.matches(Patterns.ID)) {
+			throw new IllegalArgumentException(ValidationMessage.INVALID_FORMAT + "ID number");
 		}
 	}
 
 	@JsonCreator
-	public static Email of(String value) {
-		return new Email(value);
+	public static IDNumber of(String value) {
+		return new IDNumber(value);
 	}
 }

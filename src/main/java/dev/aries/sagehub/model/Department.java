@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,7 +33,7 @@ public class Department extends Auditing {
 	private String code;
 	@Column(unique = true, nullable = false, updatable = false)
 	private String name;
-	@OneToMany(orphanRemoval = true)
+	@OneToMany(mappedBy = "department", orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<Program> programs;
 	@Column(nullable = false)

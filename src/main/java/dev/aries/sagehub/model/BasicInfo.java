@@ -6,8 +6,12 @@ import dev.aries.sagehub.enums.Gender;
 import dev.aries.sagehub.enums.MaritalStatus;
 import dev.aries.sagehub.enums.Title;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -21,8 +25,11 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@MappedSuperclass
+@Entity
 public class BasicInfo extends Auditing {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 	@Column(nullable = false)
 	private String profilePictureUrl;
 
@@ -48,9 +55,6 @@ public class BasicInfo extends Auditing {
 
 	@Column(nullable = false)
 	private LocalDate dateOfBirth;
-
-	@OneToOne
-	private User user;
 
 	public String fullName() {
 		return getFullName(this.firstName, this.middleName, this.lastName);
