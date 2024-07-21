@@ -1,7 +1,7 @@
 package dev.aries.sagehub.controller;
 
 import dev.aries.sagehub.dto.request.AdminRequest;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
+import dev.aries.sagehub.dto.response.AdminResponse;
 import dev.aries.sagehub.service.adminservice.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class AdminController {
 
 	@PostMapping
 	@PreAuthorize("hasAuthority('SCOPE_SUPER_ADMIN')")
-	public ResponseEntity<BasicUserResponse> addAdmin(@RequestBody @Valid AdminRequest request) {
+	public ResponseEntity<AdminResponse> addAdmin(@RequestBody @Valid AdminRequest request) {
 		return ResponseEntity.ok(this.adminService.addAdmin(request));
 	}
 }
