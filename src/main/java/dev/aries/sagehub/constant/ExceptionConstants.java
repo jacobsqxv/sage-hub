@@ -101,7 +101,7 @@ public final class ExceptionConstants {
 	/**
 	 * Message for entity already exists.
 	 */
-	public static final String ALREADY_EXISTS = "% already exists";
+	public static final String ALREADY_EXISTS = "%s already exists";
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.
