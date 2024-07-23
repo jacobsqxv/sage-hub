@@ -1,6 +1,7 @@
 package dev.aries.sagehub.model;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import dev.aries.sagehub.enums.AccountStatus;
 import jakarta.persistence.Column;
@@ -36,7 +37,8 @@ public class User extends Auditing {
 	private String username;
 	@Column(nullable = false)
 	private String hashedPassword;
-
+	@Column(nullable = false, unique = true, updatable = false)
+	private UUID clientId;
 	@ManyToOne
 	@JoinColumn(name = "role_id", nullable = false)
 	private Role role;

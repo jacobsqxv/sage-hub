@@ -1,6 +1,7 @@
 package dev.aries.sagehub.repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import dev.aries.sagehub.model.User;
 
@@ -12,4 +13,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	boolean existsByUsername(String username);
 
+	boolean existsByClientId(UUID clientId);
 }

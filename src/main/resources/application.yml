@@ -33,3 +33,9 @@ access-token:
 refresh-token:
   private: ${REFRESH_TOKEN_PRIVATE_KEY_PATH}
   public: ${REFRESH_TOKEN_PUBLIC_KEY_PATH}
+
+rate:
+  limiter:
+    max-requests: ${RATE_LIMITER_MAX_REQUESTS}
+    time-interval: ${RATE_LIMITER_TIME_INTERVAL}
+    reset-interval: ${RATE_LIMITER_RESET_INTERVAL}

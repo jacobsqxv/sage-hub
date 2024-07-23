@@ -103,6 +103,10 @@ public final class ExceptionConstants {
 	 */
 	public static final String ALREADY_EXISTS = "%s already exists";
 	/**
+	 * Message for rate limit exceeded.
+	 */
+	public static final String RATE_LIMIT_EXCEEDED = "Too many requests. Try again in 30 minutes";
+	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.
 	 */

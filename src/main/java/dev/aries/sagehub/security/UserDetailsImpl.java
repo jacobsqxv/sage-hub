@@ -2,6 +2,7 @@ package dev.aries.sagehub.security;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import dev.aries.sagehub.model.User;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,10 @@ public class UserDetailsImpl implements UserDetails {
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return List.of(new SimpleGrantedAuthority(String.valueOf(this.user.getRole().getName())));
+	}
+
+	public UUID getClientId() {
+		return this.user.getClientId();
 	}
 
 	@Override
