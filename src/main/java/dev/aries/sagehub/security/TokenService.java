@@ -39,36 +39,33 @@ public class TokenService {
 	private final UserUtil userUtil;
 
 	private String generateAccessToken(Authentication authentication) {
-		Instant now = Instant.now();
-		List<String> authorities = authentication.getAuthorities().stream()
-				.map(GrantedAuthority::getAuthority)
-				.toList();
-		JwtClaimsSet claims = JwtClaimsSet.builder()
-				.issuer("SageHub")
-				.claim("type", TokenType.ACCESS_TOKEN.toString())
-				.issuedAt(now)
-				.expiresAt(now.plus(15, ChronoUnit.MINUTES))
-				.subject(authentication.getName())
-				.claim("scope", authorities)
-				.build();
-
-		return this.accessTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+		return createToken(authentication, TokenType.ACCESS_TOKEN, this.accessTokenEncoder);
 	}
 
 	private String generateRefreshToken(Authentication authentication) {
+		return createToken(authentication, TokenType.REFRESH_TOKEN, this.refreshTokenEncoder);
+	}
+
+	private String createToken(Authentication authentication, TokenType tokenType, JwtEncoder encoder) {
 		Instant now = Instant.now();
 		List<String> authorities = authentication.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
 				.toList();
+		User user = this.userUtil.getUser(new Username((authentication.getName())));
+		Duration expirationDuration = tokenType.equals(TokenType.ACCESS_TOKEN)
+				? Duration.ofMinutes(15)
+				: Duration.ofDays(30);
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer("SageHub")
-				.claim("type", TokenType.REFRESH_TOKEN.toString())
+				.claim("type", tokenType.toString())
+				.claim("clientId", user.getClientId())
 				.issuedAt(now)
-				.expiresAt(now.plus(30, ChronoUnit.DAYS))
+				.expiresAt(now.plus(expirationDuration))
 				.subject(authentication.getName())
 				.claim("scope", authorities)
 				.build();
-		return this.refreshTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
+		return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 	}
 
 	public AuthToken generateToken(Authentication authentication) {
@@ -79,6 +76,7 @@ public class TokenService {
 		}
 		String accessToken = generateAccessToken(authentication);
 		String refreshToken;
+		log.info("INFO - Principal type: {}", authentication.getPrincipal().getClass());
 		log.info("INFO - Authentication credentials: {}", authentication.getCredentials().getClass());
 		if (authentication.getCredentials() instanceof Jwt jwt) {
 			Instant now = Instant.now();
