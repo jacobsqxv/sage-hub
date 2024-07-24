@@ -1,7 +1,5 @@
 package dev.aries.sagehub.mapper;
 
-import java.util.stream.Collectors;
-
 import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
 import dev.aries.sagehub.enums.ResultType;
@@ -23,7 +21,7 @@ public class ApplicantResultsMapper {
 				applicantResult.getIndexNumber(),
 				applicantResult.getScores().stream()
 						.map(this.subjectScoreMapper::toSubjectScoreResponse)
-						.collect(Collectors.toSet())
+						.toList()
 		);
 	}
 
@@ -35,7 +33,7 @@ public class ApplicantResultsMapper {
 				.indexNumber(applicantResult.indexNumber().value())
 				.scores(applicantResult.subjectScores().stream()
 						.map(this.subjectScoreMapper::toSubjectScore)
-						.collect(Collectors.toSet()))
+						.toList())
 				.build();
 	}
 }
