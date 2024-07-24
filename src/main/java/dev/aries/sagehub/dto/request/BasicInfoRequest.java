@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import dev.aries.sagehub.constant.Patterns;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 
@@ -29,7 +30,7 @@ public record BasicInfoRequest(
 		@NotEmpty(message = "Gender" + NOT_NULL)
 		String gender,
 		@Past(message = DATE_OF_BIRTH)
-		@NotEmpty(message = "Date of birth" + NOT_NULL)
+		@NotNull(message = "Date of birth" + NOT_NULL)
 		LocalDate dateOfBirth
 ) {
 }
