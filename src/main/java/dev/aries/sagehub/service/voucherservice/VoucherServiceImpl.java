@@ -99,7 +99,8 @@ public class VoucherServiceImpl implements VoucherService {
 	private void checkValidity(Voucher voucher) {
 		TokenStatus status = voucher.getStatus();
 		if (!status.equals(TokenStatus.ACTIVE) && !status.equals(TokenStatus.USED)) {
-			throw new IllegalArgumentException(ExceptionConstants.VOUCHER_INVALID);
+			throw new IllegalArgumentException(
+					String.format(ExceptionConstants.INVALID_TOKEN, VOUCHER));
 		}
 	}
 }

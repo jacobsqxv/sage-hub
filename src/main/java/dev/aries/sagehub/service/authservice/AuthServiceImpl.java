@@ -204,7 +204,8 @@ public class AuthServiceImpl implements AuthService {
 			throw new EntityNotFoundException(String.format(ExceptionConstants.NOT_FOUND, "Token"));
 		}
 		if (!token.getStatus().equals(TokenStatus.ACTIVE)) {
-			throw new IllegalArgumentException(ExceptionConstants.EXPIRED_TOKEN);
+			throw new IllegalArgumentException(
+					String.format(ExceptionConstants.INVALID_TOKEN, "Token"));
 		}
 	}
 
