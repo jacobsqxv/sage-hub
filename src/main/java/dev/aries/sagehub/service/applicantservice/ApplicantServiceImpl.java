@@ -52,10 +52,10 @@ public class ApplicantServiceImpl implements ApplicantService {
 		this.checks.checkApplicantExists(user.getId());
 		Voucher voucher = this.applicantUtil.getVoucher(Long.valueOf(user.getUsername()));
 		this.applicantUtil.updateVoucherStatus(voucher);
-		BasicInfo basicInfo = this.basicInfoInterface.addBasicInfo(request.basicInfo());
-		ContactInfo contactInfo = this.contactInfoInterface.addContactInfo(request.contactInfo());
+		BasicInfo basicInfo = this.basicInfoInterface.addBasicInfo(request.basicInfo(), user.getId());
+		ContactInfo contactInfo = this.contactInfoInterface.addContactInfo(request.contactInfo(), user.getId());
 		EmergencyContact emergencyContact = this.emergencyContactInterface
-				.addEmergencyContact(request.guardianInfo());
+				.addEmergencyContact(request.guardianInfo(), user.getId());
 		Email primaryEmail = this.generators.generateUserEmail(user.getUsername(), "STUDENT");
 		Applicant applicant = Applicant.builder()
 				.id(voucher.getSerialNumber())

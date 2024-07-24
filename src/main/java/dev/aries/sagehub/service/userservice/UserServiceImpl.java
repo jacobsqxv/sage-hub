@@ -28,6 +28,7 @@ import dev.aries.sagehub.service.contactinfoservice.ContactInfoInterface;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.service.emgcontactservice.EmergencyContactInterface;
 import dev.aries.sagehub.util.Checks;
+import dev.aries.sagehub.util.EmailUtil;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserFactory;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,7 @@ public class UserServiceImpl implements UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final Generators generators;
 	private final EmailService emailService;
+	private final EmailUtil emailUtil;
 	private final ContactInfoInterface contactInfoInterface;
 	private final EmergencyContactInterface emgContactInterface;
 	private final BasicInfoInterface basicInfoInterface;
@@ -84,42 +86,47 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional
 	public UserResponse addFacultyMember(AddUserRequest request, String role) {
+		Username username = this.generators.generateUsername(
+				request.basicInfo().firstname(), request.basicInfo().lastname());
+		Password password = this.generators.generatePassword(8);
+		User user = this.userFactory.createNewUser(username, password, RoleEnum.valueOf(role));
+		this.userRepository.save(user);
 		switch (role) {
 			case "STUDENT" -> {
-				Student newStudent = (Student) buildInfo(request, role);
+				Student newStudent = (Student) buildInfo(user, request, role);
 				log.info("INFO - Saving new student with ID: {}", newStudent.getId());
 				this.checks.checkStudentExists(newStudent.getId());
 				this.studentRepository.save(newStudent);
+				this.sendEmail(user.getId(), username, password);
 				return this.userMapper.toUserResponse(newStudent);
 			}
 			case "STAFF" -> {
-				Staff newStaff = (Staff) buildInfo(request, role);
+				Staff newStaff = (Staff) buildInfo(user, request, role);
 				log.info("INFO - Saving new staff with ID: {}", newStaff.getId());
 				this.checks.checkStaffExists(newStaff.getId());
 				this.staffRepository.save(newStaff);
+				this.sendEmail(user.getId(), username, password);
 				return this.userMapper.toUserResponse(newStaff);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));
 		}
-
 	}
 	/**
 	 * This method builds a BaseUser object for a new user.
 	 * It sets the basic info, contact info, emergency contact, id, and primary email.
 	 * @param request the request containing the user information.
 	 * @param role    the role of the new user (either "STUDENT" or "STAFF").
+	 * @param user   the user object to be associated with the new user.
 	 * @return a BaseUser object built with the provided role and request.
 	 * @throws IllegalArgumentException if the role is not "STUDENT" or "STAFF".
 	 */
-	private BaseUser buildInfo(AddUserRequest request, String role) {
-		Username username = this.generators.generateUsername(
-				request.basicInfo().firstname(), request.basicInfo().lastname());
-		Password password = this.generators.generatePassword(8);
-		User user = this.userFactory.createNewUser(username, password, RoleEnum.valueOf(role));
-		BasicInfo basicInfo = this.basicInfoInterface.addBasicInfo(request.basicInfo());
-		ContactInfo contactInfo = this.contactInfoInterface.addContactInfo(request.contactInfo());
+	private BaseUser buildInfo(User user, AddUserRequest request, String role) {
+		log.info("INFO - User ID: {}", user.getId());
+		Long userId = user.getId();
+		BasicInfo basicInfo = this.basicInfoInterface.addBasicInfo(request.basicInfo(), userId);
+		ContactInfo contactInfo = this.contactInfoInterface.addContactInfo(request.contactInfo(), userId);
 		EmergencyContact emergencyContact = this.emgContactInterface
-				.addEmergencyContact(request.emergencyContact());
+				.addEmergencyContact(request.emergencyContact(), userId);
 		Email primaryEmail = this.generators.generateUserEmail(user.getUsername(), role);
 		Long id = this.generators.generateUniqueId(role.equals("STUDENT"));
 		BaseUser.BaseUserBuilder<?, ?> builder = (role.equals("STUDENT") ? Student.builder() : Staff.builder())
@@ -129,9 +136,12 @@ public class UserServiceImpl implements UserService {
 				.contactInfo(contactInfo)
 				.emergencyContact(emergencyContact)
 				.user(user);
-		Email recipient = new Email(contactInfo.getSecondaryEmail());
-		this.emailService.sendAccountCreatedEmail(username, password, recipient);
-		log.info("INFO - New user added with username: {} and password: {}", username, password);
 		return builder.build();
+	}
+
+	private void sendEmail(Long userId, Username username, Password password) {
+		Email recipient = this.emailUtil.getRecipient(userId);
+		this.emailService.sendAccountCreatedEmail(username, password, recipient);
+		log.info("INFO - User added:: username: {} | password: {}", username.value(), password.value());
 	}
 }
