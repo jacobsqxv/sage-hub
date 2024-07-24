@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.aries.sagehub.exception.EmailSendFailureException;
 import dev.aries.sagehub.service.emailservice.EmailDetails;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -31,14 +32,14 @@ public class EmailUtil {
 	@Value("${mailgun.domain}")
 	private String mailgunDomain;
 
-	public boolean sendEmail(EmailDetails emailDetails) {
+	public void sendEmail(EmailDetails emailDetails) {
 		ClientConfig clientConfig = new ClientConfig();
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("api", this.mailgunApiKey);
 		clientConfig.register(feature);
 
 		Form formData = new Form();
 		String variables = createDynamicVariables(emailDetails);
-		formData.param("from", "SageHub <" + mailgunFrom + ">");
+		formData.param("from", "SageHub <" + this.mailgunFrom + ">");
 		formData.param("to", emailDetails.recipient().value());
 		formData.param("subject", emailDetails.template().getSubject());
 		formData.param("template", emailDetails.template().getName());
@@ -46,18 +47,18 @@ public class EmailUtil {
 
 		try (Client client = ClientBuilder.newClient(clientConfig)) {
 			WebTarget webResource = client.target(this.mailgunDomain);
-			log.debug("INFO - Sending email to {}", emailDetails.recipient());
+			log.debug("INFO - Sending email to {}", emailDetails.recipient().value());
 			try (Response response = webResource.request(MediaType.APPLICATION_FORM_URLENCODED)
 					.post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED))) {
 				if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
 					log.debug("INFO - Email sent successfully to {}",
 							emailDetails.recipient().value());
-					return true;
 				}
 				else {
-					log.error("ERROR - Failed to send email to {}",
-							emailDetails.recipient().value());
-					return false;
+					// Log error response from Mailgun
+					log.error("ERROR - Failed to send email:: Cause: {}",
+							response.readEntity(String.class));
+					throw new EmailSendFailureException();
 				}
 			}
 		}
