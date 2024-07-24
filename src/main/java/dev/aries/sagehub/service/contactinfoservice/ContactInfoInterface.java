@@ -14,9 +14,10 @@ public interface ContactInfoInterface {
 	/**
 	 * Adds new contact information for a user.
 	 * @param request the request containing the new contact information.
+	 * @param userId  the ID of the user.
 	 * @return a ContactInfo containing the updated contact information.
 	 */
-	ContactInfo addContactInfo(ContactInfoRequest request);
+	ContactInfo addContactInfo(ContactInfoRequest request, Long userId);
 	/**
 	 * Updates the contact information of a user.
 	 * @param id      the ID of the contact info.

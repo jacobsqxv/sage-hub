@@ -16,18 +16,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/users/basic-info")
+@RequestMapping("api/v1/users/{user-id}/basic-info")
 public class BasicInfoController {
 	private final BasicInfoInterface basicInfoService;
 
-	@GetMapping("{basic-info-id}")
-	public ResponseEntity<BasicInfoResponse> getBasicInfo(@PathVariable("basic-info-id") Long id) {
+	@GetMapping
+	public ResponseEntity<BasicInfoResponse> getBasicInfo(@PathVariable("user-id") Long id) {
 		return ResponseEntity.ok(this.basicInfoService.getBasicInfo(id));
 	}
 
-	@PutMapping("{basic-info-id}")
+	@PutMapping
 	public ResponseEntity<BasicInfoResponse> updateBasicInfo(
-			@PathVariable("basic-info-id") Long id, @RequestBody @Valid BasicInfoRequest request) {
+			@PathVariable("user-id") Long id, @RequestBody @Valid BasicInfoRequest request) {
 		return ResponseEntity.ok(this.basicInfoService.updateBasicInfo(id, request));
 	}
 }

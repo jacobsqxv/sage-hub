@@ -16,19 +16,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/users/emergency-contact")
+@RequestMapping("api/v1/users/{user-id}/emergency-contact")
 public class EmergencyContactController {
 	private final EmergencyContactInterface emergencyContactService;
 
-	@GetMapping("{emergency-contact-id}")
+	@GetMapping
 	public ResponseEntity<EmergencyContactResponse> getEmergencyContact(
-			@PathVariable("emergency-contact-id") Long id) {
+			@PathVariable("user-id") Long id) {
 		return ResponseEntity.ok(this.emergencyContactService.getEmergencyContact(id));
 	}
 
-	@PutMapping("{emergency-contact-id}")
+	@PutMapping
 	public ResponseEntity<EmergencyContactResponse> updateEmergencyContact(
-			@PathVariable("emergency-contact-id") Long id,
+			@PathVariable("user-id") Long id,
 			@RequestBody @Valid EmergencyContactRequest request) {
 		return ResponseEntity.ok(this.emergencyContactService.updateEmergencyContact(id, request));
 	}
