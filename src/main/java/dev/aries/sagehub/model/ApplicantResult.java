@@ -1,7 +1,8 @@
 package dev.aries.sagehub.model;
 
-import java.util.Set;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.aries.sagehub.enums.ResultType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,7 +40,8 @@ public class ApplicantResult extends Auditing {
 	@Column(nullable = false)
 	private String indexNumber;
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "result", orphanRemoval = true)
-	private Set<SubjectScore> scores;
+	@JsonManagedReference
+	private List<SubjectScore> scores;
 
 	@Override
 	public final boolean equals(Object o) {
