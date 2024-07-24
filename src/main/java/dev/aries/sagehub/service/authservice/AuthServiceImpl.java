@@ -27,6 +27,7 @@ import dev.aries.sagehub.security.TokenService;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.service.voucherservice.VoucherService;
 import dev.aries.sagehub.util.Checks;
+import dev.aries.sagehub.util.EmailUtil;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.util.UserFactory;
@@ -63,6 +64,7 @@ public class AuthServiceImpl implements AuthService {
 	private final TokenService tokenService;
 	private final GlobalUtil globalUtil;
 	private final UserUtil userUtil;
+	private final EmailUtil emailUtil;
 	private final EmailService emailService;
 	private final Generators generator;
 	private final Checks checks;
@@ -172,7 +174,7 @@ public class AuthServiceImpl implements AuthService {
 				.status(TokenStatus.ACTIVE)
 				.build();
 		this.tokenRepository.save(token);
-		Email recipient = getRecipient(user.getId());
+		Email recipient = this.emailUtil.getRecipient(user.getId());
 		this.emailService.sendPasswordResetEmail(recipient, value);
 		log.info("INFO - Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
@@ -190,7 +192,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setHashedPassword(this.passwordEncoder.encode(request.password()));
 		this.userRepository.save(user);
 		updateTokenStatus(passwordResetToken);
-		Email recipient = getRecipient(user.getId());
+		Email recipient = this.emailUtil.getRecipient(user.getId());
 		this.emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}
@@ -212,14 +214,5 @@ public class AuthServiceImpl implements AuthService {
 	private void updateTokenStatus(Token token) {
 		token.setStatus(TokenStatus.USED);
 		this.tokenRepository.save(token);
-	}
-
-	private Email getRecipient(Long userId) {
-		String recipient = this.userUtil.getUserEmail(userId);
-		if (recipient == null) {
-			throw new IllegalArgumentException(
-					String.format(ExceptionConstants.NOT_FOUND, "Email"));
-		}
-		return new Email(recipient);
 	}
 }
