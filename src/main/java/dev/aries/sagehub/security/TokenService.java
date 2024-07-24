@@ -9,6 +9,7 @@ import java.util.List;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.response.AuthToken;
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
@@ -103,6 +104,7 @@ public class TokenService {
 							Instant.now().plus(30, ChronoUnit.DAYS),
 							ZoneId.systemDefault()))
 					.type(TokenType.REFRESH_TOKEN)
+					.status(TokenStatus.ACTIVE)
 					.build();
 			this.tokenRepository.save(newToken);
 		}

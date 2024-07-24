@@ -1,15 +1,15 @@
 package dev.aries.sagehub.enums;
 
 /**
- * Enum representing the possible states of a voucher.
+ * Enum representing the possible states of a token of any kind.
  * <ul>
- * <li>{@code ACTIVE} - Indicates that the voucher is active and can be redeemed.</li>
- * <li>{@code USED} - Indicates that the voucher has been used and cannot be redeemed again.</li>
- * <li>{@code EXPIRED} - Indicates that the voucher has expired and cannot be redeemed.</li>
+ * <li>{@code ACTIVE} - Indicates that the token is active and can be used.</li>
+ * <li>{@code USED} - Indicates that the token has been used and cannot be used again.</li>
+ * <li>{@code EXPIRED} - Indicates that the token has expired and cannot be used.</li>
  * </ul>
  * @author Jacobs Agyei
  */
-public enum VoucherStatus {
+public enum TokenStatus {
 	/**
 	 * This represents the active state.
 	 */

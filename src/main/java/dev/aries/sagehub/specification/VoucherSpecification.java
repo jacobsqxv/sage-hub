@@ -1,7 +1,7 @@
 package dev.aries.sagehub.specification;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
-import dev.aries.sagehub.enums.VoucherStatus;
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.model.Voucher;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -19,6 +19,6 @@ public final class VoucherSpecification {
 	public static Specification<Voucher> hasStatus(String status) {
 		return (root, query, criteriaBuilder) -> (status == null || status.isEmpty()) ?
 				null : criteriaBuilder.equal(
-				root.get("status"), VoucherStatus.valueOf(status.toUpperCase()));
+				root.get("status"), TokenStatus.valueOf(status.toUpperCase()));
 	}
 }

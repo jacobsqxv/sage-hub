@@ -10,7 +10,7 @@ import dev.aries.sagehub.dto.request.VoucherRequest;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.dto.response.VoucherResponse;
 import dev.aries.sagehub.dto.search.GetVouchersPage;
-import dev.aries.sagehub.enums.VoucherStatus;
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.mapper.VoucherMapper;
 import dev.aries.sagehub.model.AcademicYear;
 import dev.aries.sagehub.model.Voucher;
@@ -48,7 +48,7 @@ public class VoucherServiceImpl implements VoucherService {
 					.serialNumber(serialNumber)
 					.pin(pin.value())
 					.academicYear(year)
-					.status(VoucherStatus.ACTIVE)
+					.status(TokenStatus.ACTIVE)
 					.build());
 		}
 		this.saveVouchers(vouchers);
@@ -97,8 +97,8 @@ public class VoucherServiceImpl implements VoucherService {
 	}
 
 	private void checkValidity(Voucher voucher) {
-		VoucherStatus status = voucher.getStatus();
-		if (!status.equals(VoucherStatus.ACTIVE) && !status.equals(VoucherStatus.USED)) {
+		TokenStatus status = voucher.getStatus();
+		if (!status.equals(TokenStatus.ACTIVE) && !status.equals(TokenStatus.USED)) {
 			throw new IllegalArgumentException(ExceptionConstants.VOUCHER_INVALID);
 		}
 	}

@@ -1,7 +1,7 @@
 package dev.aries.sagehub.util;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
-import dev.aries.sagehub.enums.VoucherStatus;
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.Program;
@@ -21,7 +21,7 @@ public class ApplicantUtil {
 	private final ApplicantRepository applicantRepository;
 
 	public void updateVoucherStatus(Voucher voucher) {
-		voucher.setStatus(VoucherStatus.USED);
+		voucher.setStatus(TokenStatus.USED);
 		this.voucherRepository.save(voucher);
 	}
 

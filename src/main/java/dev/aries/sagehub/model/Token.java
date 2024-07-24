@@ -2,6 +2,7 @@ package dev.aries.sagehub.model;
 
 import java.time.LocalDateTime;
 
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.enums.TokenType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,6 +38,9 @@ public class Token extends Auditing {
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private TokenType type;
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private TokenStatus status;
 
 	@Override
 	public final boolean equals(Object o) {
