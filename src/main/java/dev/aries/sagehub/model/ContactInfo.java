@@ -31,6 +31,8 @@ public class ContactInfo extends Auditing {
 	private Address address;
 
 	private String postalAddress;
+	@Column(nullable = false)
+	private Long userId;
 
 	@Override
 	public final boolean equals(Object o) {
