@@ -1,10 +1,14 @@
 package dev.aries.sagehub.service.userservice;
 
+import java.util.Objects;
+
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.dto.response.UserResponse;
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.mapper.UserMapper;
 import dev.aries.sagehub.model.BaseUser;
 import dev.aries.sagehub.model.BasicInfo;
@@ -26,7 +30,6 @@ import dev.aries.sagehub.service.emgcontactservice.EmergencyContactInterface;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserFactory;
-import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,7 +51,6 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final StudentRepository studentRepository;
 	private final StaffRepository staffRepository;
-	private final UserUtil userUtil;
 	private final Checks checks;
 	private final PasswordEncoder passwordEncoder;
 	private final Generators generators;
@@ -62,8 +64,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public GenericResponse changePassword(Long id, PasswordChangeRequest request) {
-		this.checks.isCurrentlyLoggedInUser(id);
-		User user = this.userUtil.getUser(id);
+		User user = this.checks.currentlyLoggedInUser();
+		validateLoggedInUser(user, id);
 		if (!this.checks.isPasswordEqual(user, request.oldPassword())) {
 			log.info("INFO - Current password is incorrect");
 			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
@@ -71,6 +73,12 @@ public class UserServiceImpl implements UserService {
 		user.setHashedPassword(this.passwordEncoder.encode(request.newPassword()));
 		this.userRepository.save(user);
 		return new GenericResponse(STATUS_OK, "Password changed successfully");
+	}
+
+	private void validateLoggedInUser(User user, Long id) {
+		if (!Objects.equals(user.getId(), id)) {
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
+		}
 	}
 
 	@Override
