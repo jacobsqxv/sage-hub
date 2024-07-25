@@ -12,7 +12,6 @@ import dev.aries.sagehub.repository.AdminRepository;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.UserFactory;
-import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,15 +41,13 @@ public class AdminServiceImpl implements AdminService {
 	 */
 	@Override
 	public AdminResponse addAdmin(AdminRequest request) {
-		String firstname = request.firstname();
-		String lastname = request.lastname();
-		Username username = this.generators.generateUsername(firstname, lastname);
+		Username username = this.generators.generateUsername(request.firstname(), request.lastname());
 		Password password = this.generators.generatePassword(8);
 		User user = this.userFactory.createNewUser(username, password, RoleEnum.ADMIN);
 		Admin admin = Admin.builder()
-			.firstName(firstname)
+			.firstName(request.firstname())
 			.middleName(request.middleName())
-			.lastName(lastname)
+			.lastName(request.lastname())
 			.primaryEmail(request.primaryEmail().value())
 			.profilePictureUrl(request.profilePicture())
 			.user(user)

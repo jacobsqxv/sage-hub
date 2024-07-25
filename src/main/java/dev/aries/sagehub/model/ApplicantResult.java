@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,6 +43,8 @@ public class ApplicantResult extends Auditing {
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "result", orphanRemoval = true)
 	@JsonManagedReference
 	private List<SubjectScore> scores;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Applicant applicant;
 
 	@Override
 	public final boolean equals(Object o) {
