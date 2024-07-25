@@ -36,8 +36,9 @@ public class ContactInfoImpl implements ContactInfoInterface {
 	}
 
 	@Override
-	public ContactInfo addContactInfo(ContactInfoRequest request) {
+	public ContactInfo addContactInfo(ContactInfoRequest request, Long userId) {
 		ContactInfo contactInfo = ContactInfo.builder()
+				.userId(userId)
 				.secondaryEmail(request.secondaryEmail().value())
 				.phoneNumber(request.phoneNumber().value())
 				.address(this.addressMapper.toAddress(request.address()))
@@ -60,7 +61,7 @@ public class ContactInfoImpl implements ContactInfoInterface {
 	}
 
 	private ContactInfo loadContactInfo(Long id) {
-		return this.contactInfoRepository.findById(id)
+		return this.contactInfoRepository.findByUserId(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NOT_FOUND, "Contact info")));
 	}

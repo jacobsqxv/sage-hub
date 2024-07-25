@@ -15,9 +15,10 @@ public interface EmergencyContactInterface {
 	/**
 	 * Adds new emergency contact information for a user.
 	 * @param request the request containing the new emergency contact information.
+	 * @param userId  the ID of the user.
 	 * @return a EmergencyContact containing the updated emergency contact information.
 	 */
-	EmergencyContact addEmergencyContact(EmergencyContactRequest request);
+	EmergencyContact addEmergencyContact(EmergencyContactRequest request, Long userId);
 
 	/**
 	 * Updates the emergency contact information of a user.

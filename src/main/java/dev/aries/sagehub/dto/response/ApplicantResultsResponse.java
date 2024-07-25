@@ -1,6 +1,6 @@
 package dev.aries.sagehub.dto.response;
 
-import java.util.Set;
+import java.util.List;
 
 import lombok.Builder;
 
@@ -11,6 +11,6 @@ public record ApplicantResultsResponse(
 		String type,
 		Integer year,
 		String indexNumber,
-		Set<SubjectScoreResponse> scores
+		List<SubjectScoreResponse> scores
 ) {
 }

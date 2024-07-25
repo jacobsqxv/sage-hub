@@ -12,7 +12,7 @@ public record ProgramRequest(
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "program name")
 		@NotEmpty(message = "Program name" + NOT_NULL)
 		String name,
-		@NotNull(message = "Degree offered" + NOT_NULL)
+		@NotEmpty(message = "Degree offered" + NOT_NULL)
 		String degree,
 		String description,
 		@NotNull(message = "Department ID" + NOT_NULL)

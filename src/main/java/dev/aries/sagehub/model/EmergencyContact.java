@@ -36,6 +36,8 @@ public class EmergencyContact extends Auditing {
 	@Embedded
 	@Column(nullable = false)
 	private Address address;
+	@Column(nullable = false)
+	private Long userId;
 
 	@Override
 	public final boolean equals(Object o) {

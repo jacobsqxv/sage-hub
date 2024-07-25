@@ -55,6 +55,8 @@ public class BasicInfo extends Auditing {
 
 	@Column(nullable = false)
 	private LocalDate dateOfBirth;
+	@Column(nullable = false)
+	private Long userId;
 
 	public String fullName() {
 		return getFullName(this.firstName, this.middleName, this.lastName);

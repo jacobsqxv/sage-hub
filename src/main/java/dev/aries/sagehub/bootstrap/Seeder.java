@@ -42,8 +42,8 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		this.loadRoles();
-		this.checkSuperAdmin();
 		this.checkAcademicYear();
+		this.checkSuperAdmin();
 	}
 
 	private void loadAcademicYear(Integer year) {
@@ -54,7 +54,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 				.startDate(startDate)
 				.endDate(endDate)
 				.build());
-		log.info("INFO - Academic year {} added", year);
+		log.info("INFO - Academic year added:: {}", year);
 	}
 
 	private void loadRoles() {
@@ -73,7 +73,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 						.description(roleDescription.get(role))
 						.build();
 				this.roleRepository.save(roleToSave);
-				log.info("INFO - '{}' role added", role.name());
+				log.info("INFO - Role added:: '{}'", role.name());
 			}
 		});
 	}

@@ -6,6 +6,7 @@ import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
 import dev.aries.sagehub.mapper.ApplicantResultsMapper;
 import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.ApplicantResult;
+import dev.aries.sagehub.model.SubjectScore;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.ApplicantResultRepository;
@@ -16,6 +17,7 @@ import dev.aries.sagehub.util.GlobalUtil;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +30,16 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	private final Checks checks;
 
 	@Override
+	@Transactional
 	public ApplicantResultsResponse addApplicantResults(Long applicantId, ApplicantResultRequest request) {
 		User loggedInUser = this.checks.currentlyLoggedInUser();
 		this.checks.isCurrentlyLoggedInUser(loggedInUser.getId());
 		this.applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
 		Applicant applicant = this.applicantUtil.loadApplicant(applicantId);
-		ApplicantResult results = this.resultsMapper.toApplicantResults(request);
+		ApplicantResult results = this.resultsMapper.toApplicantResults(request, applicant);
+		for (SubjectScore score : results.getScores()) {
+			score.setResult(results);
+		}
 		this.applicantResultRepository.save(results);
 		applicant.getResults().add(results);
 		this.applicantRepository.save(applicant);

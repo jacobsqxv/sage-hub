@@ -13,10 +13,9 @@ import dev.aries.sagehub.dto.response.AuthResponse;
 import dev.aries.sagehub.dto.response.AuthToken;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.mapper.UserMapper;
-import dev.aries.sagehub.model.Admin;
-import dev.aries.sagehub.model.BaseUser;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.attribute.Email;
@@ -28,6 +27,7 @@ import dev.aries.sagehub.security.TokenService;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.service.voucherservice.VoucherService;
 import dev.aries.sagehub.util.Checks;
+import dev.aries.sagehub.util.EmailUtil;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
 import dev.aries.sagehub.util.UserFactory;
@@ -64,6 +64,7 @@ public class AuthServiceImpl implements AuthService {
 	private final TokenService tokenService;
 	private final GlobalUtil globalUtil;
 	private final UserUtil userUtil;
+	private final EmailUtil emailUtil;
 	private final EmailService emailService;
 	private final Generators generator;
 	private final Checks checks;
@@ -88,7 +89,6 @@ public class AuthServiceImpl implements AuthService {
 		authentication = this.daoAuthProvider
 			.authenticate(new UsernamePasswordAuthenticationToken(
 					request.username().value(), request.password().value()));
-		user = this.userUtil.getUser(new Username(authentication.getName()));
 		}
 		catch (BadCredentialsException ex) {
 			countOfFailedAttempts = user.getFailedLoginAttempts() + 1;
@@ -122,7 +122,7 @@ public class AuthServiceImpl implements AuthService {
 					username,
 					password, RoleEnum.APPLICANT);
 			this.userRepository.save(user);
-			log.info("INFO - New user with username {} created successfully", username);
+			log.info("INFO - New user added:: username: {}", username.value());
 		}
 		AuthRequest authRequest = new AuthRequest(username, password);
 		return authenticateUser(authRequest);
@@ -171,9 +171,10 @@ public class AuthServiceImpl implements AuthService {
 				.type(TokenType.RESET_PASSWORD)
 				.userId(user.getId())
 				.expiresAt(LocalDateTime.now().plusMinutes(15))
+				.status(TokenStatus.ACTIVE)
 				.build();
 		this.tokenRepository.save(token);
-		Email recipient = new Email(getRecipient(user.getId()));
+		Email recipient = this.emailUtil.getRecipient(user.getId());
 		this.emailService.sendPasswordResetEmail(recipient, value);
 		log.info("INFO - Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
@@ -181,37 +182,37 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public GenericResponse resetPassword(String token, ResetPassword request) {
-		log.info("INFO - User requesting password reset: {}", request.username());
+		log.info("INFO - User requesting password reset: {}", request.username().value());
 		User user = this.userUtil.getUser(request.username());
-		validateToken(token, user.getId(), TokenType.RESET_PASSWORD);
+		Token passwordResetToken = loadPasswordResetToken(token, user.getId());
+		validateToken(passwordResetToken);
 		if (this.checks.isPasswordEqual(user, request.password())) {
-			throw new IllegalArgumentException(ExceptionConstants.INVALID_CURRENT_PASSWORD);
+			throw new IllegalArgumentException(ExceptionConstants.PASSWORD_ALREADY_USED);
 		}
 		user.setHashedPassword(this.passwordEncoder.encode(request.password()));
 		this.userRepository.save(user);
-		Email recipient = new Email(getRecipient(user.getId()));
+		updateTokenStatus(passwordResetToken);
+		Email recipient = this.emailUtil.getRecipient(user.getId());
 		this.emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}
 
-	private void validateToken(String value, Long userId, TokenType type) {
-		Token token = this.tokenRepository.findByValueAndUserIdAndType(value, userId, type);
+	private Token loadPasswordResetToken(String value, Long userId) {
+		return this.tokenRepository.findByValueAndUserIdAndType(value, userId, TokenType.RESET_PASSWORD);
+	}
+
+	private void validateToken(Token token) {
 		if (token == null) {
 			throw new EntityNotFoundException(String.format(ExceptionConstants.NOT_FOUND, "Token"));
 		}
-		if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException(ExceptionConstants.EXPIRED_TOKEN);
+		if (!token.getStatus().equals(TokenStatus.ACTIVE)) {
+			throw new IllegalArgumentException(
+					String.format(ExceptionConstants.INVALID_TOKEN, "Token"));
 		}
 	}
 
-	private String getRecipient(Long userId) {
-		User user = this.userUtil.getUser(userId);
-		Object userInfo = this.userUtil.getUserInfo(userId);
-		if (this.checks.isAdmin(user.getRole().getName())) {
-			return ((Admin) userInfo).getPrimaryEmail();
-		}
-		else {
-			return ((BaseUser) userInfo).getContactInfo().getSecondaryEmail();
-		}
+	private void updateTokenStatus(Token token) {
+		token.setStatus(TokenStatus.USED);
+		this.tokenRepository.save(token);
 	}
 }

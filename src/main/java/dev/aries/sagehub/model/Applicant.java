@@ -24,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Entity
 public class Applicant extends BaseUser {
-	@OneToMany(fetch = FetchType.LAZY)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "applicant", orphanRemoval = true)
 	private List<ApplicantResult> results;
 	@ManyToMany(fetch = FetchType.LAZY)
 	private List<Program> programChoices;

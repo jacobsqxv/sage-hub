@@ -47,20 +47,24 @@ public class UserUtil {
 				.existsByUsername(username.value());
 	}
 
-	public Object getUserInfo(Long id) {
+	public String getUserEmail(Long id) {
 		Role userRole = getUser(id).getRole();
 		switch (userRole.getName()) {
 			case SUPER_ADMIN, ADMIN -> {
-				return this.adminRepository.findByUserId(id);
+				return this.adminRepository.findPrimaryEmailByUserId(id)
+						.orElse(null);
 			}
 			case STAFF -> {
-				return this.staffRepository.findByUserId(id);
+				return this.staffRepository.findSecondaryEmailByUserId(id)
+						.orElse(null);
 			}
 			case STUDENT -> {
-				return this.studentRepository.findByUserId(id);
+				return this.studentRepository.findSecondaryEmailByUserId(id)
+						.orElse(null);
 			}
 			case APPLICANT -> {
-				return this.applicantRepository.findByUserId(id);
+				return this.applicantRepository.findSecondaryEmailByUserId(id)
+						.orElse(null);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));
 		}

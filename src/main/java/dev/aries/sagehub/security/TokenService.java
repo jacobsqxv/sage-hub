@@ -9,6 +9,7 @@ import java.util.List;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.response.AuthToken;
+import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
@@ -38,20 +39,21 @@ public class TokenService {
 	private final TokenRepository tokenRepository;
 	private final UserUtil userUtil;
 
-	private String generateAccessToken(Authentication authentication) {
-		return createToken(authentication, TokenType.ACCESS_TOKEN, this.accessTokenEncoder);
+	private String generateAccessToken(User user) {
+		return createToken(user, TokenType.ACCESS_TOKEN, this.accessTokenEncoder);
 	}
 
-	private String generateRefreshToken(Authentication authentication) {
-		return createToken(authentication, TokenType.REFRESH_TOKEN, this.refreshTokenEncoder);
+	private String generateRefreshToken(User user) {
+		return createToken(user, TokenType.REFRESH_TOKEN, this.refreshTokenEncoder);
 	}
 
-	private String createToken(Authentication authentication, TokenType tokenType, JwtEncoder encoder) {
+	private String createToken(User user, TokenType tokenType, JwtEncoder encoder) {
 		Instant now = Instant.now();
-		List<String> authorities = authentication.getAuthorities().stream()
+		log.info("INFO - Generating {}...", tokenType);
+		List<String> authorities = new UserDetailsImpl(user).getAuthorities()
+				.stream()
 				.map(GrantedAuthority::getAuthority)
 				.toList();
-		User user = this.userUtil.getUser(new Username((authentication.getName())));
 		Duration expirationDuration = tokenType.equals(TokenType.ACCESS_TOKEN)
 				? Duration.ofMinutes(15)
 				: Duration.ofDays(30);
@@ -61,7 +63,7 @@ public class TokenService {
 				.claim("clientId", user.getClientId())
 				.issuedAt(now)
 				.expiresAt(now.plus(expirationDuration))
-				.subject(authentication.getName())
+				.subject(user.getUsername())
 				.claim("scope", authorities)
 				.build();
 
@@ -74,7 +76,8 @@ public class TokenService {
 			log.info("Principal type: {}", authentication.getPrincipal().getClass());
 			throw new IllegalArgumentException(ExceptionConstants.INVALID_CREDENTIALS);
 		}
-		String accessToken = generateAccessToken(authentication);
+		User user = this.userUtil.getUser(new Username((authentication.getName())));
+		String accessToken = generateAccessToken(user);
 		String refreshToken;
 		log.info("INFO - Principal type: {}", authentication.getPrincipal().getClass());
 		log.info("INFO - Authentication credentials: {}", authentication.getCredentials().getClass());
@@ -84,16 +87,15 @@ public class TokenService {
 			Duration duration = Duration.between(now, expiresAt);
 			long daysUntilExpiration = duration.toDays();
 			if (daysUntilExpiration < 7) {
-				refreshToken = generateRefreshToken(authentication);
+				refreshToken = generateRefreshToken(user);
 			}
 			else {
 				refreshToken = jwt.getTokenValue();
 			}
 		}
 		else {
-			refreshToken = generateRefreshToken(authentication);
+			refreshToken = generateRefreshToken(user);
 		}
-		User user = this.userUtil.getUser(new Username((authentication.getName())));
 		AuthToken token = new AuthToken(accessToken, refreshToken);
 		if (!refreshTokenExists(user.getId(), refreshToken)) {
 			Token newToken = Token.builder()
@@ -103,6 +105,7 @@ public class TokenService {
 							Instant.now().plus(30, ChronoUnit.DAYS),
 							ZoneId.systemDefault()))
 					.type(TokenType.REFRESH_TOKEN)
+					.status(TokenStatus.ACTIVE)
 					.build();
 			this.tokenRepository.save(newToken);
 		}

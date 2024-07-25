@@ -37,8 +37,9 @@ public class BasicInfoImpl implements BasicInfoInterface {
 	}
 
 	@Override
-	public BasicInfo addBasicInfo(BasicInfoRequest request) {
+	public BasicInfo addBasicInfo(BasicInfoRequest request, Long userId) {
 		BasicInfo basicInfo = BasicInfo.builder()
+				.userId(userId)
 				.profilePictureUrl(request.profilePicture())
 				.title(Title.valueOf(request.title().toUpperCase()))
 				.firstName(request.firstname())
@@ -66,7 +67,7 @@ public class BasicInfoImpl implements BasicInfoInterface {
 	}
 
 	private BasicInfo loadBasicInfo(Long id) {
-		return this.basicInfoRepository.findById(id)
+		return this.basicInfoRepository.findByUserId(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NO_INFO_FOUND, "basic")));
 	}

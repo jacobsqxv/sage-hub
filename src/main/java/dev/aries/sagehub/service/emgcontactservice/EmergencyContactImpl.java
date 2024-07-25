@@ -36,8 +36,9 @@ public class EmergencyContactImpl implements EmergencyContactInterface {
 	}
 
 	@Override
-	public EmergencyContact addEmergencyContact(EmergencyContactRequest request) {
+	public EmergencyContact addEmergencyContact(EmergencyContactRequest request, Long userId) {
 		EmergencyContact emergencyContact = EmergencyContact.builder()
+				.userId(userId)
 				.fullName(request.fullName())
 				.relationship(request.relationship())
 				.phoneNumber(request.phoneNumber().value())
@@ -62,7 +63,7 @@ public class EmergencyContactImpl implements EmergencyContactInterface {
 	}
 
 	private EmergencyContact loadEmergencyContact(Long id) {
-		return this.emergencyContactRepository.findById(id)
+		return this.emergencyContactRepository.findByUserId(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NO_INFO_FOUND, "emergency contact")));
 	}
