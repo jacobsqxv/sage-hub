@@ -26,7 +26,7 @@ public final class ExceptionConstants {
 	/**
 	 * Message for invalid credentials exception.
 	 */
-	public static final String INVALID_CREDENTIALS = "Invalid username or password";
+	public static final String INVALID_CREDENTIALS = "Username or password is incorrect";
 	/**
 	 * Message for invalid current password exception.
 	 */
