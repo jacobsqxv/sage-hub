@@ -39,6 +39,15 @@ public final class ValidationMessage {
 	public static final String NOT_EMPTY = " must not be empty or blank";
 
 	/**
+	 * Message indicating that a field must be greater than or equal to a specified value.
+	 */
+	public static final String GREATER_THAN = " must be greater than or equal to ";
+
+	/**
+	 * Message indicating that a field must be less than or equal to a specified value.
+	 */
+	public static final String LESS_THAN = " must be less than or equal to ";
+	/**
 	 * Private constructor to prevent instantiation of this utility class. Throws an
 	 * IllegalStateException if called.
 	 */
