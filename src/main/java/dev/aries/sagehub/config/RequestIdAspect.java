@@ -26,13 +26,21 @@ public class RequestIdAspect {
 	private final RateLimiterService rateLimiterService;
 	private final UUID anonymous = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
+	/**
+	 * Aspect method that wraps around the execution of any method in the controller package.
+	 * It generates a unique request ID for each request, checks the rate limit for the client,
+	 * and ensures the request ID is removed from the MDC (Mapped Diagnostic Context) after the method execution.
+	 * @param joinPoint the join point representing the method being executed
+	 * @return the result of the method execution
+	 * @throws Throwable if any error occurs during the method execution
+	 */
 	@Around("execution(* dev.aries.sagehub.controller.*.*(..))")
 	public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 		MDC.put("requestId", UUID.randomUUID().toString());
 		try {
 			UUID clientId = getClientId();
-			if (!clientId.equals(this.anonymous)) {
-				this.rateLimiterService.checkRateLimit(clientId);
+			if (!clientId.equals(anonymous)) {
+				rateLimiterService.checkRateLimit(clientId);
 			}
 			return joinPoint.proceed();
 		}
@@ -42,15 +50,14 @@ public class RequestIdAspect {
 	}
 
 	public UUID getClientId() {
-		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-		if (attributes == null) {
-			log.info("Request attributes are null");
+		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		if (attr == null) {
 			return null;
 		}
-		Principal principal = attributes.getRequest().getUserPrincipal();
+		Principal principal = attr.getRequest().getUserPrincipal();
 		if (principal == null) {
 			log.info("Principal is null, handling as anonymous request");
-			return this.anonymous;
+			return anonymous;
 		}
 		return switch (principal) {
 			case UserDetailsImpl userDetails -> userDetails.getClientId();

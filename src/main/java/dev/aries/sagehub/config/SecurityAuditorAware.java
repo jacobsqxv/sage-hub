@@ -18,6 +18,12 @@ import org.springframework.stereotype.Component;
 @Component("auditorProvider")
 public class SecurityAuditorAware implements AuditorAware<String> {
 
+	/**
+	 * Retrieves the current auditor based on the authentication context.
+	 * If the authentication is null or not authenticated, it returns "SYSTEM" or the remote address.
+	 * Otherwise, it returns the client ID from the JWT token.
+	 * @return an Optional containing the current auditor's identifier
+	 */
 	@Override
 	public Optional<String> getCurrentAuditor() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -53,7 +59,7 @@ public class SecurityAuditorAware implements AuditorAware<String> {
 			return jwt.getClaim("clientId");
 		}
 		else {
-			throw new IllegalArgumentException(ExceptionConstants.INVALID_CREDENTIALS);
+			throw new IllegalArgumentException(ExceptionConstants.AUTHENTICATION_FAILED);
 		}
 	}
 }
