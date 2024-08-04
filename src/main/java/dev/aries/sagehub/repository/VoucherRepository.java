@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 public interface VoucherRepository extends JpaRepository<Voucher, Long>, JpaSpecificationExecutor<Voucher> {
 	Optional<Voucher> findBySerialNumberAndPin(Long serialNumber, String pin);
@@ -29,4 +31,8 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long>, JpaSpec
 	}
 
 	Optional<Voucher> findBySerialNumber(Long serialNumber);
+
+	@Modifying
+	@Query("DELETE FROM Voucher v WHERE v.expiresAt < CURRENT_TIMESTAMP")
+	void deleteAllExpiredVouchers();
 }
