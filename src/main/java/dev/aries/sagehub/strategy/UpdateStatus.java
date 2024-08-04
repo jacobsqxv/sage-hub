@@ -17,24 +17,24 @@ public class UpdateStatus {
 	private final ProgramRepository programRepository;
 
 	@Transactional
-	public void updateProgramCoursesStatus(String status, Long programId) {
-		log.info("INFO - Updating program course status: {}", status);
+	public void updateProgramCoursesStatus(Status status, Long programId) {
+		log.info("Updating program course status: {}", status);
 		if (isNotActive(status)) {
-			this.programCourseRepository.updateStatusByProgramId(Status.valueOf(status), programId);
+			programCourseRepository.updateStatusByProgramId(status, programId);
 		}
 	}
 
 	@Transactional
-	public void updateProgramStatus(String status, Long departmentId) {
-		log.info("INFO - Updating program status: {}", status);
+	public void updateProgramStatus(Status status, Long departmentId) {
+		log.info("Updating program status: {}", status);
 		if (isNotActive(status)) {
-			this.programRepository.updateStatusByDepartmentId(Status.valueOf(status), departmentId);
+			programRepository.updateStatusByDepartmentId(status, departmentId);
 		}
 	}
 
-	private boolean isNotActive(String status) {
-		return Status.valueOf(status) == Status.INACTIVE ||
-				Status.valueOf(status) == Status.ARCHIVED ||
-				Status.valueOf(status) == Status.DELETED;
+	private boolean isNotActive(Status status) {
+		return status == Status.INACTIVE ||
+				status == Status.ARCHIVED ||
+				status == Status.DELETED;
 	}
 }

@@ -23,13 +23,13 @@ public class UpdateStrategyConfig {
 	@Bean
 	public Map<String, UpdateStrategy> updateStrategies() {
 		Map<String, UpdateStrategy> strategies = new HashMap<>();
-		strategies.put("BasicInfo", this.updateBasicInfo);
-		strategies.put("ContactInfo", this.updateContactInfo);
-		strategies.put("EmergencyContact", this.updateEmergencyContact);
-		strategies.put("Department", this.updateDepartment);
-		strategies.put("Program", this.updateProgram);
-		strategies.put("Course", this.updateCourse);
-		strategies.put("ProgramCourse", this.updateProgramCourse);
+		strategies.put("BasicInfo", updateBasicInfo);
+		strategies.put("ContactInfo", updateContactInfo);
+		strategies.put("EmergencyContact", updateEmergencyContact);
+		strategies.put("Department", updateDepartment);
+		strategies.put("Program", updateProgram);
+		strategies.put("Course", updateCourse);
+		strategies.put("ProgramCourse", updateProgramCourse);
 		return strategies;
 	}
 }
