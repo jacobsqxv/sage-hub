@@ -1,41 +1,14 @@
-server:
-  port: 7000
-
 spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    driver-class-name: ${DB_DRIVER}
-  jpa:
-    hibernate:
-      ddl-auto: ${DB_DDL_AUTO}
+  profiles:
+    active: dev
 
-  application:
-    name: sage-hub
-    frontend:
-      local: ${FRONTEND_LOCAL}
-  jackson:
-    default-property-inclusion: non_null
-
-mailgun:
-  api-key: ${MAILGUN_API_KEY}
-  domain: ${MAILGUN_DOMAIN}
-  from: ${MAILGUN_FROM}
-
-application:
-  base-url: ${BASE_URL}
-
-access-token:
-  private: ${ACCESS_TOKEN_PRIVATE_KEY_PATH}
-  public: ${ACCESS_TOKEN_PUBLIC_KEY_PATH}
-
-refresh-token:
-  private: ${REFRESH_TOKEN_PRIVATE_KEY_PATH}
-  public: ${REFRESH_TOKEN_PUBLIC_KEY_PATH}
-
-rate:
-  limiter:
-    max-requests: ${RATE_LIMITER_MAX_REQUESTS}
-    time-interval: ${RATE_LIMITER_TIME_INTERVAL}
-    reset-interval: ${RATE_LIMITER_RESET_INTERVAL}
+springdoc:
+  swagger-ui:
+    path: /sagehub-docs
+    tags-sorter: alpha
+    operations-sorter: method
+    filter: true
+  api-docs:
+    path: /sagehub-api-docs
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
