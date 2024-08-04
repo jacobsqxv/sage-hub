@@ -26,6 +26,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 
@@ -40,16 +41,16 @@ public class TokenService {
 	private final UserUtil userUtil;
 
 	private String generateAccessToken(User user) {
-		return createToken(user, TokenType.ACCESS_TOKEN, this.accessTokenEncoder);
+		return createToken(user, TokenType.ACCESS_TOKEN, accessTokenEncoder);
 	}
 
 	private String generateRefreshToken(User user) {
-		return createToken(user, TokenType.REFRESH_TOKEN, this.refreshTokenEncoder);
+		return createToken(user, TokenType.REFRESH_TOKEN, refreshTokenEncoder);
 	}
 
 	private String createToken(User user, TokenType tokenType, JwtEncoder encoder) {
 		Instant now = Instant.now();
-		log.info("INFO - Generating {}...", tokenType);
+		log.info("Generating {}...", tokenType);
 		List<String> authorities = new UserDetailsImpl(user).getAuthorities()
 				.stream()
 				.map(GrantedAuthority::getAuthority)
@@ -74,28 +75,14 @@ public class TokenService {
 		if (!(authentication.getPrincipal() instanceof UserDetailsImpl
 				|| authentication.getPrincipal() instanceof Jwt)) {
 			log.info("Principal type: {}", authentication.getPrincipal().getClass());
-			throw new IllegalArgumentException(ExceptionConstants.INVALID_CREDENTIALS);
+			throw new IllegalArgumentException(ExceptionConstants.AUTHENTICATION_FAILED);
 		}
-		User user = this.userUtil.getUser(new Username((authentication.getName())));
+		User user = userUtil.getUser(new Username((authentication.getName())));
 		String accessToken = generateAccessToken(user);
 		String refreshToken;
-		log.info("INFO - Principal type: {}", authentication.getPrincipal().getClass());
-		log.info("INFO - Authentication credentials: {}", authentication.getCredentials().getClass());
-		if (authentication.getCredentials() instanceof Jwt jwt) {
-			Instant now = Instant.now();
-			Instant expiresAt = jwt.getExpiresAt();
-			Duration duration = Duration.between(now, expiresAt);
-			long daysUntilExpiration = duration.toDays();
-			if (daysUntilExpiration < 7) {
-				refreshToken = generateRefreshToken(user);
-			}
-			else {
-				refreshToken = jwt.getTokenValue();
-			}
-		}
-		else {
-			refreshToken = generateRefreshToken(user);
-		}
+		log.info("Principal type: {}", authentication.getPrincipal().getClass());
+		log.info("Authentication credentials: {}", authentication.getCredentials().getClass());
+		refreshToken = getRefreshToken(authentication, user);
 		AuthToken token = new AuthToken(accessToken, refreshToken);
 		if (!refreshTokenExists(user.getId(), refreshToken)) {
 			Token newToken = Token.builder()
@@ -107,13 +94,34 @@ public class TokenService {
 					.type(TokenType.REFRESH_TOKEN)
 					.status(TokenStatus.ACTIVE)
 					.build();
-			this.tokenRepository.save(newToken);
+			tokenRepository.save(newToken);
 		}
 		return token;
 	}
 
+	private String getRefreshToken(Authentication authentication, User user) {
+		String refreshToken;
+		if (authentication.getPrincipal() instanceof JwtAuthenticationToken jwt
+		&& jwt.getToken().getClaim("type").equals(TokenType.REFRESH_TOKEN.toString())) {
+			Instant now = Instant.now();
+			Instant expiresAt = jwt.getToken().getExpiresAt();
+			Duration duration = Duration.between(now, expiresAt);
+			long daysUntilExpiration = duration.toDays();
+			if (daysUntilExpiration < 7) {
+				refreshToken = generateRefreshToken(user);
+			}
+			else {
+				refreshToken = jwt.getToken().getTokenValue();
+			}
+		}
+		else {
+			refreshToken = generateRefreshToken(user);
+		}
+		return refreshToken;
+	}
+
 	public void updateRefreshToken(Long userId, String refreshToken, String newRefreshToken) {
-		Token token = this.tokenRepository
+		Token token = tokenRepository
 				.findByValueAndUserIdAndType(refreshToken, userId, TokenType.REFRESH_TOKEN);
 		if (token == null) {
 			throw new IllegalArgumentException(String.format(ExceptionConstants.NOT_FOUND, "Token"));
@@ -122,11 +130,11 @@ public class TokenService {
 		token.setExpiresAt(LocalDateTime.ofInstant(
 				Instant.now().plus(30, ChronoUnit.DAYS),
 				ZoneId.systemDefault()));
-		this.tokenRepository.save(token);
+		tokenRepository.save(token);
 	}
 
 	private boolean refreshTokenExists(Long userId, String refreshToken) {
-		return this.tokenRepository.findByValueAndUserIdAndType(
+		return tokenRepository.findByValueAndUserIdAndType(
 				refreshToken, userId, TokenType.REFRESH_TOKEN) != null;
 	}
 }

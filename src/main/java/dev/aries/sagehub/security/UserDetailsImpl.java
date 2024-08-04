@@ -19,21 +19,21 @@ public class UserDetailsImpl implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(new SimpleGrantedAuthority(String.valueOf(this.user.getRole().getName())));
+		return List.of(new SimpleGrantedAuthority(String.valueOf(user.getRole().getName())));
 	}
 
 	public UUID getClientId() {
-		return this.user.getClientId();
+		return user.getClientId();
 	}
 
 	@Override
 	public String getPassword() {
-		return this.user.getHashedPassword();
+		return user.getHashedPassword();
 	}
 
 	@Override
 	public String getUsername() {
-		return this.user.getUsername();
+		return user.getUsername();
 	}
 
 	@Override
@@ -53,6 +53,6 @@ public class UserDetailsImpl implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return this.user.isAccountEnabled();
+		return user.isAccountEnabled();
 	}
 }

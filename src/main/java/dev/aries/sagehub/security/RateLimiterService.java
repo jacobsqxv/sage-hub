@@ -26,7 +26,7 @@ public class RateLimiterService {
 	private long timeIntervalInMinutes;
 
 	public boolean tryAcquire(UUID clientId) {
-		return this.rateLimiterStore.tryAcquire(clientId, this.maxRequests, this.timeIntervalInMinutes);
+		return rateLimiterStore.tryAcquire(clientId, maxRequests, timeIntervalInMinutes);
 	}
 
 	public void checkRateLimit(UUID clientId) {
@@ -37,6 +37,6 @@ public class RateLimiterService {
 
 	@Scheduled(fixedRateString = "${rate.limiter.reset-interval}")
 	public void resetCounts() {
-		this.rateLimiterStore.resetAll();
+		rateLimiterStore.resetAll();
 	}
 }
