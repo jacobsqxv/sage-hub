@@ -6,9 +6,9 @@ import lombok.Builder;
 
 @Builder
 public record ApplicantResponse(
-		Long id,
+		Long userId,
 		Long applicantId,
-		Integer applyingForYear,
+		Integer yearOfApplication,
 		BasicInfoResponse basicInfo,
 		ContactInfoResponse contactInfo,
 		EmergencyContactResponse guardianInfo,
