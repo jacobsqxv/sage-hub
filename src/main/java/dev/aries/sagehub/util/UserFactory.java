@@ -26,9 +26,9 @@ public class UserFactory {
 		User user = User.builder()
 				.username(username.value())
 				.clientId(generateClientId())
-				.hashedPassword(this.passwordEncoder.encode(password.value()))
+				.hashedPassword(passwordEncoder.encode(password.value()))
 				.accountEnabled(true)
-				.role(this.roleUtil.getRole(roleEnum))
+				.role(roleUtil.getRole(roleEnum))
 				.failedLoginAttempts(0)
 				.status(AccountStatus.ACTIVE)
 				.build();
@@ -38,7 +38,7 @@ public class UserFactory {
 
 	private UUID generateClientId() {
 		UUID clientId = UUID.randomUUID();
-		while (this.userRepository.existsByClientId(clientId)) {
+		while (userRepository.existsByClientId(clientId)) {
 			clientId = UUID.randomUUID();
 		}
 		return clientId;

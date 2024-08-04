@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
+
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
 @Component
@@ -18,7 +19,7 @@ public class RoleUtil {
 	private final RoleRepository roleRepository;
 
 	public Role getRole(RoleEnum name) {
-		return this.roleRepository.findByName(name)
+		return roleRepository.findByName(name)
 				.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, "Role")));
 	}
 
