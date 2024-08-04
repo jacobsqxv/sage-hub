@@ -47,7 +47,7 @@ public class Admin extends Auditing {
 	private User user;
 
 	public String fullName() {
-		return getFullName(this.firstName, this.middleName, this.lastName);
+		return getFullName(firstName, middleName, lastName);
 	}
 
 	@Override

@@ -8,7 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -26,14 +25,14 @@ import lombok.experimental.SuperBuilder;
 public class Applicant extends BaseUser {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "applicant", orphanRemoval = true)
 	private List<ApplicantResult> results;
-	@ManyToMany(fetch = FetchType.LAZY)
+	@OneToMany(fetch = FetchType.LAZY)
 	private List<Program> programChoices;
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private ApplicantStatus status;
 	private boolean isSubmitted;
 	@ManyToOne
-	private AcademicYear applyingForYear;
+	private AcademicYear yearOfApplication;
 
 	@Override
 	public final boolean equals(Object o) {
