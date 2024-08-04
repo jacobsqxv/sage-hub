@@ -14,14 +14,14 @@ public record AdminRequest(
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "first name")
 		@NotEmpty(message = "First name" + NOT_NULL)
 		@Schema(example = "John")
-		String firstname,
+		String firstName,
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "middle name")
 		@Schema(example = "Mike")
 		String middleName,
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "last name")
 		@NotEmpty(message = "Last name" + NOT_NULL)
 		@Schema(example = "Doe")
-		String lastname,
+		String lastName,
 		@NotNull(message = "Primary email" + NOT_NULL)
 		@Schema(example = "johndoe@example.com")
 		Email primaryEmail,

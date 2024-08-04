@@ -20,14 +20,14 @@ public record BasicInfoRequest(
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "first name")
 		@NotEmpty(message = "First name" + NOT_NULL)
 		@Schema(example = "John")
-		String firstname,
+		String firstName,
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "middle name")
 		@Schema(example = "Mike")
 		String middleName,
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "last name")
 		@NotEmpty(message = "Last name" + NOT_NULL)
 		@Schema(example = "Doe")
-		String lastname,
+		String lastName,
 		@Schema(example = "https://example.com/profile.jpg")
 		String profilePicture,
 		@NotNull(message = "Title" + NOT_NULL)
