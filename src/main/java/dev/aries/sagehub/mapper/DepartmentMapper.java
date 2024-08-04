@@ -22,7 +22,7 @@ public class DepartmentMapper {
 				.programs(new ArrayList<>());
 		if (department.getPrograms() != null) {
 			response.programs(department.getPrograms().stream()
-						.map(this.programMapper::toProgramResponse)
+						.map(programMapper::toProgramResponse)
 						.toList());
 		}
 		return response.build();

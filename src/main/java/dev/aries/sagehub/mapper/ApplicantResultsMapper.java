@@ -2,7 +2,6 @@ package dev.aries.sagehub.mapper;
 
 import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
-import dev.aries.sagehub.enums.ResultType;
 import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.ApplicantResult;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class ApplicantResultsMapper {
 				applicantResult.getYear(),
 				applicantResult.getIndexNumber(),
 				applicantResult.getScores().stream()
-						.map(this.subjectScoreMapper::toSubjectScoreResponse)
+						.map(subjectScoreMapper::toSubjectScoreResponse)
 						.toList()
 		);
 	}
@@ -29,11 +28,11 @@ public class ApplicantResultsMapper {
 	public ApplicantResult toApplicantResults(ApplicantResultRequest applicantResult, Applicant applicant) {
 		return ApplicantResult.builder()
 				.schoolName(applicantResult.schoolName())
-				.type(ResultType.valueOf(applicantResult.resultType().toUpperCase()))
+				.type(applicantResult.resultType())
 				.year(applicantResult.year())
 				.indexNumber(applicantResult.indexNumber().value())
 				.scores(applicantResult.subjectScores().stream()
-						.map(this.subjectScoreMapper::toSubjectScore)
+						.map(subjectScoreMapper::toSubjectScore)
 						.toList())
 				.applicant(applicant)
 				.build();

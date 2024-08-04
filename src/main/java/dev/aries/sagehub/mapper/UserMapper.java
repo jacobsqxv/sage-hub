@@ -6,8 +6,6 @@ import dev.aries.sagehub.dto.response.UserResponse;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.BaseUser;
 import dev.aries.sagehub.model.User;
-import dev.aries.sagehub.model.attribute.Email;
-import dev.aries.sagehub.model.attribute.Username;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
@@ -31,11 +29,11 @@ public class UserMapper {
 
 	public UserResponse toUserResponse(BaseUser baseUser) {
 		return UserResponse.builder()
-				.basicInfo(this.basicInfoMapper
+				.basicInfo(basicInfoMapper
 						.toBasicInfoResponse(baseUser.getBasicInfo()))
-				.contactInfo(this.contactInfoMapper
+				.contactInfo(contactInfoMapper
 						.toContactInfoResponse(baseUser.getContactInfo()))
-				.emergencyContact(this.emergencyContactMapper
+				.emergencyContact(emergencyContactMapper
 						.toEmergencyContactResponse(baseUser.getEmergencyContact()))
 				.userId(baseUser.getUser().getId())
 				.role(baseUser.getUser().getRole().getName().toString())
