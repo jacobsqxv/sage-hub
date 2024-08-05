@@ -10,7 +10,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${DB_DDL_AUTO}
-
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+    baseline-description: "init"
+    baseline-version: 0
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+    url: ${spring.datasource.url}
   application:
     name: sage-hub
     frontend:
