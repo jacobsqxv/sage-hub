@@ -18,10 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * AdminServiceImpl is a service class that implements the AdminService interface. It
- * provides methods for managing admins, including adding a new admin.
- *
+ * Implementation of the {@code AdminService} interface.
  * @author Jacobs Agyei
+ * @see AdminService
  */
 @Service
 @RequiredArgsConstructor
@@ -35,27 +34,25 @@ public class AdminServiceImpl implements AdminService {
 	private final EmailService emailService;
 
 	/**
-	 * Adds a new admin.
-	 * @param request the request containing the admin information.
-	 * @return a BasicUserResponse containing the new admin's information.
+	 * {@inheritDoc}
 	 */
 	@Override
 	public AdminResponse addAdmin(AdminRequest request) {
-		Username username = this.generators.generateUsername(request.firstname(), request.lastname());
-		Password password = this.generators.generatePassword(8);
-		User user = this.userFactory.createNewUser(username, password, RoleEnum.ADMIN);
+		Username username = generators.generateUsername(request.firstName(), request.lastName());
+		Password password = generators.generatePassword(8);
+		User user = userFactory.createNewUser(username, password, RoleEnum.ADMIN);
 		Admin admin = Admin.builder()
-			.firstName(request.firstname())
+			.firstName(request.firstName())
 			.middleName(request.middleName())
-			.lastName(request.lastname())
+			.lastName(request.lastName())
 			.primaryEmail(request.primaryEmail().value())
 			.profilePictureUrl(request.profilePicture())
 			.user(user)
 			.build();
-		this.adminRepository.save(admin);
-		this.emailService.sendAccountCreatedEmail(username, password, request.primaryEmail());
-		log.info("INFO - New admin added with ID: {}", admin.getUser().getUsername());
-		return this.userMapper.toAdminResponse(admin);
+		adminRepository.save(admin);
+		emailService.sendAccountCreatedEmail(username, password, request.primaryEmail());
+		log.info("New admin added with ID: {}", admin.getUser().getUsername());
+		return userMapper.toAdminResponse(admin);
 	}
 
 }

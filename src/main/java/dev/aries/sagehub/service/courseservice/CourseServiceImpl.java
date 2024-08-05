@@ -19,7 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+/**
+ * Implementation of the {@code CourseService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.courseservice.CourseService
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,30 +35,39 @@ public class CourseServiceImpl implements CourseService {
 	private final Checks checks;
 	private static final String NAME = "Course";
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public CourseResponse addCourse(CourseRequest request) {
 		existsByName(request.name().toUpperCase());
 		Course course = Course.builder()
 				.name(request.name().toUpperCase())
-				.code(this.generators.generateCourseCode(request.name()))
+				.code(generators.generateCourseCode(request.name()))
 				.description(request.description())
 				.creditUnits(request.creditUnits())
 				.status(Status.PENDING)
 				.build();
-		this.courseRepository.save(course);
-		return this.courseMapper.toCourseResponse(course);
+		courseRepository.save(course);
+		return courseMapper.toCourseResponse(course);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public CourseResponse getCourse(Long courseId) {
-		Course course = this.globalUtil.loadCourse(courseId);
-		return this.courseMapper.toCourseResponse(course);
+		Course course = globalUtil.loadCourse(courseId);
+		return courseMapper.toCourseResponse(course);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Page<CourseResponse> getCourses(GetCoursesPage request, Pageable pageable) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		if (checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllCourses(request, pageable);
 		}
 		return getActiveCourses(request, pageable);
@@ -69,24 +82,27 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	private Page<CourseResponse> loadCourses(GetCoursesPage request, String status, Pageable pageable) {
-		return this.courseRepository.findAll(request.name(), request.code(), status, pageable)
-				.map(this.courseMapper::toCourseResponse);
+		return courseRepository.findAll(request.name(), request.code(), status, pageable)
+				.map(courseMapper::toCourseResponse);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public CourseResponse updateCourse(Long id, CourseRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.checkAdmins(loggedInUser.getRole().getName());
-		Course course = this.globalUtil.loadCourse(id);
-		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateCourse");
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.checkAdmins(loggedInUser.getRole().getName());
+		Course course = globalUtil.loadCourse(id);
+		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateCourse");
 		course = (Course) updateStrategy.update(course, request);
-		this.courseRepository.save(course);
-		log.info("INFO - Course {} updated successfully", course.getCode());
-		return this.courseMapper.toCourseResponse(course);
+		courseRepository.save(course);
+		log.info(" Course {} updated successfully", course.getCode());
+		return courseMapper.toCourseResponse(course);
 	}
 
 	private void existsByName(String name) {
-		if (this.courseRepository.existsByName(name)) {
+		if (courseRepository.existsByName(name)) {
 			throw new IllegalArgumentException(
 					String.format(ExceptionConstants.NAME_EXISTS, NAME, name));
 		}

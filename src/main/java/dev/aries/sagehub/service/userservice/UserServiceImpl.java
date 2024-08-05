@@ -42,7 +42,11 @@ import org.springframework.transaction.annotation.Transactional;
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
 import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 
-
+/**
+ * Implementation of the {@code UserService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.userservice.UserService
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -64,16 +68,19 @@ public class UserServiceImpl implements UserService {
 	private static final Integer STATUS_OK = HttpStatus.OK.value();
 	private final UserMapper userMapper;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public GenericResponse changePassword(Long id, PasswordChangeRequest request) {
-		User user = this.checks.currentlyLoggedInUser();
+		User user = checks.currentlyLoggedInUser();
 		validateLoggedInUser(user, id);
-		if (!this.checks.isPasswordEqual(user, request.oldPassword())) {
-			log.info("INFO - Current password is incorrect");
+		if (!checks.isPasswordEqual(user, request.oldPassword())) {
+			log.info("Current password is incorrect");
 			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
 		}
-		user.setHashedPassword(this.passwordEncoder.encode(request.newPassword()));
-		this.userRepository.save(user);
+		user.setHashedPassword(passwordEncoder.encode(request.newPassword()));
+		userRepository.save(user);
 		return new GenericResponse(STATUS_OK, "Password changed successfully");
 	}
 
@@ -83,30 +90,33 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	@Transactional
 	public UserResponse addFacultyMember(AddUserRequest request, String role) {
-		Username username = this.generators.generateUsername(
-				request.basicInfo().firstname(), request.basicInfo().lastname());
-		Password password = this.generators.generatePassword(8);
-		User user = this.userFactory.createNewUser(username, password, RoleEnum.valueOf(role));
-		this.userRepository.save(user);
+		Username username = generators.generateUsername(
+				request.basicInfo().firstName(), request.basicInfo().lastName());
+		Password password = generators.generatePassword(8);
+		User user = userFactory.createNewUser(username, password, RoleEnum.valueOf(role));
+		userRepository.save(user);
 		switch (role) {
 			case "STUDENT" -> {
 				Student newStudent = (Student) buildInfo(user, request, role);
-				log.info("INFO - Saving new student with ID: {}", newStudent.getId());
-				this.checks.checkStudentExists(newStudent.getId());
-				this.studentRepository.save(newStudent);
-				this.sendEmail(user.getId(), username, password);
-				return this.userMapper.toUserResponse(newStudent);
+				log.info("Saving new student with ID: {}", newStudent.getId());
+				checks.checkStudentExists(newStudent.getId());
+				studentRepository.save(newStudent);
+				sendEmail(user.getId(), username, password);
+				return userMapper.toUserResponse(newStudent);
 			}
 			case "STAFF" -> {
 				Staff newStaff = (Staff) buildInfo(user, request, role);
-				log.info("INFO - Saving new staff with ID: {}", newStaff.getId());
-				this.checks.checkStaffExists(newStaff.getId());
-				this.staffRepository.save(newStaff);
-				this.sendEmail(user.getId(), username, password);
-				return this.userMapper.toUserResponse(newStaff);
+				log.info("Saving new staff with ID: {}", newStaff.getId());
+				checks.checkStaffExists(newStaff.getId());
+				staffRepository.save(newStaff);
+				sendEmail(user.getId(), username, password);
+				return userMapper.toUserResponse(newStaff);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));
 		}
@@ -121,14 +131,14 @@ public class UserServiceImpl implements UserService {
 	 * @throws IllegalArgumentException if the role is not "STUDENT" or "STAFF".
 	 */
 	private BaseUser buildInfo(User user, AddUserRequest request, String role) {
-		log.info("INFO - User ID: {}", user.getId());
+		log.info("User ID: {}", user.getId());
 		Long userId = user.getId();
-		BasicInfo basicInfo = this.basicInfoInterface.addBasicInfo(request.basicInfo(), userId);
-		ContactInfo contactInfo = this.contactInfoInterface.addContactInfo(request.contactInfo(), userId);
-		EmergencyContact emergencyContact = this.emgContactInterface
+		BasicInfo basicInfo = basicInfoInterface.addBasicInfo(request.basicInfo(), userId);
+		ContactInfo contactInfo = contactInfoInterface.addContactInfo(request.contactInfo(), userId);
+		EmergencyContact emergencyContact = emgContactInterface
 				.addEmergencyContact(request.emergencyContact(), userId);
-		Email primaryEmail = this.generators.generateUserEmail(user.getUsername(), role);
-		Long id = this.generators.generateUniqueId(role.equals("STUDENT"));
+		Email primaryEmail = generators.generateUserEmail(user.getUsername(), role);
+		Long id = generators.generateUniqueId(role.equals("STUDENT"));
 		BaseUser.BaseUserBuilder<?, ?> builder = (role.equals("STUDENT") ? Student.builder() : Staff.builder())
 				.id(id)
 				.primaryEmail(primaryEmail.value())
@@ -140,8 +150,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private void sendEmail(Long userId, Username username, Password password) {
-		Email recipient = this.emailUtil.getRecipient(userId);
-		this.emailService.sendAccountCreatedEmail(username, password, recipient);
-		log.info("INFO - User added:: username: {} | password: {}", username.value(), password.value());
+		Email recipient = emailUtil.getRecipient(userId);
+		emailService.sendAccountCreatedEmail(username, password, recipient);
+		log.info("User added:: username: {} | password: {}", username.value(), password.value());
 	}
 }

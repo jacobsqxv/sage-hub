@@ -27,7 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+/**
+ * Implementation of the {@code ProgramService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.programservice.ProgramService
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,12 +46,14 @@ public class ProgramServiceImpl implements ProgramService {
 	private final Checks checks;
 	private static final String NAME = "Program";
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
 		existsByName(request.name().toUpperCase());
-		this.checks.checkIfEnumExists(Degree.class, request.degree());
-		Department department = this.globalUtil.loadDepartment(request.departmentId());
-		Degree degree = Degree.valueOf(request.degree().toUpperCase());
+		Department department = globalUtil.loadDepartment(request.departmentId());
+		Degree degree = request.degree();
 		Program program = Program.builder()
 				.name(request.name().toUpperCase())
 				.description(request.description())
@@ -57,18 +63,21 @@ public class ProgramServiceImpl implements ProgramService {
 				.degree(degree)
 				.status(Status.PENDING)
 				.build();
-		this.programRepository.save(program);
+		programRepository.save(program);
 		if (!department.getPrograms().contains(program)) {
 			department.getPrograms().add(program);
 		}
-		this.departmentRepository.save(department);
-		return this.programMapper.toProgramResponse(program);
+		departmentRepository.save(department);
+		return programMapper.toProgramResponse(program);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Page<ProgramResponse> getPrograms(GetProgramsPage request, Pageable pageable) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllPrograms(request, pageable);
 		}
 		return getActivePrograms(request, pageable);
@@ -83,61 +92,70 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	private Page<ProgramResponse> loadPrograms(GetProgramsPage request, String status, Pageable pageable) {
-		return this.programRepository.findAll(request.name(), request.department(), status, pageable)
-				.map(this.programMapper::toProgramResponse);
+		return programRepository.findAll(request.name(), request.department(), status, pageable)
+				.map(programMapper::toProgramResponse);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ProgramResponse getProgram(Long programId) {
-		Program program = this.globalUtil.loadProgram(programId);
-		return this.programMapper.toProgramResponse(program);
+		Program program = globalUtil.loadProgram(programId);
+		return programMapper.toProgramResponse(program);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ProgramResponse updateProgram(Long programId, ProgramRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.checkAdmins(loggedInUser.getRole().getName());
-		Program program = this.globalUtil.loadProgram(programId);
-		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateProgram");
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.checkAdmins(loggedInUser.getRole().getName());
+		Program program = globalUtil.loadProgram(programId);
+		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateProgram");
 		program = (Program) updateStrategy.update(program, request);
-		this.programRepository.save(program);
-		log.info("INFO - Program {} updated successfully", program.getName());
-		return this.programMapper.toProgramResponse(program);
+		programRepository.save(program);
+		log.info("Program {} updated successfully", program.getName());
+		return programMapper.toProgramResponse(program);
 	}
 
 	private ProgramCourseResponse addProgramCourses(Long programId, ProgramCourseRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.checkAdmins(loggedInUser.getRole().getName());
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.checkAdmins(loggedInUser.getRole().getName());
 		ProgramCourse programCourse = ProgramCourse.builder()
-				.program(this.globalUtil.loadProgram(programId))
-				.course(this.globalUtil.loadCourse(request.courseId()))
+				.program(globalUtil.loadProgram(programId))
+				.course(globalUtil.loadCourse(request.courseId()))
 				.academicPeriod(new AcademicPeriod(
 						(request.period().year()),
 						request.period().semester()
 				))
 				.status(Status.PENDING)
 				.build();
-		this.programCourseRepository.save(programCourse);
-		return this.programCourseMapper.toProgramCourseResponse(programCourse);
+		programCourseRepository.save(programCourse);
+		return programCourseMapper.toProgramCourseResponse(programCourse);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ProgramCourseResponse updateProgramCourses(Long programId, ProgramCourseRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.checkAdmins(loggedInUser.getRole().getName());
-		ProgramCourse programCourse = this.globalUtil.loadProgramCourses(
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.checkAdmins(loggedInUser.getRole().getName());
+		ProgramCourse programCourse = globalUtil.loadProgramCourses(
 				programId, request.courseId(), request.period());
 		if (programCourse == null) {
 			return addProgramCourses(programId, request);
 		}
-		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateProgramCourse");
+		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateProgramCourse");
 		programCourse = (ProgramCourse) updateStrategy.update(programCourse, request);
-		this.programCourseRepository.save(programCourse);
-		return this.programCourseMapper.toProgramCourseResponse(programCourse);
+		programCourseRepository.save(programCourse);
+		return programCourseMapper.toProgramCourseResponse(programCourse);
 	}
 
 	private void existsByName(String name) {
-		if (this.programRepository.existsByName(name)) {
+		if (programRepository.existsByName(name)) {
 			throw new IllegalArgumentException(
 					String.format(ExceptionConstants.NAME_EXISTS, NAME, name));
 		}

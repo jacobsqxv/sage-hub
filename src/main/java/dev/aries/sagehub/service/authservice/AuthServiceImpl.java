@@ -6,6 +6,7 @@ import java.util.Objects;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.constant.ResponseMessage;
 import dev.aries.sagehub.dto.request.AuthRequest;
+import dev.aries.sagehub.dto.request.RefreshTokenRequest;
 import dev.aries.sagehub.dto.request.ResetPassword;
 import dev.aries.sagehub.dto.request.ResetPasswordRequest;
 import dev.aries.sagehub.dto.request.VoucherRequest;
@@ -36,7 +37,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -50,16 +50,15 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Service;
 
 /**
- * AdminServiceImpl is a service class that implements the AdminService interface.
- * It provides methods for managing admins, including adding a new admin.
+ * Implementation of the {@code AuthService} interface.
  * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.authservice.AuthService
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 	private final DaoAuthenticationProvider daoAuthProvider;
-	@Qualifier("jwtRefreshTokenAuthProvider")
 	private final JwtAuthenticationProvider jwtAuthProvider;
 	private final TokenService tokenService;
 	private final GlobalUtil globalUtil;
@@ -83,10 +82,10 @@ public class AuthServiceImpl implements AuthService {
 	public AuthResponse authenticateUser(AuthRequest request) {
 		Integer countOfFailedAttempts;
 		Authentication authentication;
-		User user = this.userUtil.getUser(request.username());
+		User user = userUtil.getUser(request.username());
 		checkLockedAccount(user);
 		try {
-		authentication = this.daoAuthProvider
+		authentication = daoAuthProvider
 			.authenticate(new UsernamePasswordAuthenticationToken(
 					request.username().value(), request.password().value()));
 		}
@@ -94,63 +93,69 @@ public class AuthServiceImpl implements AuthService {
 			countOfFailedAttempts = user.getFailedLoginAttempts() + 1;
 			user.setFailedLoginAttempts(countOfFailedAttempts);
 			updateLockTime(user, countOfFailedAttempts);
-			this.userRepository.save(user);
-			log.info("INFO - Number of failed login attempts: {}", countOfFailedAttempts);
+			userRepository.save(user);
+			log.info("Number of failed login attempts: {}", countOfFailedAttempts);
 			throw new BadCredentialsException(ExceptionConstants.INVALID_CREDENTIALS);
 		}
-		AuthToken authToken = this.tokenService.generateToken(Objects.requireNonNull(authentication));
+		AuthToken authToken = tokenService.generateToken(Objects.requireNonNull(authentication));
 		String accessToken = authToken.accessToken();
 		String refreshToken = authToken.refreshToken();
 		user.setLockTime(null);
 		user.setFailedLoginAttempts(0);
 		user.setLastLogin(LocalDateTime.now());
-		this.userRepository.save(user);
+		userRepository.save(user);
 		return new AuthResponse(
 				accessToken,
 				refreshToken,
-				this.userMapper.toAuthUserResponse(user)
+				userMapper.toAuthUserResponse(user)
 				);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public AuthResponse loginWithVoucher(VoucherRequest request) {
 		Username username = new Username(String.valueOf(request.serialNumber()));
 		Password password = new Password(request.pin());
-		if (!this.userUtil.userExists(username)) {
-			this.voucherService.verifyVoucher(request);
-			User user = this.userFactory.createNewUser(
+		if (!userUtil.userExists(username)) {
+			voucherService.verifyVoucher(request);
+			User user = userFactory.createNewUser(
 					username,
 					password, RoleEnum.APPLICANT);
-			this.userRepository.save(user);
-			log.info("INFO - New user added:: username: {}", username.value());
+			userRepository.save(user);
+			log.info("New user added:: username: {}", username.value());
 		}
 		AuthRequest authRequest = new AuthRequest(username, password);
 		return authenticateUser(authRequest);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public AuthResponse renewRefreshToken(String token) {
+	public AuthResponse renewRefreshToken(RefreshTokenRequest request) {
 		try {
-			Authentication authentication = this.jwtAuthProvider
-					.authenticate(new BearerTokenAuthenticationToken(token));
-			User user = this.userUtil.getUser(new Username(authentication.getName()));
-			AuthToken authToken = this.tokenService.generateToken(authentication);
-			this.tokenService.updateRefreshToken(user.getId(), token, authToken.refreshToken());
+			Authentication authentication = jwtAuthProvider
+					.authenticate(new BearerTokenAuthenticationToken(request.token()));
+			User user = userUtil.getUser(new Username(authentication.getName()));
+			AuthToken authToken = tokenService.generateToken(authentication);
+			tokenService.updateRefreshToken(user.getId(), request.token(), authToken.refreshToken());
 			return new AuthResponse(
 					authToken.accessToken(),
 					authToken.refreshToken(),
-					this.userMapper.toAuthUserResponse(user)
+					userMapper.toAuthUserResponse(user)
 			);
 		}
 		catch (AuthenticationException ex) {
-			log.info("INFO - Error refreshing token: {}", ex.getMessage());
+			log.info("Error refreshing token: {}", ex.getMessage());
 			throw new IllegalArgumentException(ExceptionConstants.AUTHENTICATION_FAILED);
 		}
 	}
 
 	private void checkLockedAccount(User user) {
 		if (user.getLockTime() != null && user.getLockTime().isAfter(LocalDateTime.now())) {
-			String time = this.globalUtil.formatDateTime(user.getLockTime());
+			String time = globalUtil.formatDateTime(user.getLockTime());
 			throw new LockedException(String.format(ExceptionConstants.ACCOUNT_LOCKED, time));
 		}
 	}
@@ -158,14 +163,16 @@ public class AuthServiceImpl implements AuthService {
 	private void updateLockTime(User user, Integer failedAttempts) {
 		if (failedAttempts >= 5) {
 			user.setLockTime(LocalDateTime.now().plusMinutes(15));
-			user.setFailedLoginAttempts(0);
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public GenericResponse resetPasswordRequest(ResetPasswordRequest request) {
-		User user = this.userUtil.getUser(request.username());
-		String value = this.generator.generateToken(16);
+		User user = userUtil.getUser(request.username());
+		String value = generator.generateToken(16);
 		Token token = Token.builder()
 				.value(value)
 				.type(TokenType.RESET_PASSWORD)
@@ -173,32 +180,35 @@ public class AuthServiceImpl implements AuthService {
 				.expiresAt(LocalDateTime.now().plusMinutes(15))
 				.status(TokenStatus.ACTIVE)
 				.build();
-		this.tokenRepository.save(token);
-		Email recipient = this.emailUtil.getRecipient(user.getId());
-		this.emailService.sendPasswordResetEmail(recipient, value);
-		log.info("INFO - Reset password token: {}", value);
+		tokenRepository.save(token);
+		Email recipient = emailUtil.getRecipient(user.getId());
+		emailService.sendPasswordResetEmail(recipient, value);
+		log.info("Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public GenericResponse resetPassword(String token, ResetPassword request) {
-		log.info("INFO - User requesting password reset: {}", request.username().value());
-		User user = this.userUtil.getUser(request.username());
+		log.info("User requesting password reset: {}", request.username().value());
+		User user = userUtil.getUser(request.username());
 		Token passwordResetToken = loadPasswordResetToken(token, user.getId());
 		validateToken(passwordResetToken);
-		if (this.checks.isPasswordEqual(user, request.password())) {
+		if (checks.isPasswordEqual(user, request.password())) {
 			throw new IllegalArgumentException(ExceptionConstants.PASSWORD_ALREADY_USED);
 		}
-		user.setHashedPassword(this.passwordEncoder.encode(request.password()));
-		this.userRepository.save(user);
+		user.setHashedPassword(passwordEncoder.encode(request.password()));
+		userRepository.save(user);
 		updateTokenStatus(passwordResetToken);
-		Email recipient = this.emailUtil.getRecipient(user.getId());
-		this.emailService.sendPasswordResetCompleteEmail(recipient, "login");
+		Email recipient = emailUtil.getRecipient(user.getId());
+		emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}
 
 	private Token loadPasswordResetToken(String value, Long userId) {
-		return this.tokenRepository.findByValueAndUserIdAndType(value, userId, TokenType.RESET_PASSWORD);
+		return tokenRepository.findByValueAndUserIdAndType(value, userId, TokenType.RESET_PASSWORD);
 	}
 
 	private void validateToken(Token token) {
@@ -213,6 +223,6 @@ public class AuthServiceImpl implements AuthService {
 
 	private void updateTokenStatus(Token token) {
 		token.setStatus(TokenStatus.USED);
-		this.tokenRepository.save(token);
+		tokenRepository.save(token);
 	}
 }

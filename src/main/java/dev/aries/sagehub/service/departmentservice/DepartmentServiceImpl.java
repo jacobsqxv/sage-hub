@@ -20,7 +20,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
-
+/**
+ * Implementation of the {@code DepartmentService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.departmentservice.DepartmentService
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,35 +36,44 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private final GlobalUtil globalUtil;
 	private static final String NAME = "Department";
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public DepartmentResponse addDepartment(DepartmentRequest request) {
 		existsByName(request.name());
 		Department department = Department.builder()
 				.name(request.name())
-				.code(this.generators.generateDeptCode())
+				.code(generators.generateDeptCode())
 				.status(Status.PENDING)
 				.build();
-		this.departmentRepository.save(department);
-		log.info("INFO - Department {} added successfully", department.getCode());
-		return this.departmentMapper.toResponse(department);
+		departmentRepository.save(department);
+		log.info("Department {} added successfully", department.getCode());
+		return departmentMapper.toResponse(department);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public DepartmentResponse getDepartment(Long departmentId) {
-		Department department = this.globalUtil.loadDepartment(departmentId);
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		if (!this.checks.isAdmin(loggedInUser.getRole().getName())) {
+		Department department = globalUtil.loadDepartment(departmentId);
+		User loggedInUser = checks.currentlyLoggedInUser();
+		if (!Checks.isAdmin(loggedInUser.getRole().getName())) {
 			department.setPrograms(department.getPrograms().stream()
 					.filter((program) -> program.getStatus() == Status.ACTIVE)
 					.toList());
 		}
-		return this.departmentMapper.toResponse(department);
+		return departmentMapper.toResponse(department);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Page<DepartmentResponse> getDepartments(GetDepartmentsPage request, Pageable pageable) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		if (this.checks.isAdmin(loggedInUser.getRole().getName())) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllDepartments(request, pageable);
 		}
 		return getActiveDepartments(request, pageable);
@@ -75,24 +88,27 @@ public class DepartmentServiceImpl implements DepartmentService {
 	}
 
 	private Page<DepartmentResponse> loadDepartments(GetDepartmentsPage request, String status, Pageable pageable) {
-		return this.departmentRepository.findAll(request.name(), request.code(), status, pageable)
-				.map(this.departmentMapper::toPageResponse);
+		return departmentRepository.findAll(request.name(), request.code(), status, pageable)
+				.map(departmentMapper::toPageResponse);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.checkAdmins(loggedInUser.getRole().getName());
-		Department department = this.globalUtil.loadDepartment(departmentId);
-		UpdateStrategy updateStrategy = this.globalUtil.checkStrategy("updateDepartment");
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.checkAdmins(loggedInUser.getRole().getName());
+		Department department = globalUtil.loadDepartment(departmentId);
+		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateDepartment");
 		department = (Department) updateStrategy.update(department, request);
-		this.departmentRepository.save(department);
-		log.info("INFO - Department {} updated successfully", department.getCode());
-		return this.departmentMapper.toResponse(department);
+		departmentRepository.save(department);
+		log.info("Department {} updated successfully", department.getCode());
+		return departmentMapper.toResponse(department);
 	}
 
 	private void existsByName(String name) {
-		if (this.departmentRepository.existsByName(name)) {
+		if (departmentRepository.existsByName(name)) {
 			throw new IllegalArgumentException(String.format(NAME_EXISTS, NAME, name));
 		}
 	}

@@ -16,7 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-
+/**
+ * Implementation of the {@code EmergencyContactInterface} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.emgcontactservice.EmergencyContactInterface
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -27,43 +31,52 @@ public class EmergencyContactImpl implements EmergencyContactInterface {
 	private final EmergencyContactMapper emergencyContactMapper;
 	private final EmergencyContactRepository emergencyContactRepository;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public EmergencyContactResponse getEmergencyContact(Long id) {
-		User loggedUser = this.checks.currentlyLoggedInUser();
-		this.checks.isAdminOrLoggedIn(loggedUser.getUsername());
+		User loggedUser = checks.currentlyLoggedInUser();
+		checks.isAdminOrLoggedIn(loggedUser.getUsername());
 		EmergencyContact emergencyContact = loadEmergencyContact(id);
-		return this.emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
+		return emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public EmergencyContact addEmergencyContact(EmergencyContactRequest request, Long userId) {
 		EmergencyContact emergencyContact = EmergencyContact.builder()
 				.userId(userId)
 				.fullName(request.fullName())
 				.relationship(request.relationship())
-				.phoneNumber(request.phoneNumber().value())
+				.phoneNumber(request.phoneNumber().number())
 				.email(request.email().value())
 				.occupation(request.occupation())
-				.address(this.addressMapper.toAddress(request.address()))
+				.address(addressMapper.toAddress(request.address()))
 				.build();
-		log.info("INFO - Saving new emergency contact info...");
+		log.info("Saving new emergency contact info...");
 		return emergencyContact;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public EmergencyContactResponse updateEmergencyContact(Long id, EmergencyContactRequest request) {
-		User loggedUser = this.checks.currentlyLoggedInUser();
-		this.checks.isAdminOrLoggedIn(loggedUser.getUsername());
+		User loggedUser = checks.currentlyLoggedInUser();
+		checks.isAdminOrLoggedIn(loggedUser.getUsername());
 		EmergencyContact emergencyContact = loadEmergencyContact(id);
-		UpdateStrategy strategy = this.globalUtil.checkStrategy("updateEmergencyContact");
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateEmergencyContact");
 		emergencyContact = (EmergencyContact) strategy.update(emergencyContact, request);
-		this.emergencyContactRepository.save(emergencyContact);
-		log.info("INFO - Emergency contact info for user ID: {} updated", loggedUser.getId());
-		return this.emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
+		emergencyContactRepository.save(emergencyContact);
+		log.info("Emergency contact info for user ID: {} updated", loggedUser.getId());
+		return emergencyContactMapper.toEmergencyContactResponse(emergencyContact);
 	}
 
 	private EmergencyContact loadEmergencyContact(Long id) {
-		return this.emergencyContactRepository.findByUserId(id)
+		return emergencyContactRepository.findByUserId(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NO_INFO_FOUND, "emergency contact")));
 	}
