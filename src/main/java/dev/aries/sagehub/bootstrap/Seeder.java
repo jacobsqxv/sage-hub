@@ -41,20 +41,20 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		this.loadRoles();
-		this.checkAcademicYear();
-		this.checkSuperAdmin();
+		loadRoles();
+		checkAcademicYear();
+		checkSuperAdmin();
 	}
 
 	private void loadAcademicYear(Integer year) {
 		LocalDate startDate = LocalDate.of(year, 9, 1);
 		LocalDate endDate = startDate.plusYears(1).minusDays(1);
-		this.academicYearRepository.save(AcademicYear.builder()
+		academicYearRepository.save(AcademicYear.builder()
 				.year(year)
 				.startDate(startDate)
 				.endDate(endDate)
 				.build());
-		log.info("INFO - Academic year added:: {}", year);
+		log.info("Academic year added:: {}", year);
 	}
 
 	private void loadRoles() {
@@ -67,13 +67,13 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 				RoleEnum.APPLICANT, "Prospective Student role");
 
 		Arrays.stream(roles).forEach((role) -> {
-			if (!this.roleRepository.existsByName(role)) {
+			if (!roleRepository.existsByName(role)) {
 				Role roleToSave = Role.builder()
 						.name(role)
 						.description(roleDescription.get(role))
 						.build();
-				this.roleRepository.save(roleToSave);
-				log.info("INFO - Role added:: '{}'", role.name());
+				roleRepository.save(roleToSave);
+				log.info("Role added:: '{}'", role.name());
 			}
 		});
 	}
@@ -81,10 +81,10 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 	private void loadSuperAdmin() {
 		String firstName = "Super";
 		String lastName = "Admin";
-		Username username = this.generators.generateUsername(firstName, lastName);
-		Password password = this.generators.generatePassword(8);
+		Username username = generators.generateUsername(firstName, lastName);
+		Password password = generators.generatePassword(8);
 		Email email = new Email("sagehub.superadmin@mockinbox.com");
-		User user = this.userFactory.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
+		User user = userFactory.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
 		Admin superAdmin = Admin.builder()
 				.firstName(firstName)
 				.lastName(lastName)
@@ -92,14 +92,14 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 				.profilePictureUrl("https://www.gravatar.com/avatar.jpg")
 				.user(user)
 				.build();
-		this.adminRepository.save(superAdmin);
-		this.emailService.sendAccountCreatedEmail(username, password, email);
-		log.info("INFO - Super admin added:: username: {} | password: {}", username.value(), password.value());
+		adminRepository.save(superAdmin);
+		emailService.sendAccountCreatedEmail(username, password, email);
+		log.info("Super admin added:: username: {} | password: {}", username.value(), password.value());
 	}
 
 	private void checkSuperAdmin() {
-		if (this.userRepository.findByUsername("sadmin").isPresent()) {
-			log.info("INFO - Super admin already exists");
+		if (userRepository.findByUsername("sadmin").isPresent()) {
+			log.info("Super admin already exists");
 		}
 		else {
 			loadSuperAdmin();
@@ -108,8 +108,8 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 
 	private void checkAcademicYear() {
 		Integer currentYear = LocalDate.now().getYear();
-		if (this.academicYearRepository.findByYear(currentYear).isPresent()) {
-			log.info("INFO - Academic year {} already exists", currentYear);
+		if (academicYearRepository.findByYear(currentYear).isPresent()) {
+			log.info("Academic year {} already exists", currentYear);
 		}
 		else {
 			loadAcademicYear(currentYear);
