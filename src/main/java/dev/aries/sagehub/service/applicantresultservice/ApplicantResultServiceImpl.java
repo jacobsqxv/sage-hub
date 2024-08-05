@@ -18,7 +18,11 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+/**
+ * Implementation of the {@code ApplicantResultService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.applicantresultservice.ApplicantResultService
+ */
 @Service
 @RequiredArgsConstructor
 public class ApplicantResultServiceImpl implements ApplicantResultService {
@@ -29,37 +33,43 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	private final GlobalUtil globalUtil;
 	private final Checks checks;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	@Transactional
 	public ApplicantResultsResponse addApplicantResults(Long applicantId, ApplicantResultRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.isCurrentlyLoggedInUser(loggedInUser.getId());
-		this.applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
-		Applicant applicant = this.applicantUtil.loadApplicant(applicantId);
-		ApplicantResult results = this.resultsMapper.toApplicantResults(request, applicant);
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
+		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Applicant applicant = applicantUtil.loadApplicant(applicantId);
+		ApplicantResult results = resultsMapper.toApplicantResults(request, applicant);
 		for (SubjectScore score : results.getScores()) {
 			score.setResult(results);
 		}
-		this.applicantResultRepository.save(results);
+		applicantResultRepository.save(results);
 		applicant.getResults().add(results);
-		this.applicantRepository.save(applicant);
-		return this.resultsMapper.toApplicantResultsResponse(results);
+		applicantRepository.save(applicant);
+		return resultsMapper.toApplicantResultsResponse(results);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicantResultsResponse updateApplicantResults(Long id, ApplicantResultRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.checks.isCurrentlyLoggedInUser(loggedInUser.getId());
+		User loggedInUser = checks.currentlyLoggedInUser();
+		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
 		ApplicantResult result = loadResults(id);
-		this.applicantUtil.validApplicantResult(loggedInUser.getId(), result.getId());
-		UpdateStrategy strategy = this.globalUtil.checkStrategy("updateApplicantResults");
+		applicantUtil.validApplicantResult(loggedInUser.getId(), result.getId());
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateApplicantResults");
 		result = (ApplicantResult) strategy.update(result, request);
-		this.applicantResultRepository.save(result);
-		return this.resultsMapper.toApplicantResultsResponse(result);
+		applicantResultRepository.save(result);
+		return resultsMapper.toApplicantResultsResponse(result);
 	}
 
 	private ApplicantResult loadResults(Long id) {
-		return this.applicantResultRepository.findById(id)
+		return applicantResultRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Results")));
 	}

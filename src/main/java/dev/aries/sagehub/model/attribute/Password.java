@@ -20,21 +20,21 @@ public record Password(String value) implements CharSequence {
 
 	@Override
 	public int length() {
-		return this.value.length();
+		return value.length();
 	}
 
 	@Override
 	public char charAt(int index) {
-		return this.value.charAt(index);
+		return value.charAt(index);
 	}
 
 	@Override
 	public CharSequence subSequence(int start, int end) {
-		return this.value.subSequence(start, end);
+		return value.subSequence(start, end);
 	}
 
 	@Override
 	public String toString() {
-		return this.value;
+		return value;
 	}
 }

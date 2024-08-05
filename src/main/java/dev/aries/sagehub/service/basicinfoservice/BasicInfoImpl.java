@@ -3,9 +3,6 @@ package dev.aries.sagehub.service.basicinfoservice;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.BasicInfoRequest;
 import dev.aries.sagehub.dto.response.BasicInfoResponse;
-import dev.aries.sagehub.enums.Gender;
-import dev.aries.sagehub.enums.MaritalStatus;
-import dev.aries.sagehub.enums.Title;
 import dev.aries.sagehub.mapper.BasicInfoMapper;
 import dev.aries.sagehub.model.BasicInfo;
 import dev.aries.sagehub.model.User;
@@ -18,7 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-
+/**
+ * Implementation of the {@code BasicInfoInterface} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.basicinfoservice.BasicInfoInterface
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -28,46 +29,54 @@ public class BasicInfoImpl implements BasicInfoInterface {
 	private final BasicInfoMapper basicInfoMapper;
 	private final BasicInfoRepository basicInfoRepository;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public BasicInfoResponse getBasicInfo(Long id) {
-		User loggedUser = this.checks.currentlyLoggedInUser();
-		this.checks.isAdminOrLoggedIn(loggedUser.getUsername());
+		User loggedUser = checks.currentlyLoggedInUser();
+		checks.isAdminOrLoggedIn(loggedUser.getUsername());
 		BasicInfo basicInfo = loadBasicInfo(id);
-		return this.basicInfoMapper.toBasicInfoResponse(basicInfo);
+		return basicInfoMapper.toBasicInfoResponse(basicInfo);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public BasicInfo addBasicInfo(BasicInfoRequest request, Long userId) {
 		BasicInfo basicInfo = BasicInfo.builder()
 				.userId(userId)
 				.profilePictureUrl(request.profilePicture())
-				.title(Title.valueOf(request.title().toUpperCase()))
-				.firstName(request.firstname())
-				.lastName(request.lastname())
+				.title(request.title())
+				.firstName(request.firstName())
+				.lastName(request.lastName())
 				.middleName(request.middleName())
-				.maritalStatus(MaritalStatus.valueOf(
-						request.maritalStatus().toUpperCase()))
-				.gender(Gender.valueOf(request.gender().toUpperCase()))
+				.maritalStatus(request.maritalStatus())
+				.gender(request.gender())
 				.dateOfBirth(request.dateOfBirth())
 				.build();
-		log.info("INFO - Saving new basic info...");
+		log.info("Saving new basic info...");
 		return basicInfo;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public BasicInfoResponse updateBasicInfo(Long id, BasicInfoRequest request) {
-		User loggedUser = this.checks.currentlyLoggedInUser();
-		this.checks.isAdminOrLoggedIn(loggedUser.getUsername());
+		User loggedUser = checks.currentlyLoggedInUser();
+		checks.isAdminOrLoggedIn(loggedUser.getUsername());
 		BasicInfo basicInfo = loadBasicInfo(id);
-		UpdateStrategy strategy = this.globalUtil.checkStrategy("updateBasicInfo");
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateBasicInfo");
 		basicInfo = (BasicInfo) strategy.update(basicInfo, request);
-		this.basicInfoRepository.save(basicInfo);
-		log.info("INFO - Basic info for user ID: {} updated", loggedUser.getId());
-		return this.basicInfoMapper.toBasicInfoResponse(basicInfo);
+		basicInfoRepository.save(basicInfo);
+		log.info(" Basic info for user ID: {} updated", loggedUser.getId());
+		return basicInfoMapper.toBasicInfoResponse(basicInfo);
 	}
 
 	private BasicInfo loadBasicInfo(Long id) {
-		return this.basicInfoRepository.findByUserId(id)
+		return basicInfoRepository.findByUserId(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NO_INFO_FOUND, "basic")));
 	}

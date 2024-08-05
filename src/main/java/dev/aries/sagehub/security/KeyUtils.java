@@ -63,19 +63,19 @@ public class KeyUtils {
 	}
 
 	private KeyPair getAccessTokenKeyPair() {
-		if (Objects.isNull(this.accessTokenKeyPair)) {
-			this.accessTokenKeyPair = loadOrCreateKeyPair(
-					this.accessTokenPublicKeyPath, this.accessTokenPrivateKeyPath);
+		if (Objects.isNull(accessTokenKeyPair)) {
+			accessTokenKeyPair = loadOrCreateKeyPair(
+					accessTokenPublicKeyPath, accessTokenPrivateKeyPath);
 		}
-		return this.accessTokenKeyPair;
+		return accessTokenKeyPair;
 	}
 
 	private KeyPair getRefreshTokenKeyPair() {
-		if (Objects.isNull(this.refreshTokenKeyPair)) {
-			this.refreshTokenKeyPair = loadOrCreateKeyPair(
-					this.refreshTokenPublicKeyPath, this.refreshTokenPrivateKeyPath);
+		if (Objects.isNull(refreshTokenKeyPair)) {
+			refreshTokenKeyPair = loadOrCreateKeyPair(
+					refreshTokenPublicKeyPath, refreshTokenPrivateKeyPath);
 		}
-		return this.refreshTokenKeyPair;
+		return refreshTokenKeyPair;
 	}
 
 	private KeyPair loadOrCreateKeyPair(String publicKeyPath, String privateKeyPath) {

@@ -12,10 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,6 +39,11 @@ public class SecurityConfig {
 
 	private static final String[] WHITELIST = {
 			"/api/v1/auth/**",
+			"/sagehub-docs/**",
+			"/sagehub-api-docs/**",
+			"/swagger-ui/**",
+			"/swagger-ui.html",
+			"/v3/api-docs/**",
 	};
 	private final UserDetailsService userDetailsService;
 	private final KeyUtils keyUtils;
@@ -68,22 +71,17 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
-	}
-
-	@Bean
 	@Primary
 	JwtDecoder jwtAccessTokenDecoder() {
-		return NimbusJwtDecoder.withPublicKey(this.keyUtils.getAccessTokenPublicKey()).build();
+		return NimbusJwtDecoder.withPublicKey(keyUtils.getAccessTokenPublicKey()).build();
 	}
 
 	@Bean
 	@Primary
 	JwtEncoder jwtAccessTokenEncoder() {
 		JWK jwk = new RSAKey
-				.Builder(this.keyUtils.getAccessTokenPublicKey())
-				.privateKey(this.keyUtils.getAccessTokenPrivateKey())
+				.Builder(keyUtils.getAccessTokenPublicKey())
+				.privateKey(keyUtils.getAccessTokenPrivateKey())
 				.build();
 		JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
 		return new NimbusJwtEncoder(jwks);
@@ -91,14 +89,14 @@ public class SecurityConfig {
 
 	@Bean
 	JwtDecoder jwtRefreshTokenDecoder() {
-		return NimbusJwtDecoder.withPublicKey(this.keyUtils.getRefreshTokenPublicKey()).build();
+		return NimbusJwtDecoder.withPublicKey(keyUtils.getRefreshTokenPublicKey()).build();
 	}
 
 	@Bean
 	JwtEncoder jwtRefreshTokenEncoder() {
 		JWK jwk = new RSAKey
-				.Builder(this.keyUtils.getRefreshTokenPublicKey())
-				.privateKey(this.keyUtils.getRefreshTokenPrivateKey())
+				.Builder(keyUtils.getRefreshTokenPublicKey())
+				.privateKey(keyUtils.getRefreshTokenPrivateKey())
 				.build();
 		JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
 		return new NimbusJwtEncoder(jwks);
@@ -107,7 +105,7 @@ public class SecurityConfig {
 	@Bean
 	DaoAuthenticationProvider daoAuthenticationProvider() {
 		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(this.userDetailsService);
+		provider.setUserDetailsService(userDetailsService);
 		provider.setPasswordEncoder(passwordEncoder());
 		return provider;
 	}

@@ -26,7 +26,7 @@ public final class ExceptionConstants {
 	/**
 	 * Message for invalid credentials exception.
 	 */
-	public static final String INVALID_CREDENTIALS = "Invalid username or password";
+	public static final String INVALID_CREDENTIALS = "Username or password is incorrect";
 	/**
 	 * Message for invalid current password exception.
 	 */
@@ -93,6 +93,15 @@ public final class ExceptionConstants {
 	 */
 	public static final String PASSWORD_ALREADY_USED = "Password has already been used";
 
+	/**
+	 * Message for invalid request.
+	 */
+	public static final String INVALID_REQUEST = "There was a problem with the request format";
+
+	/**
+	 * Message for invalid enum value.
+	 */
+	public static final String ENUM_VALUE_INVALID = "The provided value: '%s', is invalid";
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.

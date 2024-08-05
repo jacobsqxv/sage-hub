@@ -77,7 +77,7 @@ public class Generators {
 		lastName = lastName.replace("-", "");
 		String username = String.format("%s%s", firstName.charAt(0), lastName).toLowerCase();
 		int suffix = 1;
-		while (this.userRepository.existsByUsername(username)) {
+		while (userRepository.existsByUsername(username)) {
 			username = username.replaceAll("\\d+$", "");
 			username = String.format("%s%d", username, suffix++);
 		}
@@ -93,12 +93,12 @@ public class Generators {
 	public Long generateUniqueId(boolean isStudent) {
 		Long id = Long.valueOf(generateId(isStudent));
 		if (isStudent) {
-			while (this.voucherRepository.existsBySerialNumber(id)) {
+			while (voucherRepository.existsBySerialNumber(id)) {
 				id = Long.valueOf(generateId(true));
 			}
 		}
 		else {
-			while (this.staffRepository.existsById(id)) {
+			while (staffRepository.existsById(id)) {
 				id = Long.valueOf(generateId(false));
 			}
 		}
@@ -107,7 +107,7 @@ public class Generators {
 
 	public String generateDeptCode() {
 		String code = generator.generatePassword(3, digits);
-		while (this.departmentRepository.existsByCode(code)) {
+		while (departmentRepository.existsByCode(code)) {
 			code = generator.generatePassword(3, digits);
 		}
 		return code;
@@ -126,7 +126,7 @@ public class Generators {
 		prefix = prefix.toUpperCase();
 		String suffix = generator.generatePassword(3, digits);
 		String code = String.format("%s %s", prefix, suffix);
-		while (this.courseRepository.existsByCode(code)) {
+		while (courseRepository.existsByCode(code)) {
 			suffix = generator.generatePassword(3, digits);
 			code = String.format("%s%s", prefix, suffix);
 		}

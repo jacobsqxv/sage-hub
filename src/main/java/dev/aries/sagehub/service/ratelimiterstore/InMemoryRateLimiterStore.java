@@ -7,18 +7,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
 
 import org.springframework.stereotype.Component;
-
+/**
+ * Implementation of the {@code RateLimiterStore} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.ratelimiterstore.RateLimiterStore
+ */
 @Component
 public class InMemoryRateLimiterStore implements RateLimiterStore {
 	private final ConcurrentHashMap<UUID, RateLimitEntry> rateLimits = new ConcurrentHashMap<>();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean tryAcquire(UUID clientId, int maxRequests, long timeIntervalInMinutes) {
-		RateLimitEntry entry = this.rateLimits.computeIfAbsent(clientId, (key) ->
+		RateLimitEntry entry = rateLimits.computeIfAbsent(clientId, (key) ->
 				new RateLimitEntry(maxRequests, LocalDateTime.now()));
 		LocalDateTime currentTime = LocalDateTime.now();
 		if (entry.getLastRequestTime().isBefore(currentTime.minusMinutes(timeIntervalInMinutes))) {
-			entry.reset(maxRequests, currentTime);
+			entry.reset(currentTime);
 			return true;
 		}
 		if (entry.getRequestCount() < maxRequests) {
@@ -28,11 +35,23 @@ public class InMemoryRateLimiterStore implements RateLimiterStore {
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void resetAll() {
-		this.rateLimits.clear();
+		rateLimits.clear();
 	}
 
+	/**
+	 * The {@code RateLimitEntry} class represents an entry for rate limiting.
+	 * It keeps track of the maximum number of requests allowed, the current request count,
+	 * and the time of the last request.
+	 * <p>
+	 * This class is used internally by the rate limiter to manage and enforce rate limits.
+	 * </p>
+	 * @author Jacobs Agyei
+	 */
 	@Data
 	private static class RateLimitEntry {
 		private final int maxRequests;
@@ -41,17 +60,17 @@ public class InMemoryRateLimiterStore implements RateLimiterStore {
 
 		RateLimitEntry(int maxRequests, LocalDateTime lastRequestTime) {
 			this.maxRequests = maxRequests;
-			this.requestCount = 0;
+			requestCount = 0;
 			this.lastRequestTime = lastRequestTime;
 		}
 
-		void reset(int maxRequests, LocalDateTime lastRequestTime) {
-			this.requestCount = 0;
+		void reset(LocalDateTime lastRequestTime) {
+			requestCount = 0;
 			this.lastRequestTime = lastRequestTime;
 		}
 
 		void incrementRequestCount() {
-			this.requestCount++;
+			requestCount++;
 		}
 	}
 }

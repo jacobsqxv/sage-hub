@@ -1,5 +1,7 @@
 package dev.aries.sagehub.model;
 
+import java.time.LocalDateTime;
+
 import dev.aries.sagehub.enums.TokenStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +36,7 @@ public class Voucher extends Auditing {
 	private TokenStatus status;
 	@ManyToOne
 	private AcademicYear academicYear;
+	private LocalDateTime expiresAt;
 
 	@Override
 	public final boolean equals(Object o) {

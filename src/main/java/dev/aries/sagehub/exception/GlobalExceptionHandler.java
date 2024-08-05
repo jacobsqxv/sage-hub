@@ -6,11 +6,12 @@ import java.util.Set;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -18,14 +19,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	private static final LocalDateTime TIMESTAMP = LocalDateTime.now();
-	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	@ExceptionHandler({ LockedException.class, DisabledException.class, BadCredentialsException.class,
-			UnauthorizedAccessException.class })
+	@ExceptionHandler({ LockedException.class, DisabledException.class,
+			UnauthorizedAccessException.class, AccessDeniedException.class })
 	public ResponseEntity<ExceptionResponse> handleUnauthorizedExceptions(Exception exp) {
 		logException(exp);
 		Set<String> error = new HashSet<>();
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
 		else {
 			error.add(exp.getMessage());
 		}
-		int code = HttpStatus.UNAUTHORIZED.value();
+		int code = HttpStatus.FORBIDDEN.value();
 		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
 	}
 
@@ -60,11 +61,26 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
 	}
 
-	@ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
+	@ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, BadCredentialsException.class})
 	public ResponseEntity<ExceptionResponse> handleBadRequests(Exception exp) {
 		logException(exp);
 		Set<String> error = new HashSet<>();
 		error.add(exp.getMessage());
+		int code = HttpStatus.BAD_REQUEST.value();
+		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ExceptionResponse> handleInvalidRequestFormat(HttpMessageNotReadableException exp) {
+		logException(exp);
+		Set<String> error = new HashSet<>();
+		Throwable rootCause = exp.getRootCause();
+		if (rootCause instanceof IllegalArgumentException exception) {
+			return handleBadRequests(exception);
+		}
+		else {
+			error.add(ExceptionConstants.INVALID_REQUEST);
+		}
 		int code = HttpStatus.BAD_REQUEST.value();
 		return ResponseEntity.status(code).body(new ExceptionResponse(code, TIMESTAMP, error));
 	}

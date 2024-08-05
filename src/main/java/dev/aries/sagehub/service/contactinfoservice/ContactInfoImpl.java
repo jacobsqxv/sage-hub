@@ -16,7 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-
+/**
+ * Implementation of the {@code ContactInfoInterface} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.contactinfoservice.ContactInfoInterface
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -27,41 +31,50 @@ public class ContactInfoImpl implements ContactInfoInterface {
 	private final ContactInfoMapper contactInfoMapper;
 	private final ContactInfoRepository contactInfoRepository;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ContactInfoResponse getContactInfo(Long id) {
-		User loggedUser = this.checks.currentlyLoggedInUser();
-		this.checks.isAdminOrLoggedIn(loggedUser.getUsername());
+		User loggedUser = checks.currentlyLoggedInUser();
+		checks.isAdminOrLoggedIn(loggedUser.getUsername());
 		ContactInfo contactInfo = loadContactInfo(id);
-		return this.contactInfoMapper.toContactInfoResponse(contactInfo);
+		return contactInfoMapper.toContactInfoResponse(contactInfo);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ContactInfo addContactInfo(ContactInfoRequest request, Long userId) {
 		ContactInfo contactInfo = ContactInfo.builder()
 				.userId(userId)
 				.secondaryEmail(request.secondaryEmail().value())
-				.phoneNumber(request.phoneNumber().value())
-				.address(this.addressMapper.toAddress(request.address()))
+				.phoneNumber(request.phoneNumber().number())
+				.address(addressMapper.toAddress(request.address()))
 				.postalAddress(request.postalAddress())
 				.build();
-		log.info("INFO - Saving new contact info...");
+		log.info("Saving new contact info...");
 		return contactInfo;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ContactInfoResponse updateContactInfo(Long id, ContactInfoRequest request) {
-		User loggedUser = this.checks.currentlyLoggedInUser();
-		this.checks.isAdminOrLoggedIn(loggedUser.getUsername());
+		User loggedUser = checks.currentlyLoggedInUser();
+		checks.isAdminOrLoggedIn(loggedUser.getUsername());
 		ContactInfo contactInfo = loadContactInfo(id);
-		UpdateStrategy strategy = this.globalUtil.checkStrategy("updateContactInfo");
+		UpdateStrategy strategy = globalUtil.checkStrategy("updateContactInfo");
 		contactInfo = (ContactInfo) strategy.update(contactInfo, request);
-		this.contactInfoRepository.save(contactInfo);
-		log.info("INFO - Contact info for user ID: {} updated", loggedUser.getId());
-		return this.contactInfoMapper.toContactInfoResponse(contactInfo);
+		contactInfoRepository.save(contactInfo);
+		log.info("Contact info for user ID: {} updated", loggedUser.getId());
+		return contactInfoMapper.toContactInfoResponse(contactInfo);
 	}
 
 	private ContactInfo loadContactInfo(Long id) {
-		return this.contactInfoRepository.findByUserId(id)
+		return contactInfoRepository.findByUserId(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NOT_FOUND, "Contact info")));
 	}

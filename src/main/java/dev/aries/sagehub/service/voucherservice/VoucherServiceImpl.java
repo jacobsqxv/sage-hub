@@ -1,5 +1,7 @@
 package dev.aries.sagehub.service.voucherservice;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +26,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
+/**
+ * Implementation of the {@code VoucherService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.voucherservice.VoucherService
+ */
 @Service
 @RequiredArgsConstructor
 public class VoucherServiceImpl implements VoucherService {
@@ -36,31 +42,42 @@ public class VoucherServiceImpl implements VoucherService {
 	private final Generators generators;
 	private final VoucherMapper voucherMapper;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public GenericResponse addVouchers(AddVoucherRequest request) {
 		checkVouchers(request.year());
 		AcademicYear year = getAcademicYear(request.year());
 		List<Voucher> vouchers = new ArrayList<>();
 		for (int i = 0; i < request.quantity(); i++) {
-			Long serialNumber = this.generators.generateUniqueId(true);
-			Password pin = this.generators.generatePassword(8);
+			Long serialNumber = generators.generateUniqueId(true);
+			Password pin = generators.generatePassword(8);
+			LocalDate expiresAt = year.getStartDate().plusMonths(2);
 			vouchers.add(Voucher.builder()
 					.serialNumber(serialNumber)
 					.pin(pin.value())
 					.academicYear(year)
 					.status(TokenStatus.ACTIVE)
+					.expiresAt(expiresAt.atTime(LocalTime.MAX))
 					.build());
 		}
-		this.saveVouchers(vouchers);
+		saveVouchers(vouchers);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.ADD_SUCCESS, "Vouchers"));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Page<VoucherResponse> getVouchers(GetVouchersPage request, Pageable pageable) {
-		return this.voucherRepository.findAll(request.year(), request.status(), pageable)
-				.map(this.voucherMapper::toVoucherResponse);
+		return voucherRepository.findAll(request.year(), request.status(), pageable)
+				.map(voucherMapper::toVoucherResponse);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void verifyVoucher(VoucherRequest request) {
 		Voucher voucher = getVoucher(request.serialNumber(), request.pin());
@@ -70,28 +87,28 @@ public class VoucherServiceImpl implements VoucherService {
 
 	private void saveVouchers(List<Voucher> vouchers) {
 		if (vouchers.size() > 1) {
-			this.voucherRepository.saveAll(vouchers);
+			voucherRepository.saveAll(vouchers);
 		}
 		else {
-			this.voucherRepository.save(vouchers.getFirst());
+			voucherRepository.save(vouchers.getFirst());
 		}
 	}
 
 	private void checkVouchers(Integer year) {
-		List<Voucher> vouchers = this.voucherRepository.findAllByAcademicYear(getAcademicYear(year));
+		List<Voucher> vouchers = voucherRepository.findAllByAcademicYear(getAcademicYear(year));
 		if (!vouchers.isEmpty() && vouchers.size() >= LIMIT) {
 			throw new IllegalArgumentException(ExceptionConstants.VOUCHERS_LIMIT);
 		}
 	}
 
 	private AcademicYear getAcademicYear(Integer year) {
-		return this.academicYearRepository.findByYear(year)
+		return academicYearRepository.findByYear(year)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Academic Year")));
 	}
 
 	private Voucher getVoucher(Long serialNumber, String pin) {
-		return this.voucherRepository.findBySerialNumberAndPin(serialNumber, pin)
+		return voucherRepository.findBySerialNumberAndPin(serialNumber, pin)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, VOUCHER)));
 	}

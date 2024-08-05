@@ -15,7 +15,7 @@ public class UpdateContactInfo implements UpdateStrategy<ContactInfo, ContactInf
 		entity.setSecondaryEmail((request.secondaryEmail() != null) ? request.secondaryEmail().value() : entity
 				.getSecondaryEmail());
 		entity.setPhoneNumber((request.phoneNumber() != null) ?
-				request.phoneNumber().value() : entity.getPhoneNumber());
+				request.phoneNumber().number() : entity.getPhoneNumber());
 		entity.setAddress(updateAddress(entity.getAddress(), request.address()));
 		entity.setPostalAddress((request.postalAddress() != null) ?
 				request.postalAddress() : entity.getPostalAddress());

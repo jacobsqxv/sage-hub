@@ -37,31 +37,31 @@ public class GlobalUtil {
 	private final CourseRepository courseRepository;
 
 	public UpdateStrategy checkStrategy(String type) {
-		if (this.updateStrategies.get(type) == null) {
+		if (updateStrategies.get(type) == null) {
 			throw new IllegalArgumentException(String.format(NO_UPDATE_STRATEGY, type));
 		}
-		return this.updateStrategies.get(type);
+		return updateStrategies.get(type);
 	}
 
 	public Department loadDepartment(Long id) {
-		return this.departmentRepository.findById(id)
+		return departmentRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(NOT_FOUND, "Department")));
 	}
 
 	public Program loadProgram(Long programId) {
-		return this.programRepository.findById(programId)
+		return programRepository.findById(programId)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NOT_FOUND, "Program")));
 	}
 
 	public ProgramCourse loadProgramCourses(Long programId, Long courseId, AcademicPeriod period) {
-		return this.programCourseRepository
+		return programCourseRepository
 				.findByProgramIdAndCourseIdAndAcademicPeriod(programId, courseId, period);
 	}
 
 	public Course loadCourse(Long courseId) {
-		return this.courseRepository.findById(courseId)
+		return courseRepository.findById(courseId)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Course")));
 	}
@@ -74,6 +74,11 @@ public class GlobalUtil {
 		return dateTime.format(formatter);
 	}
 
+	/**
+	 * Get the ordinal indicator for a given day ('st','nd','rd','th') .
+	 * @param day - The day to get the ordinal indicator for.
+	 * @return the ordinal indicator.
+	 */
 	private static String getOrdinalIndicator(int day) {
 		if (day >= 11 && day <= 13) {
 			return "th";

@@ -12,8 +12,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,7 +57,7 @@ public class BasicInfo extends Auditing {
 	private Long userId;
 
 	public String fullName() {
-		return getFullName(this.firstName, this.middleName, this.lastName);
+		return getFullName(firstName, middleName, lastName);
 	}
 
 	static String getFullName(String firstName, String middleName, String lastName) {
@@ -71,5 +69,21 @@ public class BasicInfo extends Auditing {
 		builder.append(middleName).append(" ");
 		builder.append(lastName);
 		return builder.toString().trim();
+	}
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof BasicInfo basicInfo)) {
+			return false;
+		}
+		return getId() != null && getId().equals(basicInfo.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return getClass().hashCode();
 	}
 }

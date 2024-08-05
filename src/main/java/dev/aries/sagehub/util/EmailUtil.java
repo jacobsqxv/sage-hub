@@ -36,7 +36,7 @@ public class EmailUtil {
 	private final UserUtil userUtil;
 
 	public Email getRecipient(Long userId) {
-		String recipient = this.userUtil.getUserEmail(userId);
+		String recipient = userUtil.getUserEmail(userId);
 		if (recipient == null) {
 			throw new IllegalArgumentException(
 					String.format(ExceptionConstants.NOT_FOUND, "Email"));
@@ -44,31 +44,35 @@ public class EmailUtil {
 		return new Email(recipient);
 	}
 
+	/**
+	 * Send an email using the Mailgun API.
+	 * @param emailDetails - The email details to send.
+	 */
 	public void sendEmail(EmailDetails emailDetails) {
 		ClientConfig clientConfig = new ClientConfig();
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("api", this.mailgunApiKey);
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic("api", mailgunApiKey);
 		clientConfig.register(feature);
 
 		Form formData = new Form();
 		String variables = createDynamicVariables(emailDetails);
-		formData.param("from", "SageHub <" + this.mailgunFrom + ">");
+		formData.param("from", "SageHub <" + mailgunFrom + ">");
 		formData.param("to", emailDetails.recipient().value());
 		formData.param("subject", emailDetails.template().getSubject());
 		formData.param("template", emailDetails.template().getName());
 		formData.param("h:X-Mailgun-Variables", variables);
 
 		try (Client client = ClientBuilder.newClient(clientConfig)) {
-			WebTarget webResource = client.target(this.mailgunDomain);
-			log.debug("INFO - Sending email to {}", emailDetails.recipient().value());
+			WebTarget webResource = client.target(mailgunDomain);
+			log.debug("Sending email to {}", emailDetails.recipient().value());
 			try (Response response = webResource.request(MediaType.APPLICATION_FORM_URLENCODED)
 					.post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED))) {
 				if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-					log.debug("INFO - Email sent successfully to {}",
+					log.debug("Email sent successfully to {}",
 							emailDetails.recipient().value());
 				}
 				else {
 					// Log error response from Mailgun
-					log.error("ERROR - Failed to send email:: Cause: {}",
+					log.error("Failed to send email:: Cause: {}",
 							response.readEntity(String.class));
 					throw new EmailSendFailureException();
 				}
@@ -76,6 +80,11 @@ public class EmailUtil {
 		}
 	}
 
+	/**
+	 * Create dynamic variables for the email template.
+	 * @param emailDetails - The email details to send.
+	 * @return - The dynamic variables as a JSON string.
+	 */
 	private String createDynamicVariables(EmailDetails emailDetails) {
 		Map<String, Object> variables = new HashMap<>();
 

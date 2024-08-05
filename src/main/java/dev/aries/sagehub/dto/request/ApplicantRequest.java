@@ -1,5 +1,6 @@
 package dev.aries.sagehub.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -7,15 +8,19 @@ import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
 public record ApplicantRequest(
 		@NotNull(message = "Academic year" + NOT_NULL)
-		Integer applyingForYear,
-		@NotNull(message = NOT_NULL + "Basic info")
+		@Schema(example = "2024")
+		Integer yearOfApplication,
+		@NotNull(message = "Basic info" + NOT_NULL)
 		@Valid
+		@Schema(implementation = BasicInfoRequest.class)
 		BasicInfoRequest basicInfo,
-		@NotNull(message = NOT_NULL + "Contact info")
+		@NotNull(message =  "Contact info" + NOT_NULL)
 		@Valid
+		@Schema(implementation = ContactInfoRequest.class)
 		ContactInfoRequest contactInfo,
-		@NotNull(message = NOT_NULL + "Emergency contact")
+		@NotNull(message = "Emergency contact" + NOT_NULL)
 		@Valid
+		@Schema(implementation = EmergencyContactRequest.class)
 		EmergencyContactRequest guardianInfo
 ) {
 }

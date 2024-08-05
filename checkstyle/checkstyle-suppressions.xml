@@ -9,5 +9,6 @@
     <suppress files="\.java$" checks="HeaderCheck" />
     <suppress files="\.java$" checks="JavadocPackageCheck" />
     <suppress files="\.java$" checks="SpringAvoidStaticImport" />
+    <suppress files="\.java$" checks="RequireThis" />
 
 </suppressions>

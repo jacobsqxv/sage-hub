@@ -17,22 +17,23 @@ public class ApplicantMapper {
 
 	public ApplicantResponse toApplicantResponse(Applicant applicant) {
 		ApplicantResponse.ApplicantResponseBuilder response = ApplicantResponse.builder();
-		response.id(applicant.getId())
-				.applyingForYear(applicant.getApplyingForYear().getYear())
-				.basicInfo(this.basicInfoMapper.toBasicInfoResponse(applicant.getBasicInfo()))
+		response.userId(applicant.getUser().getId())
+				.applicantId(applicant.getId())
+				.yearOfApplication(applicant.getYearOfApplication().getYear())
+				.basicInfo(basicInfoMapper.toBasicInfoResponse(applicant.getBasicInfo()))
 				.status(applicant.getStatus().toString())
 				.isSubmitted(applicant.isSubmitted());
-		response.contactInfo(this.contactInfoMapper.toContactInfoResponse(applicant.getContactInfo()));
-		response.guardianInfo(this.emergencyContactMapper
+		response.contactInfo(contactInfoMapper.toContactInfoResponse(applicant.getContactInfo()));
+		response.guardianInfo(emergencyContactMapper
 				.toEmergencyContactResponse(applicant.getEmergencyContact()));
 		if (applicant.getProgramChoices() != null) {
 			response.programs(applicant.getProgramChoices().stream()
-					.map(this.programMapper::toBasicProgramResponse)
+					.map(programMapper::toBasicProgramResponse)
 					.toList());
 		}
 		if (applicant.getResults() != null) {
 			response.results(applicant.getResults().stream()
-					.map(this.applicantResultsMapper::toApplicantResultsResponse)
+					.map(applicantResultsMapper::toApplicantResultsResponse)
 					.toList());
 		}
 		return response.build();

@@ -30,20 +30,20 @@ public class UserUtil {
 	private final ApplicantRepository applicantRepository;
 
 	public User getUser(Username username) {
-		log.info("INFO - Getting user with username: {}", username.value());
-		return this.userRepository.findByUsername(username.value())
+		log.info("Getting user with username: {}", username.value());
+		return userRepository.findByUsername(username.value())
 				.orElseThrow(
 						() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
 	}
 
 	public User getUser(Long id) {
-		log.info("INFO - Getting user with user ID: {}", id);
-		return this.userRepository.findById(id).orElseThrow(
+		log.info("Getting user with user ID: {}", id);
+		return userRepository.findById(id).orElseThrow(
 				() -> new EntityNotFoundException(String.format(NOT_FOUND, USER)));
 	}
 
 	public boolean userExists(Username username) {
-		return this.userRepository
+		return userRepository
 				.existsByUsername(username.value());
 	}
 
@@ -51,19 +51,19 @@ public class UserUtil {
 		Role userRole = getUser(id).getRole();
 		switch (userRole.getName()) {
 			case SUPER_ADMIN, ADMIN -> {
-				return this.adminRepository.findPrimaryEmailByUserId(id)
+				return adminRepository.findPrimaryEmailByUserId(id)
 						.orElse(null);
 			}
 			case STAFF -> {
-				return this.staffRepository.findSecondaryEmailByUserId(id)
+				return staffRepository.findSecondaryEmailByUserId(id)
 						.orElse(null);
 			}
 			case STUDENT -> {
-				return this.studentRepository.findSecondaryEmailByUserId(id)
+				return studentRepository.findSecondaryEmailByUserId(id)
 						.orElse(null);
 			}
 			case APPLICANT -> {
-				return this.applicantRepository.findSecondaryEmailByUserId(id)
+				return applicantRepository.findSecondaryEmailByUserId(id)
 						.orElse(null);
 			}
 			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, USER));

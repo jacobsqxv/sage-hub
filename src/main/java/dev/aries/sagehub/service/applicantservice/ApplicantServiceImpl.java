@@ -30,7 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+/**
+ * Implementation of the {@code ApplicantService} interface.
+ * @author Jacobs Agyei
+ * @see dev.aries.sagehub.service.applicantservice.ApplicantService
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -45,22 +49,25 @@ public class ApplicantServiceImpl implements ApplicantService {
 	private final Checks checks;
 	private final Generators generators;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	@Transactional
 	public ApplicantResponse addPersonalInfo(ApplicantRequest request) {
-		User user = this.checks.currentlyLoggedInUser();
-		this.checks.checkApplicantExists(user.getId());
-		Voucher voucher = this.applicantUtil.getVoucher(Long.valueOf(user.getUsername()));
-		this.applicantUtil.updateVoucherStatus(voucher);
-		BasicInfo basicInfo = this.basicInfoInterface.addBasicInfo(request.basicInfo(), user.getId());
-		ContactInfo contactInfo = this.contactInfoInterface.addContactInfo(request.contactInfo(), user.getId());
-		EmergencyContact emergencyContact = this.emergencyContactInterface
+		User user = checks.currentlyLoggedInUser();
+		checks.checkApplicantExists(user.getId());
+		Voucher voucher = applicantUtil.getVoucher(Long.valueOf(user.getUsername()));
+		applicantUtil.updateVoucherStatus(voucher);
+		BasicInfo basicInfo = basicInfoInterface.addBasicInfo(request.basicInfo(), user.getId());
+		ContactInfo contactInfo = contactInfoInterface.addContactInfo(request.contactInfo(), user.getId());
+		EmergencyContact emergencyContact = emergencyContactInterface
 				.addEmergencyContact(request.guardianInfo(), user.getId());
-		Email primaryEmail = this.generators.generateUserEmail(user.getUsername(), "STUDENT");
+		Email primaryEmail = generators.generateUserEmail(user.getUsername(), "STUDENT");
 		Applicant applicant = Applicant.builder()
 				.id(voucher.getSerialNumber())
 				.primaryEmail(primaryEmail.value())
-				.applyingForYear(voucher.getAcademicYear())
+				.yearOfApplication(voucher.getAcademicYear())
 				.basicInfo(basicInfo)
 				.contactInfo(contactInfo)
 				.emergencyContact(emergencyContact)
@@ -68,33 +75,39 @@ public class ApplicantServiceImpl implements ApplicantService {
 				.status(ApplicantStatus.PENDING)
 				.user(user)
 				.build();
-		this.applicantRepository.save(applicant);
-		return this.applicantMapper.toApplicantResponse(applicant);
+		applicantRepository.save(applicant);
+		return applicantMapper.toApplicantResponse(applicant);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicantResponse getApplicant(Long applicantId) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
-		Applicant applicant = this.applicantUtil.loadApplicant(applicantId);
-		return this.applicantMapper.toApplicantResponse(applicant);
+		User loggedInUser = checks.currentlyLoggedInUser();
+		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Applicant applicant = applicantUtil.loadApplicant(applicantId);
+		return applicantMapper.toApplicantResponse(applicant);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Transactional
 	@Override
 	public List<ProgramResponse> updateApplicantProgramChoices(Long applicantId, ProgramChoicesRequest request) {
-		User loggedInUser = this.checks.currentlyLoggedInUser();
-		this.applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
-		Applicant applicant = this.applicantUtil.loadApplicant(applicantId);
+		User loggedInUser = checks.currentlyLoggedInUser();
+		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Applicant applicant = applicantUtil.loadApplicant(applicantId);
 		List<Program> programChoices = request.programChoices()
-				.stream().map(this.applicantUtil::getProgram).toList();
+				.stream().map(applicantUtil::getProgram).toList();
 		if (programChoices.size() != 4) {
 			throw new IllegalArgumentException(ExceptionConstants.PROGRAM_FETCH_ERROR);
 		}
 		applicant.getProgramChoices().clear();
 		applicant.getProgramChoices().addAll(programChoices);
-		this.applicantRepository.save(applicant);
-		return programChoices.stream().map(this.programMapper::toBasicProgramResponse).toList();
+		applicantRepository.save(applicant);
+		return programChoices.stream().map(programMapper::toBasicProgramResponse).toList();
 	}
 
 }
