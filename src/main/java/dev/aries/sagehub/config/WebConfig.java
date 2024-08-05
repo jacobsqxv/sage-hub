@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-	@Value("${spring.application.frontend.local}")
+	@Value("${application.frontend}")
 	private String localFrontend;
 
 	@Override

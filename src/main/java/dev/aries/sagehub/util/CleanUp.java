@@ -16,7 +16,7 @@ public class CleanUp {
 	private final TokenRepository tokenRepository;
 	private final VoucherRepository voucherRepository;
 
-	@Scheduled(cron = "${clean-up.cron}")
+	@Scheduled(cron = "${application.clean-up.cron}")
 	@Transactional
 	public void cleanUp() {
 		log.info("Starting clean up...");

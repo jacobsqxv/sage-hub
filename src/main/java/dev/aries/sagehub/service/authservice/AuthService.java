@@ -23,7 +23,7 @@ public interface AuthService {
 	/**
 	 * Authenticates a user.
 	 * <p>
-	 * This method takes an {@code AuthRequest} object containing the username and password,
+	 * This method takes an {@code AuthRequest} object containing the username, password, a boolean for remember me,
 	 * and returns an {@code AuthResponse} object containing the authentication tokens and user information.
 	 * </p>
 	 * @param request the {@code AuthRequest} containing the username and password.

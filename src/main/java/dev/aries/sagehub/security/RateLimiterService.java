@@ -19,10 +19,10 @@ public class RateLimiterService {
 
 	private final InMemoryRateLimiterStore rateLimiterStore;
 
-	@Value("${rate.limiter.max-requests}")
+	@Value("${application.rate-limiter.max-requests}")
 	private int maxRequests;
 
-	@Value("${rate.limiter.time-interval}")
+	@Value("${application.rate-limiter.time-interval}")
 	private long timeIntervalInMinutes;
 
 	public boolean tryAcquire(UUID clientId) {
@@ -35,7 +35,7 @@ public class RateLimiterService {
 		}
 	}
 
-	@Scheduled(fixedRateString = "${rate.limiter.reset-interval}")
+	@Scheduled(fixedRateString = "${application.rate-limiter.reset-interval}")
 	public void resetCounts() {
 		rateLimiterStore.resetAll();
 	}

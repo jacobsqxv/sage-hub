@@ -56,8 +56,8 @@ public class TokenService {
 				.map(GrantedAuthority::getAuthority)
 				.toList();
 		Duration expirationDuration = tokenType.equals(TokenType.ACCESS_TOKEN)
-				? Duration.ofMinutes(15)
-				: Duration.ofDays(30);
+				? Duration.ofMinutes(30)
+				: Duration.ofDays(7);
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer("SageHub")
 				.claim("type", tokenType.toString())
@@ -71,7 +71,7 @@ public class TokenService {
 		return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 	}
 
-	public AuthToken generateToken(Authentication authentication) {
+	public AuthToken generateToken(Authentication authentication, boolean rememberMe) {
 		if (!(authentication.getPrincipal() instanceof UserDetailsImpl
 				|| authentication.getPrincipal() instanceof Jwt)) {
 			log.info("Principal type: {}", authentication.getPrincipal().getClass());
@@ -82,21 +82,25 @@ public class TokenService {
 		String refreshToken;
 		log.info("Principal type: {}", authentication.getPrincipal().getClass());
 		log.info("Authentication credentials: {}", authentication.getCredentials().getClass());
-		refreshToken = getRefreshToken(authentication, user);
-		AuthToken token = new AuthToken(accessToken, refreshToken);
-		if (!refreshTokenExists(user.getId(), refreshToken)) {
-			Token newToken = Token.builder()
-					.value(token.refreshToken())
-					.userId(user.getId())
-					.expiresAt(LocalDateTime.ofInstant(
-							Instant.now().plus(30, ChronoUnit.DAYS),
-							ZoneId.systemDefault()))
-					.type(TokenType.REFRESH_TOKEN)
-					.status(TokenStatus.ACTIVE)
-					.build();
-			tokenRepository.save(newToken);
+		if (rememberMe) {
+			refreshToken = getRefreshToken(authentication, user);
+			if (!refreshTokenExists(user.getId(), refreshToken)) {
+				Token newToken = Token.builder()
+						.value(refreshToken)
+						.userId(user.getId())
+						.expiresAt(LocalDateTime.ofInstant(
+								Instant.now().plus(7, ChronoUnit.DAYS),
+								ZoneId.systemDefault()))
+						.type(TokenType.REFRESH_TOKEN)
+						.status(TokenStatus.ACTIVE)
+						.build();
+				tokenRepository.save(newToken);
+			}
 		}
-		return token;
+		else {
+			refreshToken = null;
+		}
+		return new AuthToken(accessToken, refreshToken);
 	}
 
 	private String getRefreshToken(Authentication authentication, User user) {
@@ -107,7 +111,7 @@ public class TokenService {
 			Instant expiresAt = jwt.getToken().getExpiresAt();
 			Duration duration = Duration.between(now, expiresAt);
 			long daysUntilExpiration = duration.toDays();
-			if (daysUntilExpiration < 7) {
+			if (daysUntilExpiration < 3) {
 				refreshToken = generateRefreshToken(user);
 			}
 			else {
@@ -128,7 +132,7 @@ public class TokenService {
 		}
 		token.setValue(newRefreshToken);
 		token.setExpiresAt(LocalDateTime.ofInstant(
-				Instant.now().plus(30, ChronoUnit.DAYS),
+				Instant.now().plus(7, ChronoUnit.DAYS),
 				ZoneId.systemDefault()));
 		tokenRepository.save(token);
 	}
