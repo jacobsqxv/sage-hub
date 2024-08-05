@@ -13,6 +13,11 @@ public record AuthRequest(
 		Username username,
 		@NotNull(message = "Password" + ValidationMessage.NOT_NULL)
 		@Schema(example = "P@ssw0rd")
-		Password password
+		Password password,
+		@Schema(example = "true")
+		boolean rememberMe
 ) {
+	public AuthRequest(Username username, Password password) {
+		this(username, password, false);
+	}
 }
