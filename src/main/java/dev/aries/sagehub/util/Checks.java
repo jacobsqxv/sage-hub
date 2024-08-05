@@ -6,10 +6,12 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
+import dev.aries.sagehub.model.AcademicPeriod;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.ApplicantRepository;
+import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import jakarta.persistence.EntityExistsException;
@@ -32,6 +34,7 @@ public class Checks {
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
 	private final ApplicantRepository applicantRepository;
+	private final ProgramCourseRepository programCourseRepository;
 	private static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 	private static final String DEFAULT_COUNTRY_CODE = "GH";
 
@@ -111,6 +114,16 @@ public class Checks {
 		if (applicantRepository.existsByUserId(userId)) {
 			throw new EntityExistsException(
 					String.format(ALREADY_EXISTS, "Applicant"));
+		}
+	}
+
+	public void checkProgramCourse(Long programId, Long courseId, AcademicPeriod period) {
+		boolean courseExistsAtPeriod = programCourseRepository.existsByProgramIdAndCourseIdAndAcademicPeriod(
+				programId, courseId, period);
+		boolean courseExists = programCourseRepository.existsByProgramIdAndCourseId(programId, courseId);
+		if (courseExistsAtPeriod || courseExists) {
+			throw new EntityExistsException(
+					String.format(ALREADY_EXISTS, "Course configuration"));
 		}
 	}
 

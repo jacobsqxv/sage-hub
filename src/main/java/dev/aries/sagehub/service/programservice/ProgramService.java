@@ -1,8 +1,6 @@
 package dev.aries.sagehub.service.programservice;
 
-import dev.aries.sagehub.dto.request.ProgramCourseRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
-import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
 
@@ -71,16 +69,4 @@ public interface ProgramService {
 	 */
 	ProgramResponse updateProgram(Long programId, ProgramRequest request);
 
-	/**
-	 * Updates the courses of a program.
-	 * <p>
-	 * This method takes the ID of the program and a {@code ProgramCourseRequest} object containing the updated
-	 * courses, and returns a {@code ProgramCourseResponse} object containing the updated program courses.
-	 * </p>
-	 * @param programId the ID of the program whose courses are to be updated.
-	 * @param request the {@code ProgramCourseRequest} containing the updated courses.
-	 * @return a {@code ProgramCourseResponse} containing the updated program courses.
-	 * @throws IllegalArgumentException if the programId or request is null or contains invalid data.
-	 */
-	ProgramCourseResponse updateProgramCourses(Long programId, ProgramCourseRequest request);
 }

@@ -5,6 +5,7 @@ import dev.aries.sagehub.dto.request.ProgramCourseRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
 import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
+import dev.aries.sagehub.dto.search.GetPrgCoursesPage;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
 import dev.aries.sagehub.enums.Degree;
 import dev.aries.sagehub.enums.Status;
@@ -27,15 +28,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
- * Implementation of the {@code ProgramService} interface.
+ * Implementation of the {@code ProgramService} and {@code ProgramCourseService} interfaces.
  * @author Jacobs Agyei
  * @see dev.aries.sagehub.service.programservice.ProgramService
+ * @see dev.aries.sagehub.service.programservice.ProgramCourseService
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProgramServiceImpl implements ProgramService {
+public class ProgramServiceImpl implements ProgramService, ProgramCourseService {
 
 	private final ProgramRepository programRepository;
 	private final ProgramCourseRepository programCourseRepository;
@@ -120,9 +124,45 @@ public class ProgramServiceImpl implements ProgramService {
 		return programMapper.toProgramResponse(program);
 	}
 
-	private ProgramCourseResponse addProgramCourses(Long programId, ProgramCourseRequest request) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Page<ProgramCourseResponse> getProgramCourses(
+			Long programId, GetPrgCoursesPage request, Pageable pageable) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		Program program = globalUtil.loadProgram(programId);
+		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
+			return getAllProgramsCourses(program, request, pageable);
+		}
+		return getActiveProgramCourses(program, request, pageable);
+	}
+
+	private Page<ProgramCourseResponse> getActiveProgramCourses(
+			Program program, GetPrgCoursesPage request, Pageable pageable) {
+		request = request.withStatus(Status.ACTIVE.name());
+		return loadProgramCourses(program, request, pageable);
+	}
+
+	private Page<ProgramCourseResponse> getAllProgramsCourses(
+			Program program, GetPrgCoursesPage request, Pageable pageable) {
+		return loadProgramCourses(program, request, pageable);
+	}
+
+	private Page<ProgramCourseResponse> loadProgramCourses(
+			Program program, GetPrgCoursesPage request, Pageable pageable) {
+		return programCourseRepository.findAll(program, request, pageable)
+				.map(programCourseMapper::toProgramCourseResponse);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ProgramCourseResponse addProgramCourse(Long programId, ProgramCourseRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
 		checks.checkAdmins(loggedInUser.getRole().getName());
+		checks.checkProgramCourse(programId, request.courseId(), request.period());
 		ProgramCourse programCourse = ProgramCourse.builder()
 				.program(globalUtil.loadProgram(programId))
 				.course(globalUtil.loadCourse(request.courseId()))
@@ -140,18 +180,16 @@ public class ProgramServiceImpl implements ProgramService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProgramCourseResponse updateProgramCourses(Long programId, ProgramCourseRequest request) {
-		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.checkAdmins(loggedInUser.getRole().getName());
-		ProgramCourse programCourse = globalUtil.loadProgramCourses(
-				programId, request.courseId(), request.period());
-		if (programCourse == null) {
-			return addProgramCourses(programId, request);
+	@Transactional
+	public void deleteCourseConfig(Long programId, Long id) {
+		int success = programCourseRepository.deleteByIdAndProgramId(id, programId);
+		if (success != 1) {
+			throw new IllegalArgumentException(
+					String.format(ExceptionConstants.NOT_FOUND, "Course configuration"));
 		}
-		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateProgramCourse");
-		programCourse = (ProgramCourse) updateStrategy.update(programCourse, request);
-		programCourseRepository.save(programCourse);
-		return programCourseMapper.toProgramCourseResponse(programCourse);
+		else {
+			log.info("Course configuration deleted successfully");
+		}
 	}
 
 	private void existsByName(String name) {
