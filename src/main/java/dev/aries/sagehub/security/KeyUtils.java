@@ -31,16 +31,16 @@ import org.springframework.stereotype.Component;
 public class KeyUtils {
 	private static final String DIRECTORY_PATH = "jwt-token-keys";
 
-	@Value("${access-token.private}")
+	@Value("${application.jwt.access-token.private}")
 	private String accessTokenPrivateKeyPath;
 
-	@Value("${access-token.public}")
+	@Value("${application.jwt.access-token.public}")
 	private String accessTokenPublicKeyPath;
 
-	@Value("${refresh-token.private}")
+	@Value("${application.jwt.refresh-token.private}")
 	private String refreshTokenPrivateKeyPath;
 
-	@Value("${refresh-token.public}")
+	@Value("${application.jwt.refresh-token.public}")
 	private String refreshTokenPublicKeyPath;
 
 	private KeyPair accessTokenKeyPair;

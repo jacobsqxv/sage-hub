@@ -20,8 +20,6 @@ spring:
     url: ${spring.datasource.url}
   application:
     name: sage-hub
-    frontend:
-      local: ${FRONTEND_LOCAL}
   jackson:
     default-property-inclusion: non_null
 
@@ -30,21 +28,20 @@ mailgun:
   domain: ${MAILGUN_DOMAIN}
   from: ${MAILGUN_FROM}
 
+# Application properties
 application:
   base-url: ${BASE_URL}
-
-access-token:
-  private: ${ACCESS_TOKEN_PRIVATE_KEY_PATH}
-  public: ${ACCESS_TOKEN_PUBLIC_KEY_PATH}
-
-refresh-token:
-  private: ${REFRESH_TOKEN_PRIVATE_KEY_PATH}
-  public: ${REFRESH_TOKEN_PUBLIC_KEY_PATH}
-
-rate:
-  limiter:
-    max-requests: ${RATE_LIMITER_MAX_REQUESTS}
-    time-interval: ${RATE_LIMITER_TIME_INTERVAL}
-    reset-interval: ${RATE_LIMITER_RESET_INTERVAL}
-clean-up:
-  cron: ${CLEAN_UP_CRON}
+  frontend: ${FRONTEND_URL}
+  jwt:
+    access-token:
+      private: ${ACCESS_TOKEN_PRIVATE_KEY_PATH}
+      public: ${ACCESS_TOKEN_PUBLIC_KEY_PATH}
+    refresh-token:
+      private: ${REFRESH_TOKEN_PRIVATE_KEY_PATH}
+      public: ${REFRESH_TOKEN_PUBLIC_KEY_PATH}
+  rate-limiter:
+      max-requests: ${RATE_LIMITER_MAX_REQUESTS}
+      time-interval: ${RATE_LIMITER_TIME_INTERVAL}
+      reset-interval: ${RATE_LIMITER_RESET_INTERVAL}
+  clean-up:
+    cron: ${CLEAN_UP_CRON}
