@@ -13,8 +13,8 @@ import jakarta.validation.constraints.NotNull;
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
 public record ApplicantResultRequest(
-	@NotEmpty(message = "Result type" + NOT_NULL)
-			@Schema(example = "WASSCE")
+	@NotNull(message = "Result type" + NOT_NULL)
+			@Schema(example = "WASSCE_SCHOOL")
 	ResultType resultType,
 	@NotEmpty(message = "School name" + NOT_NULL)
 	@Schema(example = "Aries International School")
