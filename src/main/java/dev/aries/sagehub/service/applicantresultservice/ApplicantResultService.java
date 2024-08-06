@@ -29,14 +29,15 @@ public interface ApplicantResultService {
 	/**
 	 * Updates existing applicant results.
 	 * <p>
-	 * This method takes the {@code id} of the applicant's result and an {@code ApplicantResultRequest}
+	 * This method takes the id of the applicant, the id of the result and an {@code ApplicantResultRequest}
 	 * object containing the updated details of the
 	 * applicant results, and returns an {@code ApplicantResultsResponse} object containing the updated results.
 	 * </p>
-	 * @param id the ID of the applicant results to be updated.
+	 * @param id the ID of the applicant to be updated.
+	 * @param resultId the ID of the applicant results to be updated.
 	 * @param request the {@code ApplicantResultRequest} containing the updated applicant results information.
 	 * @return an {@code ApplicantResultsResponse} containing the updated applicant results information.
 	 * @throws IllegalArgumentException if the request is null or contains invalid data.
 	 */
-	ApplicantResultsResponse updateApplicantResults(Long id, ApplicantResultRequest request);
+	ApplicantResultsResponse updateApplicantResults(Long id, Long resultId, ApplicantResultRequest request);
 }

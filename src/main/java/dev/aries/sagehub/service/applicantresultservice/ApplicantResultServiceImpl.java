@@ -15,6 +15,7 @@ import dev.aries.sagehub.util.ApplicantUtil;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.GlobalUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Jacobs Agyei
  * @see dev.aries.sagehub.service.applicantresultservice.ApplicantResultService
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApplicantResultServiceImpl implements ApplicantResultService {
@@ -57,10 +59,12 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicantResultsResponse updateApplicantResults(Long id, ApplicantResultRequest request) {
+	public ApplicantResultsResponse updateApplicantResults(Long id, Long resultId, ApplicantResultRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
+		log.info("applicant id: {} | username: {}", id, loggedInUser.getUsername());
+		checkApplicant(id, loggedInUser.getUsername());
 		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
-		ApplicantResult result = loadResults(id);
+		ApplicantResult result = loadResults(resultId);
 		applicantUtil.validApplicantResult(loggedInUser.getId(), result.getId());
 		UpdateStrategy strategy = globalUtil.checkStrategy("updateApplicantResults");
 		result = (ApplicantResult) strategy.update(result, request);
@@ -68,9 +72,15 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 		return resultsMapper.toApplicantResultsResponse(result);
 	}
 
-	private ApplicantResult loadResults(Long id) {
-		return applicantResultRepository.findById(id)
+	private ApplicantResult loadResults(Long resultId) {
+		return applicantResultRepository.findById(resultId)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Results")));
+	}
+
+	private void checkApplicant(Long id, String username) {
+		if (!String.valueOf(id).equals(username)) {
+			throw new IllegalArgumentException(ExceptionConstants.UNAUTHORIZED_ACCESS);
+		}
 	}
 }

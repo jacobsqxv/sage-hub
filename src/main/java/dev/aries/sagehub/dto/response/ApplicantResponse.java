@@ -1,10 +1,7 @@
 package dev.aries.sagehub.dto.response;
 
-import java.util.List;
+import dev.aries.sagehub.enums.ApplicantStatus;
 
-import lombok.Builder;
-
-@Builder
 public record ApplicantResponse(
 		Long userId,
 		Long applicantId,
@@ -12,9 +9,7 @@ public record ApplicantResponse(
 		BasicInfoResponse basicInfo,
 		ContactInfoResponse contactInfo,
 		EmergencyContactResponse guardianInfo,
-		List<ApplicantResultsResponse> results,
-		List<ProgramResponse> programs,
-		String status,
+		ApplicantStatus status,
 		boolean isSubmitted
 ) {
 }
