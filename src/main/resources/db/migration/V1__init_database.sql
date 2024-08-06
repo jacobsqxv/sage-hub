@@ -93,7 +93,8 @@ CREATE TABLE IF NOT EXISTS applicant_result
     type         VARCHAR(255)                            NOT NULL,
     year         INTEGER                                 NOT NULL,
     applicant_id BIGINT,
-    CONSTRAINT pk_applicant_result PRIMARY KEY (id)
+    CONSTRAINT pk_applicant_result PRIMARY KEY (id),
+    CONSTRAINT uc_applicant_result_index_number UNIQUE (index_number)
 );
 
 CREATE TABLE IF NOT EXISTS basic_info
