@@ -1,5 +1,7 @@
 package dev.aries.sagehub.util;
 
+import java.util.Objects;
+
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
@@ -38,22 +40,19 @@ public class Checks {
 	private static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 	private static final String DEFAULT_COUNTRY_CODE = "GH";
 
-	/**
-	 * Check if an enum value exists for the string passed into the function.
-	 * @param enumClass - The enum class to check against.
-	 * @param request - the string to check against the enum.
-	 * @param <E> - The enum type.
-	 */
-	public static <E extends Enum<E>> void checkIfEnumExists(Class<E> enumClass, String request) {
-		try {
-			Enum.valueOf(enumClass, request.toUpperCase());
-		}
-		catch (IllegalArgumentException ex) {
-			throw new IllegalArgumentException(String.format(ExceptionConstants.NOT_FOUND,
-					enumClass.getSimpleName()));
+	public static void validateLoggedInUser(User user, Long id) {
+		log.info("loggedInUser: {}, userId: {}", user.getId(), id);
+		if (!Objects.equals(user.getId(), id)) {
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
 
+	public static void validateLoggedInUserName(User user, Long id) {
+		log.info("loggedInUser: {}, username: {}", user.getUsername(), id);
+		if (!Objects.equals(Long.valueOf(user.getUsername()), id)) {
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
+		}
+	}
 	public User currentlyLoggedInUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Username username = new Username(authentication.getName());
@@ -79,14 +78,6 @@ public class Checks {
 		if (!(role.equals(RoleEnum.ADMIN) ||
 				role.equals(RoleEnum.SUPER_ADMIN))) {
 			log.info("Unauthorized access");
-			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
-		}
-	}
-
-	public void isCurrentlyLoggedInUser(Long id) {
-		User user = currentlyLoggedInUser();
-		if (!user.getId().equals(id)) {
-			log.info("Unauthorized access to information for this user");
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}

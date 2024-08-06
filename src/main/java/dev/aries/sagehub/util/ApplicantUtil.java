@@ -50,10 +50,4 @@ public class ApplicantUtil {
 		}
 	}
 
-	public void validApplicant(Long userId, Long applicantId) {
-		if (!applicantRepository.existsByIdAndUserId(applicantId, userId)) {
-			throw new UnauthorizedAccessException(
-					String.format(ExceptionConstants.UNAUTHORIZED_ACCESS));
-		}
-	}
 }
