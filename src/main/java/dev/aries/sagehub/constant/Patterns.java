@@ -27,19 +27,19 @@ public final class Patterns {
 	 * apostrophes, commas, periods, spaces, and hyphens.
 	 * This pattern supports first and last names, including compound names.
 	 */
-	public static final String NAME = "^([A-Za-z]{4,20}(?:-[A-Za-z]{4,20})?\\s){0,5}$";
+	public static final String NAME = "^([A-Za-z]{3,20}(?:-?[A-Za-z]{3,20})?\\s?){1,5}$";
 
 	/**
 	 * Regular expression for validating location names.
 	 * It allows for location names with alphabetic characters, including spaces, commas, periods, and hyphens.
 	 */
-	public static final String LOCATION = "^([A-Za-z]{4,20}(?:-[A-Za-z]{4,20})?\\s){0,3}$";
+	public static final String LOCATION = "^([A-Za-z]{3,20}(?:-?[A-Za-z]{3,20})?\\s?){1,3}$";
 
 	/**
 	 * Regular expression for validating street addresses. It allows for street addresses
 	 * with alphanumeric characters, including spaces, commas, periods, and hyphens.
 	 */
-	public static final String STREET = "^(?:(\\d){3,7},?\\s)?([A-Za-z]{4,20}(?:-[A-Za-z]{4,20})?\\s){0,4}$";
+	public static final String STREET = "^(?:(\\d){3,7},?\\s)?([A-Za-z]{3,20}(?:-?[A-Za-z]{3,20})?\\s?){1,4}$";
 
 	/**
 	 * Regular expression for validating passwords.
@@ -52,7 +52,8 @@ public final class Patterns {
 	 * Regular expression for validating postal addresses.
 	 * It supports alphanumeric characters, including spaces, commas, periods, and hyphens.
 	 */
-	public static final String POSTAL_ADDRESS = "^(PO|P\\.O)\\.\\s*Box\\s\\w{4,20},?\\s+\\w{4,25}([- ]\\w{4,25})?$";
+	public static final String POSTAL_ADDRESS = "^(Box\\s[A-Z0-9]{4,20},?\\s)?" +
+			"([A-Za-z]{4,20}(?:-?[A-Za-z]{4,20})?\\s?){1,3}$";
 
 	/**
 	 * Regular expression for validating JWT tokens.

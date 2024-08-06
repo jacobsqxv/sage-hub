@@ -1,5 +1,7 @@
 package dev.aries.sagehub.service.applicantresultservice;
 
+import java.util.List;
+
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
@@ -15,6 +17,7 @@ import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.ApplicantUtil;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.GlobalUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,6 +59,33 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 		return resultsMapper.toApplicantResultsResponse(results);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<ApplicantResultsResponse> getApplicantResults(Long applicantId) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
+		Applicant applicant = applicantUtil.loadApplicant(applicantId);
+		if (applicant.getResults() == null) {
+			throw new EntityNotFoundException(String.format(ExceptionConstants.NOT_FOUND, "Results"));
+		}
+		return applicant.getResults().stream().map(resultsMapper::toApplicantResultsResponse)
+				.toList();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ApplicantResultsResponse getApplicantResult(Long applicantId, Long resultId) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
+		applicantUtil.validApplicantResult(loggedInUser.getId(), resultId);
+		ApplicantResult result = loadResults(resultId);
+		return resultsMapper.toApplicantResultsResponse(result);
+	}
+
 	private void checkExistingResults(IDNumber indexNumber) {
 		if (applicantResultRepository.existsByIndexNumber(indexNumber.value())) {
 			throw new IllegalArgumentException(ExceptionConstants.EXISTING_RESULTS);
@@ -70,8 +100,8 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	public ApplicantResultsResponse updateApplicantResults(Long id, Long resultId, ApplicantResultRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
 		Checks.validateLoggedInUserName(loggedInUser, id);
+		applicantUtil.validApplicantResult(loggedInUser.getId(), resultId);
 		ApplicantResult result = loadResults(resultId);
-		applicantUtil.validApplicantResult(loggedInUser.getId(), result.getId());
 		UpdateStrategy strategy = globalUtil.checkStrategy("updateApplicantResults");
 		result = (ApplicantResult) strategy.update(result, request);
 		applicantResultRepository.save(result);
