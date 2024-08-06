@@ -8,6 +8,7 @@ import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.ApplicantResult;
 import dev.aries.sagehub.model.SubjectScore;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.IDNumber;
 import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.ApplicantResultRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
@@ -42,9 +43,9 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	@Transactional
 	public ApplicantResultsResponse addApplicantResults(Long applicantId, ApplicantResultRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
-		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
 		Applicant applicant = applicantUtil.loadApplicant(applicantId);
+		checkExistingResults(request.indexNumber());
 		ApplicantResult results = resultsMapper.toApplicantResults(request, applicant);
 		for (SubjectScore score : results.getScores()) {
 			score.setResult(results);
@@ -55,15 +56,20 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 		return resultsMapper.toApplicantResultsResponse(results);
 	}
 
+	private void checkExistingResults(IDNumber indexNumber) {
+		if (applicantResultRepository.existsByIndexNumber(indexNumber.value())) {
+			throw new IllegalArgumentException(ExceptionConstants.EXISTING_RESULTS);
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
+	@Transactional
 	public ApplicantResultsResponse updateApplicantResults(Long id, Long resultId, ApplicantResultRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		log.info("applicant id: {} | username: {}", id, loggedInUser.getUsername());
-		checkApplicant(id, loggedInUser.getUsername());
-		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
+		Checks.validateLoggedInUserName(loggedInUser, id);
 		ApplicantResult result = loadResults(resultId);
 		applicantUtil.validApplicantResult(loggedInUser.getId(), result.getId());
 		UpdateStrategy strategy = globalUtil.checkStrategy("updateApplicantResults");
@@ -78,9 +84,4 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 						String.format(ExceptionConstants.NOT_FOUND, "Results")));
 	}
 
-	private void checkApplicant(Long id, String username) {
-		if (!String.valueOf(id).equals(username)) {
-			throw new IllegalArgumentException(ExceptionConstants.UNAUTHORIZED_ACCESS);
-		}
-	}
 }

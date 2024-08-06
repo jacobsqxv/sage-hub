@@ -86,7 +86,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 	@Override
 	public ApplicantResponse getApplicant(Long applicantId) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
 		Applicant applicant = applicantUtil.loadApplicant(applicantId);
 		return applicantMapper.toApplicantResponse(applicant);
 	}
@@ -98,7 +98,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 	@Override
 	public List<ProgramResponse> updateApplicantProgramChoices(Long applicantId, ProgramChoicesRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
 		Applicant applicant = applicantUtil.loadApplicant(applicantId);
 		List<Program> programChoices = request.programChoices()
 				.stream().map(applicantUtil::getProgram).toList();

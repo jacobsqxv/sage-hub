@@ -1,14 +1,10 @@
 package dev.aries.sagehub.service.userservice;
 
-import java.util.Objects;
-
-import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
 import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.enums.RoleEnum;
-import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.mapper.UserMapper;
 import dev.aries.sagehub.model.BaseUser;
 import dev.aries.sagehub.model.BasicInfo;
@@ -73,7 +69,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public GenericResponse changePassword(Long id, PasswordChangeRequest request) {
 		User user = checks.currentlyLoggedInUser();
-		validateLoggedInUser(user, id);
+		Checks.validateLoggedInUser(user, id);
 		if (!checks.isPasswordEqual(user, request.oldPassword())) {
 			log.info("Current password is incorrect");
 			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
@@ -81,12 +77,6 @@ public class UserServiceImpl implements UserService {
 		user.setHashedPassword(passwordEncoder.encode(request.newPassword()));
 		userRepository.save(user);
 		return new GenericResponse(STATUS_OK, "Password changed successfully");
-	}
-
-	private void validateLoggedInUser(User user, Long id) {
-		if (!Objects.equals(user.getId(), id)) {
-			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
-		}
 	}
 
 	/**
