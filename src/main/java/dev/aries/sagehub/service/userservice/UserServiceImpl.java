@@ -5,8 +5,8 @@ import java.util.Objects;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
+import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.GenericResponse;
-import dev.aries.sagehub.dto.response.UserResponse;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.mapper.UserMapper;
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
-import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
+import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 
 /**
  * Implementation of the {@code UserService} interface.
@@ -52,7 +52,6 @@ import static dev.aries.sagehub.constant.ExceptionConstants.NOT_FOUND;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-	private static final String ROLE = "Role";
 	private final UserRepository userRepository;
 	private final StudentRepository studentRepository;
 	private final StaffRepository staffRepository;
@@ -95,51 +94,51 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@Transactional
-	public UserResponse addFacultyMember(AddUserRequest request, String role) {
+	public BasicUserResponse addFacultyMember(AddUserRequest request) {
 		Username username = generators.generateUsername(
 				request.basicInfo().firstName(), request.basicInfo().lastName());
 		Password password = generators.generatePassword(8);
-		User user = userFactory.createNewUser(username, password, RoleEnum.valueOf(role));
+		User user = userFactory.createNewUser(username, password, request.role());
 		userRepository.save(user);
-		switch (role) {
-			case "STUDENT" -> {
-				Student newStudent = (Student) buildInfo(user, request, role);
+		switch (request.role()) {
+			case RoleEnum.STUDENT -> {
+				Student newStudent = (Student) buildInfo(user, request);
 				log.info("Saving new student with ID: {}", newStudent.getId());
 				checks.checkStudentExists(newStudent.getId());
 				studentRepository.save(newStudent);
 				sendEmail(user.getId(), username, password);
-				return userMapper.toUserResponse(newStudent);
+				return userMapper.toBasicUserResponse(newStudent);
 			}
-			case "STAFF" -> {
-				Staff newStaff = (Staff) buildInfo(user, request, role);
+			case RoleEnum.STAFF -> {
+				Staff newStaff = (Staff) buildInfo(user, request);
 				log.info("Saving new staff with ID: {}", newStaff.getId());
 				checks.checkStaffExists(newStaff.getId());
 				staffRepository.save(newStaff);
 				sendEmail(user.getId(), username, password);
-				return userMapper.toUserResponse(newStaff);
+				return userMapper.toBasicUserResponse(newStaff);
 			}
-			default -> throw new IllegalArgumentException(String.format(NOT_FOUND, ROLE));
+			default -> throw new IllegalArgumentException(UNEXPECTED_VALUE);
 		}
 	}
 	/**
 	 * This method builds a BaseUser object for a new user.
 	 * It sets the basic info, contact info, emergency contact, id, and primary email.
 	 * @param request the request containing the user information.
-	 * @param role    the role of the new user (either "STUDENT" or "STAFF").
 	 * @param user   the user object to be associated with the new user.
 	 * @return a BaseUser object built with the provided role and request.
 	 * @throws IllegalArgumentException if the role is not "STUDENT" or "STAFF".
 	 */
-	private BaseUser buildInfo(User user, AddUserRequest request, String role) {
+	private BaseUser buildInfo(User user, AddUserRequest request) {
 		log.info("User ID: {}", user.getId());
 		Long userId = user.getId();
 		BasicInfo basicInfo = basicInfoInterface.addBasicInfo(request.basicInfo(), userId);
 		ContactInfo contactInfo = contactInfoInterface.addContactInfo(request.contactInfo(), userId);
 		EmergencyContact emergencyContact = emgContactInterface
 				.addEmergencyContact(request.emergencyContact(), userId);
-		Email primaryEmail = generators.generateUserEmail(user.getUsername(), role);
-		Long id = generators.generateUniqueId(role.equals("STUDENT"));
-		BaseUser.BaseUserBuilder<?, ?> builder = (role.equals("STUDENT") ? Student.builder() : Staff.builder())
+		Email primaryEmail = generators.generateUserEmail(user.getUsername(), request.role().name());
+		boolean isStudent = request.role().equals(RoleEnum.STUDENT);
+		Long id = generators.generateUniqueId(isStudent);
+		BaseUser.BaseUserBuilder<?, ?> builder = (isStudent ? Student.builder() : Staff.builder())
 				.id(id)
 				.primaryEmail(primaryEmail.value())
 				.basicInfo(basicInfo)
