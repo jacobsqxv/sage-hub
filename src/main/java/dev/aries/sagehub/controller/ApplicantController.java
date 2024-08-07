@@ -3,12 +3,10 @@ package dev.aries.sagehub.controller;
 import java.util.List;
 
 import dev.aries.sagehub.dto.request.ApplicantRequest;
-import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.request.ProgramChoicesRequest;
 import dev.aries.sagehub.dto.response.ApplicantResponse;
-import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
+import dev.aries.sagehub.dto.response.BasicApplicantResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
-import dev.aries.sagehub.service.applicantresultservice.ApplicantResultService;
 import dev.aries.sagehub.service.applicantservice.ApplicantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,15 +35,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Applicant", description = "Manage applicants and their information")
 public class ApplicantController {
 	private final ApplicantService applicantService;
-	private final ApplicantResultService applicantResultService;
 
 	@PostMapping
 	@Operation(summary = "Start application",
 			description = "Start application process by adding personal information",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Applicant personal information added successfully",
-			content = {@Content(schema = @Schema(implementation = ApplicantResponse.class))})
-	public ResponseEntity<ApplicantResponse> addPersonalInformation(
+			content = {@Content(schema = @Schema(implementation = BasicApplicantResponse.class))})
+	public ResponseEntity<BasicApplicantResponse> addPersonalInformation(
 			@RequestBody @Valid ApplicantRequest request) {
 		return new ResponseEntity<>(applicantService.addPersonalInfo(request), HttpStatus.CREATED);
 	}
@@ -72,15 +69,4 @@ public class ApplicantController {
 		return ResponseEntity.ok(applicantService.updateApplicantProgramChoices(id, request));
 	}
 
-	@PostMapping("{id}/results")
-	@Operation(summary = "Add applicant results",
-			description = "Add applicant results by ID",
-			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "201", description = "Applicant results added successfully",
-			content = {@Content(schema = @Schema(implementation = ApplicantResultsResponse.class))})
-	public ResponseEntity<ApplicantResultsResponse> addResults(
-			@PathVariable Long id, @RequestBody @Valid ApplicantResultRequest request) {
-		return new ResponseEntity<>(applicantResultService.addApplicantResults(id, request),
-				HttpStatus.CREATED);
-	}
 }

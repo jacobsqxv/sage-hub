@@ -2,6 +2,7 @@ package dev.aries.sagehub.mapper;
 
 import dev.aries.sagehub.dto.response.AdminResponse;
 import dev.aries.sagehub.dto.response.AuthUserResponse;
+import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.UserResponse;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.BaseUser;
@@ -39,6 +40,19 @@ public class UserMapper {
 				.role(baseUser.getUser().getRole().getName().toString())
 				.status(baseUser.getUser().getStatus().toString())
 				.memberId(baseUser.getId())
+				.build();
+	}
+
+	public BasicUserResponse toBasicUserResponse(BaseUser baseUser) {
+		return BasicUserResponse.builder()
+				.userId(baseUser.getUser().getId())
+				.memberId(baseUser.getId())
+				.profilePicture(baseUser.getBasicInfo().getProfilePictureUrl())
+				.fullName(baseUser.getBasicInfo().fullName())
+				.email(baseUser.getContactInfo().getSecondaryEmail())
+				.role(baseUser.getUser().getRole().getName())
+				.gender(baseUser.getBasicInfo().getGender())
+				.status(baseUser.getUser().getStatus())
 				.build();
 	}
 

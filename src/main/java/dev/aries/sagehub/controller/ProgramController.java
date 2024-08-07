@@ -4,7 +4,9 @@ import dev.aries.sagehub.dto.request.ProgramCourseRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
 import dev.aries.sagehub.dto.response.ProgramCourseResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
+import dev.aries.sagehub.dto.search.GetPrgCoursesPage;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
+import dev.aries.sagehub.service.programservice.ProgramCourseService;
 import dev.aries.sagehub.service.programservice.ProgramService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +36,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/programs")
 @RequiredArgsConstructor
 @Tag(name = "Program", description = "Endpoints for managing programs")
+@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 public class ProgramController {
 	private final ProgramService programService;
+	private final ProgramCourseService programCourseService;
 
 	@PostMapping
 	@Operation(summary = "Add program", description = "Add a new program",
@@ -49,6 +55,7 @@ public class ProgramController {
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Programs retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = ProgramResponse.class))})
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Page<ProgramResponse>> getPrograms(
 			GetProgramsPage request, @PageableDefault Pageable pageable) {
 		return ResponseEntity.ok(programService.getPrograms(request, pageable));
@@ -59,6 +66,7 @@ public class ProgramController {
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Program retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = ProgramResponse.class))})
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<ProgramResponse> getProgram(@PathVariable("program-id")Long programId) {
 		return ResponseEntity.ok(programService.getProgram(programId));
 	}
@@ -73,14 +81,35 @@ public class ProgramController {
 		return ResponseEntity.ok(programService.updateProgram(programId, request));
 	}
 
-	@PutMapping("/{program-id}/courses")
-	@Operation(summary = "Update program courses", description = "Update program courses by program ID",
+	@GetMapping("/{program-id}/courses")
+	@Operation(summary = "Get program courses", description = "Get program courses by program ID",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "200", description = "Program courses updated successfully",
+	@ApiResponse(responseCode = "200", description = "Program courses retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = ProgramCourseResponse.class))})
-	public ResponseEntity<ProgramCourseResponse> updateProgramCourses(
-			@PathVariable("program-id") Long programId, @RequestBody @Valid ProgramCourseRequest request) {
-		return ResponseEntity.ok(programService.updateProgramCourses(programId, request));
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<Page<ProgramCourseResponse>> getProgramCourses(@PathVariable("program-id") Long programId,
+							GetPrgCoursesPage request, @PageableDefault Pageable pageable) {
+		return ResponseEntity.ok(programCourseService.getProgramCourses(programId, request, pageable));
 	}
 
+	@PostMapping("/{program-id}/courses")
+	@Operation(summary = "Add course config", description = "Add new course config for a given period",
+			security = @SecurityRequirement(name = "bearerAuth"))
+	@ApiResponse(responseCode = "201", description = "Program course added successfully",
+			content = {@Content(schema = @Schema(implementation = ProgramCourseResponse.class))})
+	public ResponseEntity<ProgramCourseResponse> addProgramCourse(
+			@PathVariable("program-id") Long programId, @RequestBody @Valid ProgramCourseRequest request) {
+		return new ResponseEntity<>(programCourseService.addProgramCourse(programId, request),
+				HttpStatus.CREATED);
+	}
+
+	@DeleteMapping("/{program-id}/courses/{id}")
+	@Operation(summary = "Delete course config", description = "Delete course config by ID",
+			security = @SecurityRequirement(name = "bearerAuth"))
+	@ApiResponse(responseCode = "204", description = "Program course deleted successfully")
+	public ResponseEntity<Void> deleteProgramCourse(
+			@PathVariable("program-id") Long programId, @PathVariable("id") Long id) {
+			programCourseService.deleteCourseConfig(programId, id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
 }

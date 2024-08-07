@@ -38,7 +38,7 @@ public class ApplicantResult extends Auditing {
 	private String schoolName;
 	@Column(nullable = false)
 	private Integer year;
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private String indexNumber;
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "result", orphanRemoval = true)
 	@JsonManagedReference

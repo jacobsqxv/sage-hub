@@ -1,15 +1,19 @@
 package dev.aries.sagehub.util;
 
+import java.util.Objects;
+
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
+import dev.aries.sagehub.model.AcademicPeriod;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.ApplicantRepository;
+import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import jakarta.persistence.EntityExistsException;
@@ -32,22 +36,31 @@ public class Checks {
 	private final StaffRepository staffRepository;
 	private final StudentRepository studentRepository;
 	private final ApplicantRepository applicantRepository;
+	private final ProgramCourseRepository programCourseRepository;
 	private static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 	private static final String DEFAULT_COUNTRY_CODE = "GH";
 
-	/**
-	 * Check if an enum value exists for the string passed into the function.
-	 * @param enumClass - The enum class to check against.
-	 * @param request - the string to check against the enum.
-	 * @param <E> - The enum type.
-	 */
+	public static void validateLoggedInUser(User user, Long id) {
+		log.info("loggedInUser: {}, userId: {}", user.getId(), id);
+		if (!Objects.equals(user.getId(), id)) {
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
+		}
+	}
+
+	public static void validateLoggedInUserName(User user, Long id) {
+		log.info("loggedInUser: {}, username: {}", user.getUsername(), id);
+		if (!Objects.equals(Long.valueOf(user.getUsername()), id)) {
+			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
+		}
+	}
+
 	public static <E extends Enum<E>> void checkIfEnumExists(Class<E> enumClass, String request) {
 		try {
 			Enum.valueOf(enumClass, request.toUpperCase());
 		}
 		catch (IllegalArgumentException ex) {
-			throw new IllegalArgumentException(String.format(ExceptionConstants.NOT_FOUND,
-					enumClass.getSimpleName()));
+			throw new IllegalArgumentException(
+					String.format(ExceptionConstants.ENUM_VALUE_INVALID, request));
 		}
 	}
 
@@ -80,14 +93,6 @@ public class Checks {
 		}
 	}
 
-	public void isCurrentlyLoggedInUser(Long id) {
-		User user = currentlyLoggedInUser();
-		if (!user.getId().equals(id)) {
-			log.info("Unauthorized access to information for this user");
-			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
-		}
-	}
-
 	public boolean isPasswordEqual(User user, Password password) {
 		return passwordEncoder.matches(password.value(), user.getHashedPassword());
 	}
@@ -111,6 +116,16 @@ public class Checks {
 		if (applicantRepository.existsByUserId(userId)) {
 			throw new EntityExistsException(
 					String.format(ALREADY_EXISTS, "Applicant"));
+		}
+	}
+
+	public void checkProgramCourse(Long programId, Long courseId, AcademicPeriod period) {
+		boolean courseExistsAtPeriod = programCourseRepository.existsByProgramIdAndCourseIdAndAcademicPeriod(
+				programId, courseId, period);
+		boolean courseExists = programCourseRepository.existsByProgramIdAndCourseId(programId, courseId);
+		if (courseExistsAtPeriod || courseExists) {
+			throw new EntityExistsException(
+					String.format(ALREADY_EXISTS, "Course configuration"));
 		}
 	}
 

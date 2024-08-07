@@ -19,6 +19,7 @@ import dev.aries.sagehub.model.Voucher;
 import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.repository.AcademicYearRepository;
 import dev.aries.sagehub.repository.VoucherRepository;
+import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.Generators;
 import lombok.RequiredArgsConstructor;
 
@@ -71,6 +72,9 @@ public class VoucherServiceImpl implements VoucherService {
 	 */
 	@Override
 	public Page<VoucherResponse> getVouchers(GetVouchersPage request, Pageable pageable) {
+		if (request.status() != null) {
+			Checks.checkIfEnumExists(TokenStatus.class, request.status());
+		}
 		return voucherRepository.findAll(request.year(), request.status(), pageable)
 				.map(voucherMapper::toVoucherResponse);
 	}

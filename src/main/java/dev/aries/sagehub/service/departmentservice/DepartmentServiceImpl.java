@@ -72,6 +72,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 	 */
 	@Override
 	public Page<DepartmentResponse> getDepartments(GetDepartmentsPage request, Pageable pageable) {
+		if (request.status() != null) {
+			Checks.checkIfEnumExists(Status.class, request.status());
+		}
 		User loggedInUser = checks.currentlyLoggedInUser();
 		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllDepartments(request, pageable);
@@ -88,7 +91,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 	}
 
 	private Page<DepartmentResponse> loadDepartments(GetDepartmentsPage request, String status, Pageable pageable) {
-		return departmentRepository.findAll(request.name(), request.code(), status, pageable)
+		return departmentRepository.findAll(request, status, pageable)
 				.map(departmentMapper::toPageResponse);
 	}
 

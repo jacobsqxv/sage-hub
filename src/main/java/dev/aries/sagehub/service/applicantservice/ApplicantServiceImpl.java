@@ -6,6 +6,7 @@ import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ApplicantRequest;
 import dev.aries.sagehub.dto.request.ProgramChoicesRequest;
 import dev.aries.sagehub.dto.response.ApplicantResponse;
+import dev.aries.sagehub.dto.response.BasicApplicantResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.enums.ApplicantStatus;
 import dev.aries.sagehub.mapper.ApplicantMapper;
@@ -54,7 +55,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 	 */
 	@Override
 	@Transactional
-	public ApplicantResponse addPersonalInfo(ApplicantRequest request) {
+	public BasicApplicantResponse addPersonalInfo(ApplicantRequest request) {
 		User user = checks.currentlyLoggedInUser();
 		checks.checkApplicantExists(user.getId());
 		Voucher voucher = applicantUtil.getVoucher(Long.valueOf(user.getUsername()));
@@ -76,7 +77,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 				.user(user)
 				.build();
 		applicantRepository.save(applicant);
-		return applicantMapper.toApplicantResponse(applicant);
+		return applicantMapper.toBasicApplicantResponse(applicant);
 	}
 
 	/**
@@ -85,7 +86,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 	@Override
 	public ApplicantResponse getApplicant(Long applicantId) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
 		Applicant applicant = applicantUtil.loadApplicant(applicantId);
 		return applicantMapper.toApplicantResponse(applicant);
 	}
@@ -97,7 +98,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 	@Override
 	public List<ProgramResponse> updateApplicantProgramChoices(Long applicantId, ProgramChoicesRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
 		Applicant applicant = applicantUtil.loadApplicant(applicantId);
 		List<Program> programChoices = request.programChoices()
 				.stream().map(applicantUtil::getProgram).toList();

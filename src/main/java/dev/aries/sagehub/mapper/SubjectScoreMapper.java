@@ -18,7 +18,7 @@ public class SubjectScoreMapper {
 	public SubjectScore toSubjectScore(SubjectScoreRequest subjectScore) {
 		return SubjectScore.builder()
 				.subjectName(subjectScore.subject())
-				.grade(subjectScore.grade())
+				.grade(subjectScore.grade().getGrade())
 				.build();
 	}
 }

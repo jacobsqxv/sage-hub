@@ -1,5 +1,7 @@
 package dev.aries.sagehub.service.applicantresultservice;
 
+import java.util.List;
+
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
@@ -8,13 +10,16 @@ import dev.aries.sagehub.model.Applicant;
 import dev.aries.sagehub.model.ApplicantResult;
 import dev.aries.sagehub.model.SubjectScore;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.IDNumber;
 import dev.aries.sagehub.repository.ApplicantRepository;
 import dev.aries.sagehub.repository.ApplicantResultRepository;
 import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.util.ApplicantUtil;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.GlobalUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Jacobs Agyei
  * @see dev.aries.sagehub.service.applicantresultservice.ApplicantResultService
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApplicantResultServiceImpl implements ApplicantResultService {
@@ -40,9 +46,9 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	@Transactional
 	public ApplicantResultsResponse addApplicantResults(Long applicantId, ApplicantResultRequest request) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
-		applicantUtil.validApplicant(loggedInUser.getId(), applicantId);
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
 		Applicant applicant = applicantUtil.loadApplicant(applicantId);
+		checkExistingResults(request.indexNumber());
 		ApplicantResult results = resultsMapper.toApplicantResults(request, applicant);
 		for (SubjectScore score : results.getScores()) {
 			score.setResult(results);
@@ -57,20 +63,55 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicantResultsResponse updateApplicantResults(Long id, ApplicantResultRequest request) {
+	public List<ApplicantResultsResponse> getApplicantResults(Long applicantId) {
 		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.isCurrentlyLoggedInUser(loggedInUser.getId());
-		ApplicantResult result = loadResults(id);
-		applicantUtil.validApplicantResult(loggedInUser.getId(), result.getId());
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
+		Applicant applicant = applicantUtil.loadApplicant(applicantId);
+		if (applicant.getResults() == null) {
+			throw new EntityNotFoundException(String.format(ExceptionConstants.NOT_FOUND, "Results"));
+		}
+		return applicant.getResults().stream().map(resultsMapper::toApplicantResultsResponse)
+				.toList();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ApplicantResultsResponse getApplicantResult(Long applicantId, Long resultId) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		Checks.validateLoggedInUserName(loggedInUser, applicantId);
+		applicantUtil.validApplicantResult(loggedInUser.getId(), resultId);
+		ApplicantResult result = loadResults(resultId);
+		return resultsMapper.toApplicantResultsResponse(result);
+	}
+
+	private void checkExistingResults(IDNumber indexNumber) {
+		if (applicantResultRepository.existsByIndexNumber(indexNumber.value())) {
+			throw new IllegalArgumentException(ExceptionConstants.EXISTING_RESULTS);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	@Transactional
+	public ApplicantResultsResponse updateApplicantResults(Long id, Long resultId, ApplicantResultRequest request) {
+		User loggedInUser = checks.currentlyLoggedInUser();
+		Checks.validateLoggedInUserName(loggedInUser, id);
+		applicantUtil.validApplicantResult(loggedInUser.getId(), resultId);
+		ApplicantResult result = loadResults(resultId);
 		UpdateStrategy strategy = globalUtil.checkStrategy("updateApplicantResults");
 		result = (ApplicantResult) strategy.update(result, request);
 		applicantResultRepository.save(result);
 		return resultsMapper.toApplicantResultsResponse(result);
 	}
 
-	private ApplicantResult loadResults(Long id) {
-		return applicantResultRepository.findById(id)
+	private ApplicantResult loadResults(Long resultId) {
+		return applicantResultRepository.findById(resultId)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Results")));
 	}
+
 }

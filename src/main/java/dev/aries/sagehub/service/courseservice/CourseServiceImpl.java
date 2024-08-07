@@ -66,8 +66,11 @@ public class CourseServiceImpl implements CourseService {
 	 */
 	@Override
 	public Page<CourseResponse> getCourses(GetCoursesPage request, Pageable pageable) {
+		if (request.status() != null) {
+			Checks.checkIfEnumExists(Status.class, request.status());
+		}
 		User loggedInUser = checks.currentlyLoggedInUser();
-		if (checks.isAdmin(loggedInUser.getRole().getName())) {
+		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllCourses(request, pageable);
 		}
 		return getActiveCourses(request, pageable);
@@ -82,7 +85,7 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	private Page<CourseResponse> loadCourses(GetCoursesPage request, String status, Pageable pageable) {
-		return courseRepository.findAll(request.name(), request.code(), status, pageable)
+		return courseRepository.findAll(request, status, pageable)
 				.map(courseMapper::toCourseResponse);
 	}
 

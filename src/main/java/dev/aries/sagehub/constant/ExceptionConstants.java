@@ -102,6 +102,16 @@ public final class ExceptionConstants {
 	 * Message for invalid enum value.
 	 */
 	public static final String ENUM_VALUE_INVALID = "The provided value: '%s', is invalid";
+
+	/**
+	 * Message for existing results.
+	 */
+	public static final String EXISTING_RESULTS = "Results already exist for the provided index number";
+
+	/**
+	 * Message for blacklisted token.
+	 */
+	public static final String BLACKLISTED_TOKEN = "An access token has already been issued for this refresh token";
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.

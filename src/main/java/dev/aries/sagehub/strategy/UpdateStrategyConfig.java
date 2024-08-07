@@ -17,7 +17,6 @@ public class UpdateStrategyConfig {
 	private final UpdateDepartment updateDepartment;
 	private final UpdateProgram updateProgram;
 	private final UpdateCourse updateCourse;
-	private final UpdateProgramCourse updateProgramCourse;
 	private final UpdateBasicInfo updateBasicInfo;
 
 	@Bean
@@ -29,7 +28,6 @@ public class UpdateStrategyConfig {
 		strategies.put("Department", updateDepartment);
 		strategies.put("Program", updateProgram);
 		strategies.put("Course", updateCourse);
-		strategies.put("ProgramCourse", updateProgramCourse);
 		return strategies;
 	}
 }

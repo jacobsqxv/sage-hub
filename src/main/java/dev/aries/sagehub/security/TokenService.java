@@ -4,8 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.response.AuthToken;
@@ -13,9 +13,7 @@ import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.enums.TokenType;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
-import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.TokenRepository;
-import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -37,8 +36,9 @@ public class TokenService {
 	private final JwtEncoder accessTokenEncoder;
 	@Qualifier("jwtRefreshTokenEncoder")
 	private final JwtEncoder refreshTokenEncoder;
+	@Qualifier("jwtRefreshTokenDecoder")
+	private final JwtDecoder refreshTokenDecoder;
 	private final TokenRepository tokenRepository;
-	private final UserUtil userUtil;
 
 	private String generateAccessToken(User user) {
 		return createToken(user, TokenType.ACCESS_TOKEN, accessTokenEncoder);
@@ -71,31 +71,18 @@ public class TokenService {
 		return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 	}
 
-	public AuthToken generateToken(Authentication authentication, boolean rememberMe) {
+	public AuthToken generateToken(Authentication authentication, User user, boolean rememberMe) {
 		if (!(authentication.getPrincipal() instanceof UserDetailsImpl
 				|| authentication.getPrincipal() instanceof Jwt)) {
 			log.info("Principal type: {}", authentication.getPrincipal().getClass());
 			throw new IllegalArgumentException(ExceptionConstants.AUTHENTICATION_FAILED);
 		}
-		User user = userUtil.getUser(new Username((authentication.getName())));
 		String accessToken = generateAccessToken(user);
 		String refreshToken;
 		log.info("Principal type: {}", authentication.getPrincipal().getClass());
 		log.info("Authentication credentials: {}", authentication.getCredentials().getClass());
 		if (rememberMe) {
 			refreshToken = getRefreshToken(authentication, user);
-			if (!refreshTokenExists(user.getId(), refreshToken)) {
-				Token newToken = Token.builder()
-						.value(refreshToken)
-						.userId(user.getId())
-						.expiresAt(LocalDateTime.ofInstant(
-								Instant.now().plus(7, ChronoUnit.DAYS),
-								ZoneId.systemDefault()))
-						.type(TokenType.REFRESH_TOKEN)
-						.status(TokenStatus.ACTIVE)
-						.build();
-				tokenRepository.save(newToken);
-			}
 		}
 		else {
 			refreshToken = null;
@@ -124,21 +111,30 @@ public class TokenService {
 		return refreshToken;
 	}
 
-	public void updateRefreshToken(Long userId, String refreshToken, String newRefreshToken) {
-		Token token = tokenRepository
-				.findByValueAndUserIdAndType(refreshToken, userId, TokenType.REFRESH_TOKEN);
-		if (token == null) {
-			throw new IllegalArgumentException(String.format(ExceptionConstants.NOT_FOUND, "Token"));
+	public void blacklistOldToken(Long userId, String refreshToken) {
+		if (!tokenRepository.existsByValueAndType(refreshToken, TokenType.REFRESH_TOKEN)) {
+			Jwt jwt = refreshTokenDecoder.decode(refreshToken);
+			LocalDateTime expiry = LocalDateTime.ofInstant(
+					Objects.requireNonNull(jwt.getExpiresAt()), ZoneId.systemDefault());
+			Token blacklistedToken = Token.builder()
+					.type(TokenType.REFRESH_TOKEN)
+					.status(TokenStatus.EXPIRED)
+					.userId(userId)
+					.value(refreshToken)
+					.expiresAt(expiry)
+					.build();
+			log.info("Blacklisting old token...");
+			tokenRepository.save(blacklistedToken);
 		}
-		token.setValue(newRefreshToken);
-		token.setExpiresAt(LocalDateTime.ofInstant(
-				Instant.now().plus(7, ChronoUnit.DAYS),
-				ZoneId.systemDefault()));
-		tokenRepository.save(token);
+		else {
+			log.info("Old token already blacklisted");
+			validateToken(refreshToken);
+		}
 	}
 
-	private boolean refreshTokenExists(Long userId, String refreshToken) {
-		return tokenRepository.findByValueAndUserIdAndType(
-				refreshToken, userId, TokenType.REFRESH_TOKEN) != null;
+	private void validateToken(String refreshToken) {
+		if (tokenRepository.existsByValueAndType(refreshToken, TokenType.REFRESH_TOKEN)) {
+			throw new IllegalArgumentException(ExceptionConstants.BLACKLISTED_TOKEN);
+		}
 	}
 }
