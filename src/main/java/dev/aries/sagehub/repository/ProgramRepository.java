@@ -1,5 +1,6 @@
 package dev.aries.sagehub.repository;
 
+import dev.aries.sagehub.dto.search.GetProgramsPage;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.model.Program;
 import dev.aries.sagehub.specification.GeneralSpecification;
@@ -21,13 +22,13 @@ public interface ProgramRepository extends JpaRepository<Program, Long>, JpaSpec
 
 	boolean existsByName(String name);
 
-	default Page<Program> findAll(String name, String department, String status, Pageable page) {
+	default Page<Program> findAll(GetProgramsPage request, String status, Pageable page) {
 		GeneralSpecification<Program> spec = new GeneralSpecification<>();
 		return findAll(
 				Specification
-						.where(spec.hasName(name))
-						.and(spec.hasStatus(status))
-						.and(ProgramSpecification.hasDepartment(department)),
+						.where(spec.hasName(request.name()))
+						.and(ProgramSpecification.hasDepartment(request.department())
+						.and(spec.hasStatus(status))),
 				page
 		);
 	}

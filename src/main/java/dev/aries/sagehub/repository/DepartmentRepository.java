@@ -1,5 +1,6 @@
 package dev.aries.sagehub.repository;
 
+import dev.aries.sagehub.dto.search.GetDepartmentsPage;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.specification.GeneralSpecification;
 
@@ -14,12 +15,12 @@ public interface DepartmentRepository extends JpaRepository<Department, Long>, J
 
 	boolean existsByName(String departmentName);
 
-	default Page<Department> findAll(String name, String code, String status, Pageable page) {
+	default Page<Department> findAll(GetDepartmentsPage request, String status, Pageable page) {
 		GeneralSpecification<Department> spec = new GeneralSpecification<>();
 		return findAll(
 				Specification
-						.where(spec.hasName(name))
-						.and(spec.hasCode(code))
+						.where(spec.hasName(request.name()))
+						.and(spec.hasCode(request.code()))
 						.and(spec.hasStatus(status)),
 				page
 		);

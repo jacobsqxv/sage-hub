@@ -1,5 +1,6 @@
 package dev.aries.sagehub.repository;
 
+import dev.aries.sagehub.dto.search.GetCoursesPage;
 import dev.aries.sagehub.model.Course;
 import dev.aries.sagehub.specification.GeneralSpecification;
 
@@ -14,12 +15,12 @@ public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecif
 
 	boolean existsByName(String name);
 
-	default Page<Course> findAll(String name, String code, String status, Pageable page) {
+	default Page<Course> findAll(GetCoursesPage request, String status, Pageable page) {
 		GeneralSpecification<Course> spec = new GeneralSpecification<>();
 		return findAll(
 				Specification
-						.where(spec.hasName(name))
-						.and(spec.hasCode(code))
+						.where(spec.hasName(request.name()))
+						.and(spec.hasCode(request.code()))
 						.and(spec.hasStatus(status)),
 				page
 		);

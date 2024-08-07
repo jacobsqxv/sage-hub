@@ -96,7 +96,7 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 	}
 
 	private Page<ProgramResponse> loadPrograms(GetProgramsPage request, String status, Pageable pageable) {
-		return programRepository.findAll(request.name(), request.department(), status, pageable)
+		return programRepository.findAll(request, status, pageable)
 				.map(programMapper::toProgramResponse);
 	}
 
