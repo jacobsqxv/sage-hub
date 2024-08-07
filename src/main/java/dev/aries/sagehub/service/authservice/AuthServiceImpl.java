@@ -98,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new BadCredentialsException(ExceptionConstants.INVALID_CREDENTIALS);
 		}
 		AuthToken authToken = tokenService.generateToken(Objects.requireNonNull(authentication),
-				request.rememberMe());
+				user, request.rememberMe());
 		String accessToken = authToken.accessToken();
 		String refreshToken = authToken.refreshToken();
 		user.setLockTime(null);
@@ -140,8 +140,8 @@ public class AuthServiceImpl implements AuthService {
 			Authentication authentication = jwtAuthProvider
 					.authenticate(new BearerTokenAuthenticationToken(request.token()));
 			User user = userUtil.getUser(new Username(authentication.getName()));
-			AuthToken authToken = tokenService.generateToken(authentication, true);
-			tokenService.updateRefreshToken(user.getId(), request.token(), authToken.refreshToken());
+			tokenService.blacklistOldToken(user.getId(), request.token());
+			AuthToken authToken = tokenService.generateToken(authentication, user, true);
 			return new AuthResponse(
 					authToken.accessToken(),
 					authToken.refreshToken(),
