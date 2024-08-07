@@ -4,6 +4,8 @@ import java.security.Principal;
 import java.util.UUID;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
+import dev.aries.sagehub.enums.TokenType;
+import dev.aries.sagehub.repository.TokenRepository;
 import dev.aries.sagehub.security.RateLimiterService;
 import dev.aries.sagehub.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +24,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Aspect
 @Component
 @RequiredArgsConstructor
-public class RequestIdAspect {
+public class ControllerAspect {
 	private final RateLimiterService rateLimiterService;
+	private final TokenRepository tokenRepository;
 	private final UUID anonymous = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
 	/**
@@ -59,10 +62,24 @@ public class RequestIdAspect {
 			log.info("Principal is null, handling as anonymous request");
 			return anonymous;
 		}
+		checkBlacklist(principal);
 		return switch (principal) {
 			case UserDetailsImpl userDetails -> userDetails.getClientId();
 			case JwtAuthenticationToken jwt -> UUID.fromString(jwt.getToken().getClaim("clientId"));
 			default -> throw new IllegalArgumentException(ExceptionConstants.AUTHENTICATION_FAILED);
 		};
+	}
+
+	public void checkBlacklist(Principal principal) {
+		if (principal instanceof JwtAuthenticationToken jwt) {
+			String refreshToken = jwt.getToken().getTokenValue();
+			validateToken(refreshToken);
+		}
+	}
+
+	private void validateToken(String refreshToken) {
+		if (tokenRepository.existsByValueAndType(refreshToken, TokenType.REFRESH_TOKEN)) {
+			throw new IllegalArgumentException(ExceptionConstants.BLACKLISTED_TOKEN);
+		}
 	}
 }

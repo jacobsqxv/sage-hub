@@ -128,7 +128,13 @@ public class TokenService {
 		}
 		else {
 			log.info("Old token already blacklisted");
+			validateToken(refreshToken);
 		}
 	}
 
+	private void validateToken(String refreshToken) {
+		if (tokenRepository.existsByValueAndType(refreshToken, TokenType.REFRESH_TOKEN)) {
+			throw new IllegalArgumentException(ExceptionConstants.BLACKLISTED_TOKEN);
+		}
+	}
 }
