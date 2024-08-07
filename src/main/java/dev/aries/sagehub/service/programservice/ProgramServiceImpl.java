@@ -80,6 +80,9 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 	 */
 	@Override
 	public Page<ProgramResponse> getPrograms(GetProgramsPage request, Pageable pageable) {
+		if (request.status() != null) {
+			Checks.checkIfEnumExists(Status.class, request.status());
+		}
 		User loggedInUser = checks.currentlyLoggedInUser();
 		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllPrograms(request, pageable);

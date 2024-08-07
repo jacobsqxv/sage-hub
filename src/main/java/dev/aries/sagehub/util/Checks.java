@@ -53,6 +53,17 @@ public class Checks {
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
+
+	public static <E extends Enum<E>> void checkIfEnumExists(Class<E> enumClass, String request) {
+		try {
+			Enum.valueOf(enumClass, request.toUpperCase());
+		}
+		catch (IllegalArgumentException ex) {
+			throw new IllegalArgumentException(
+					String.format(ExceptionConstants.ENUM_VALUE_INVALID, request));
+		}
+	}
+
 	public User currentlyLoggedInUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Username username = new Username(authentication.getName());
