@@ -3,13 +3,10 @@ package dev.aries.sagehub.controller;
 import java.util.List;
 
 import dev.aries.sagehub.dto.request.ApplicantRequest;
-import dev.aries.sagehub.dto.request.ApplicantResultRequest;
 import dev.aries.sagehub.dto.request.ProgramChoicesRequest;
 import dev.aries.sagehub.dto.response.ApplicantResponse;
-import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
 import dev.aries.sagehub.dto.response.BasicApplicantResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
-import dev.aries.sagehub.service.applicantresultservice.ApplicantResultService;
 import dev.aries.sagehub.service.applicantservice.ApplicantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Applicant", description = "Manage applicants and their information")
 public class ApplicantController {
 	private final ApplicantService applicantService;
-	private final ApplicantResultService applicantResultService;
 
 	@PostMapping
 	@Operation(summary = "Start application",

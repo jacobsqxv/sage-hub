@@ -25,7 +25,6 @@ public interface ProgramCourseRepository extends JpaRepository<ProgramCourse, Lo
 	@Query("UPDATE ProgramCourse p SET p.status = :status WHERE p.program.id = :programId")
 	void updateStatusByProgramId(@Param("status") Status status, @Param("programId") Long programId);
 
-	ProgramCourse findByProgramIdAndCourseIdAndAcademicPeriod(Long programId, Long courseId, AcademicPeriod period);
 	boolean existsByProgramIdAndCourseIdAndAcademicPeriod(Long programId, Long courseId, AcademicPeriod period);
 
 	default Page<ProgramCourse> findAll(Program program, GetPrgCoursesPage request, Pageable pageable) {

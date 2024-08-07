@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class EmergencyContactMapper {
-	private final AddressMapper addressMapper;
 
 	public EmergencyContactResponse toEmergencyContactResponse(EmergencyContact emergencyContact) {
 		return new EmergencyContactResponse(
