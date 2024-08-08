@@ -1,8 +1,8 @@
 package dev.aries.sagehub.enums;
 
 /**
- * Enum representing the academic years in a typical educational program.
- * This enum is used to categorize students and courses based on their academic year,
+ * The {@code Year} class represents the academic years in a typical educational program.
+ * This is used to categorize students and courses based on their academic year,
  * facilitating the organization of academic information and schedules.
  * <ul>
  *     <li>{@code FIRST} - Represents the first academic year.</li>

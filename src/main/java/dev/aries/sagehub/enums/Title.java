@@ -4,12 +4,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Enum representing the common titles.
+ * The {@code Title} class represents the common titles
+ * used in the application.
  * <ul>
  * <li>{@code MR} - Represents the title Mister.</li>
  * <li>{@code MISS} - Represents the title Miss.</li>
  * <li>{@code MRS} - Represents the title Missus.</li>
  * </ul>
+ *
  * @author Jacobs Agyei
  */
 @Getter
