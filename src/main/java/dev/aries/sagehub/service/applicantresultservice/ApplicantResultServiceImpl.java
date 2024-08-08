@@ -1,9 +1,11 @@
 package dev.aries.sagehub.service.applicantresultservice;
 
 import java.util.List;
+import java.util.Objects;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.ApplicantResultRequest;
+import dev.aries.sagehub.dto.request.SubjectScoreRequest;
 import dev.aries.sagehub.dto.response.ApplicantResultsResponse;
 import dev.aries.sagehub.mapper.ApplicantResultsMapper;
 import dev.aries.sagehub.model.Applicant;
@@ -102,8 +104,15 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 		Checks.validateLoggedInUserName(loggedInUser, id);
 		applicantUtil.validApplicantResult(loggedInUser.getId(), resultId);
 		ApplicantResult result = loadResults(resultId);
+		IDNumber oldID = IDNumber.of(result.getIndexNumber());
+		if (!Objects.equals(request.indexNumber().value(), oldID.value())) {
+			checkExistingResults(request.indexNumber());
+		}
 		UpdateStrategy strategy = globalUtil.checkStrategy("updateApplicantResults");
 		result = (ApplicantResult) strategy.update(result, request);
+		List<SubjectScore> newScores = updateScores(request.subjectScores(), result);
+		result.getScores().clear();
+		result.getScores().addAll(newScores);
 		applicantResultRepository.save(result);
 		return resultsMapper.toApplicantResultsResponse(result);
 	}
@@ -114,4 +123,15 @@ public class ApplicantResultServiceImpl implements ApplicantResultService {
 						String.format(ExceptionConstants.NOT_FOUND, "Results")));
 	}
 
+	private List<SubjectScore> updateScores(List<SubjectScoreRequest> scores, ApplicantResult result) {
+		return scores.stream().map((req) -> toSubjectScore(req, result)).toList();
+	}
+
+	private SubjectScore toSubjectScore(SubjectScoreRequest request, ApplicantResult result) {
+		return SubjectScore.builder()
+				.result(result)
+				.subjectName(request.subject())
+				.grade(request.grade().getGrade())
+				.build();
+	}
 }

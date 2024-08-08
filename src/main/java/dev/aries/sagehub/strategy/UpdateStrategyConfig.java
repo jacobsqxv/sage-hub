@@ -18,6 +18,7 @@ public class UpdateStrategyConfig {
 	private final UpdateProgram updateProgram;
 	private final UpdateCourse updateCourse;
 	private final UpdateBasicInfo updateBasicInfo;
+	private final UpdateApplicantResults updateApplicantResults;
 
 	@Bean
 	public Map<String, UpdateStrategy> updateStrategies() {
@@ -28,6 +29,7 @@ public class UpdateStrategyConfig {
 		strategies.put("Department", updateDepartment);
 		strategies.put("Program", updateProgram);
 		strategies.put("Course", updateCourse);
+		strategies.put("ApplicantResults", updateApplicantResults);
 		return strategies;
 	}
 }
