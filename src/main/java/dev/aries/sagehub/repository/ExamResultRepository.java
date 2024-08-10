@@ -7,10 +7,10 @@ import dev.aries.sagehub.model.ExamResult;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ApplicantResultRepository extends JpaRepository<ExamResult, Long> {
+public interface ExamResultRepository extends JpaRepository<ExamResult, Long> {
 	boolean existsByIndexNumber(String indexNumber);
 
-	Optional<ExamResult> findByIdAndApplicantId(Long id, Long applicantId);
+	List<ExamResult> findAllByUserId(Long id);
 
-	List<ExamResult> findByApplicantId(Long applicantId);
+	Optional<ExamResult> findByIdAndUserId(Long id, Long userId);
 }

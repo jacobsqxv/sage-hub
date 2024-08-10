@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface StaffRepository extends JpaRepository<Staff, Long> {
 
-	@Query("SELECT s.contactInfo.secondaryEmail FROM Staff s " +
+	@Query("SELECT s.userProfile.contactInfo.secondaryEmail FROM Staff s " +
 			"WHERE s.user.id = :userId")
 	Optional<String> findSecondaryEmailByUserId(Long userId);
 }

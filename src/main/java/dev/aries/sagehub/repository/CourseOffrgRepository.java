@@ -5,8 +5,8 @@ import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.model.CourseOffering;
 import dev.aries.sagehub.model.Program;
 import dev.aries.sagehub.model.attribute.AcademicPeriod;
-import dev.aries.sagehub.specification.GeneralSpecification;
 import dev.aries.sagehub.specification.CourseOffrgSpecification;
+import dev.aries.sagehub.specification.GeneralSpecification;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
-public interface CourseOfferingRepository extends JpaRepository<CourseOffering, Long>,
+public interface CourseOffrgRepository extends JpaRepository<CourseOffering, Long>,
 		JpaSpecificationExecutor<CourseOffering> {
 
 	@Modifying
