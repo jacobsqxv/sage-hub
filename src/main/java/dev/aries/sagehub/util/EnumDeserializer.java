@@ -9,7 +9,7 @@ import dev.aries.sagehub.constant.ExceptionConstants;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class SafeEnumDeserializer<E extends Enum<E>> extends JsonDeserializer<E> {
+public class EnumDeserializer<E extends Enum<E>> extends JsonDeserializer<E> {
 	private Class<E> enumClass;
 
 	@Override

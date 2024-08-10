@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.exception.EmailSendFailureException;
-import dev.aries.sagehub.model.attribute.Email;
 import dev.aries.sagehub.service.emailservice.EmailDetails;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -33,16 +31,6 @@ public class EmailUtil {
 	private String mailgunFrom;
 	@Value("${mailgun.domain}")
 	private String mailgunDomain;
-	private final UserUtil userUtil;
-
-	public Email getRecipient(Long userId) {
-		String recipient = userUtil.getUserEmail(userId);
-		if (recipient == null) {
-			throw new IllegalArgumentException(
-					String.format(ExceptionConstants.NOT_FOUND, "Email"));
-		}
-		return new Email(recipient);
-	}
 
 	/**
 	 * Send an email using the Mailgun API.

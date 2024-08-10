@@ -8,15 +8,8 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
-import dev.aries.sagehub.model.AcademicPeriod;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.attribute.Password;
-import dev.aries.sagehub.model.attribute.Username;
-import dev.aries.sagehub.repository.ApplicantRepository;
-import dev.aries.sagehub.repository.ProgramCourseRepository;
-import dev.aries.sagehub.repository.StaffRepository;
-import dev.aries.sagehub.repository.StudentRepository;
-import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,31 +18,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import static dev.aries.sagehub.constant.ExceptionConstants.ALREADY_EXISTS;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class Checks {
-	private final UserUtil userUtil;
 	private final PasswordEncoder passwordEncoder;
-	private final StaffRepository staffRepository;
-	private final StudentRepository studentRepository;
-	private final ApplicantRepository applicantRepository;
-	private final ProgramCourseRepository programCourseRepository;
 	private static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 	private static final String DEFAULT_COUNTRY_CODE = "GH";
 
-	public static void validateLoggedInUser(User user, Long id) {
+	public static void validateLoggedInUserId(User user, Long id) {
 		log.info("loggedInUser: {}, userId: {}", user.getId(), id);
 		if (!Objects.equals(user.getId(), id)) {
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
 
-	public static void validateLoggedInUserName(User user, Long id) {
-		log.info("loggedInUser: {}, username: {}", user.getUsername(), id);
-		if (!Objects.equals(Long.valueOf(user.getUsername()), id)) {
+	public static void validateLoggedInUser(User loggedInUser, User owner) {
+		log.info("loggedInUser: {}, resourceOwner: {}", loggedInUser.getUsername(), owner.getUsername());
+		if (!Objects.equals(loggedInUser, owner)) {
 			throw new UnauthorizedAccessException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}
@@ -62,12 +48,6 @@ public class Checks {
 			throw new IllegalArgumentException(
 					String.format(ExceptionConstants.ENUM_VALUE_INVALID, request));
 		}
-	}
-
-	public User currentlyLoggedInUser() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Username username = new Username(authentication.getName());
-		return userUtil.getUser(username);
 	}
 
 	public void isAdminOrLoggedIn(String username) {
@@ -85,7 +65,7 @@ public class Checks {
 		}
 	}
 
-	public void checkAdmins(RoleEnum role) {
+	public static void checkAdmins(RoleEnum role) {
 		if (!(role.equals(RoleEnum.ADMIN) ||
 				role.equals(RoleEnum.SUPER_ADMIN))) {
 			log.info("Unauthorized access");
@@ -99,34 +79,6 @@ public class Checks {
 
 	public static boolean isAdmin(RoleEnum role) {
 		return role.equals(RoleEnum.ADMIN) || role.equals(RoleEnum.SUPER_ADMIN);
-	}
-	public void checkStudentExists(Long studentId) {
-		if (studentRepository.existsById(studentId)) {
-			throw new EntityExistsException(String.format(ALREADY_EXISTS, "Student"));
-		}
-	}
-
-	public void checkStaffExists(Long staffId) {
-		if (staffRepository.existsById(staffId)) {
-			throw new EntityExistsException(String.format(ALREADY_EXISTS, "Staff"));
-		}
-	}
-
-	public void checkApplicantExists(Long userId) {
-		if (applicantRepository.existsByUserId(userId)) {
-			throw new EntityExistsException(
-					String.format(ALREADY_EXISTS, "Applicant"));
-		}
-	}
-
-	public void checkProgramCourse(Long programId, Long courseId, AcademicPeriod period) {
-		boolean courseExistsAtPeriod = programCourseRepository.existsByProgramIdAndCourseIdAndAcademicPeriod(
-				programId, courseId, period);
-		boolean courseExists = programCourseRepository.existsByProgramIdAndCourseId(programId, courseId);
-		if (courseExistsAtPeriod || courseExists) {
-			throw new EntityExistsException(
-					String.format(ALREADY_EXISTS, "Course configuration"));
-		}
 	}
 
 	public static boolean isValidPhoneNumber(String number, String countryCode) {
