@@ -27,7 +27,7 @@ public class UpdateCourse implements UpdateStrategy<Course, CourseRequest> {
 		if (!Objects.equals(request.name(), entity.getName())) {
 			log.info("Entity: {}, Request: {}", entity.getName(), request.name());
 			throw new IllegalArgumentException(String.format(
-					ExceptionConstants.CANNOT_UPDATE_NAME, "Course"));
+					ExceptionConstants.CANNOT_UPDATE, "Course name"));
 		}
 	}
 }

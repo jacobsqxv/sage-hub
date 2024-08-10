@@ -6,12 +6,14 @@ import dev.aries.sagehub.model.UserProfile;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UpdateUserInfo implements UpdateStrategy<UserProfile, UserProfileRequest> {
+public class UpdateUserProfile implements UpdateStrategy<UserProfile, UserProfileRequest> {
 
 	@Override
 	public UserProfile update(UserProfile entity, UserProfileRequest request) {
-		entity.setPersonalInfo(UpdatePersonalInfo.update(entity.getPersonalInfo(), request.personalInfo()));
-		entity.setContactInfo(UpdateContactInfo.update(entity.getContactInfo(), request.contactInfo()));
+		entity.setPersonalInfo(UpdateAttributes.updatePersonalInfo(
+				entity.getPersonalInfo(), request.personalInfo()));
+		entity.setContactInfo(UpdateAttributes.updateContactInfo(
+				entity.getContactInfo(), request.contactInfo()));
 		return entity;
 	}
 }

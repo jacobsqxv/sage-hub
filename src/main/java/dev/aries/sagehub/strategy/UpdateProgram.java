@@ -48,7 +48,7 @@ public class UpdateProgram implements UpdateStrategy<Program, ProgramRequest> {
 		if (!Objects.equals(request.name(), entity.getName())) {
 			log.info("Entity: {}, Request: {}", entity.getName(), request.name());
 			throw new IllegalArgumentException(String.format(
-					ExceptionConstants.CANNOT_UPDATE_NAME, "Program"));
+					ExceptionConstants.CANNOT_UPDATE, "Program name"));
 		}
 	}
 }
