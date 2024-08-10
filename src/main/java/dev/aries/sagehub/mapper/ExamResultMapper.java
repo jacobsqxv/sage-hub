@@ -1,40 +1,55 @@
 package dev.aries.sagehub.mapper;
 
-import dev.aries.sagehub.dto.request.ApplicantResultRequest;
-import dev.aries.sagehub.dto.response.ResultResponse;
-import dev.aries.sagehub.model.Application;
+import dev.aries.sagehub.constant.ExceptionConstants;
+import dev.aries.sagehub.dto.request.ExamResultRequest;
+import dev.aries.sagehub.dto.request.SubjectScoreRequest;
+import dev.aries.sagehub.dto.response.ExamResultResponse;
+import dev.aries.sagehub.dto.response.SubjectScoreResponse;
 import dev.aries.sagehub.model.ExamResult;
-import lombok.RequiredArgsConstructor;
+import dev.aries.sagehub.model.SubjectScore;
+import dev.aries.sagehub.model.User;
 
-import org.springframework.stereotype.Component;
+public final class ExamResultMapper {
 
-@Component
-@RequiredArgsConstructor
-public class ApplicantResultsMapper {
-	private final SubjectScoreMapper subjectScoreMapper;
-	public ResultResponse toApplicantResultsResponse(ExamResult examResult) {
-		return new ResultResponse(
+	public static ExamResultResponse toResultResponse(ExamResult examResult) {
+		return new ExamResultResponse(
 				examResult.getId(),
-				examResult.getSchoolName(),
 				examResult.getType().toString(),
 				examResult.getYear(),
 				examResult.getIndexNumber(),
-				examResult.getScores().stream()
-						.map(subjectScoreMapper::toSubjectScoreResponse)
+				examResult.getResults().stream()
+						.map(ExamResultMapper::toScoreResponse)
 						.toList()
 		);
 	}
 
-	public ExamResult toApplicantResults(ApplicantResultRequest applicantResult, Application application) {
+	public static ExamResult toExamResult(ExamResultRequest request, User user) {
 		return ExamResult.builder()
-				.schoolName(applicantResult.schoolName())
-				.type(applicantResult.resultType())
-				.year(applicantResult.year())
-				.indexNumber(applicantResult.indexNumber().value())
-				.scores(applicantResult.subjectScores().stream()
-						.map(subjectScoreMapper::toSubjectScore)
+				.type(request.resultType())
+				.year(request.year())
+				.indexNumber(request.indexNumber().value())
+				.results(request.subjectScores().stream()
+						.map(ExamResultMapper::toSubjectScore)
 						.toList())
-				.applicant(application)
+				.user(user)
 				.build();
+	}
+
+	public static SubjectScoreResponse toScoreResponse(SubjectScore subjectScore) {
+		return SubjectScoreResponse.builder()
+				.subject(subjectScore.getSubject())
+				.grade(subjectScore.getGrade())
+				.build();
+	}
+
+	public static SubjectScore toSubjectScore(SubjectScoreRequest subjectScore) {
+		return SubjectScore.builder()
+				.subject(subjectScore.subject())
+				.grade(subjectScore.grade().getGrade())
+				.build();
+	}
+
+	private ExamResultMapper() {
+		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);
 	}
 }

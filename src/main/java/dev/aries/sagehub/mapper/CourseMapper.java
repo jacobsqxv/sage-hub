@@ -1,14 +1,14 @@
 package dev.aries.sagehub.mapper;
 
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.response.CourseResponse;
+import dev.aries.sagehub.dto.response.CrseOffrgResponse;
 import dev.aries.sagehub.model.Course;
+import dev.aries.sagehub.model.CourseOffering;
 
-import org.springframework.stereotype.Component;
+public final class CourseMapper {
 
-@Component
-public class CourseMapper {
-
-	public CourseResponse toCourseResponse(Course course) {
+	public static CourseResponse toCourseResponse(Course course) {
 		return new CourseResponse(
 				course.getId(),
 				course.getCode(),
@@ -17,5 +17,19 @@ public class CourseMapper {
 				course.getCreditUnits(),
 				course.getStatus().toString()
 		);
+	}
+
+	public static CrseOffrgResponse toCourseOffrgResponse(CourseOffering courseOffering) {
+		return new CrseOffrgResponse(
+				courseOffering.getId(),
+				toCourseResponse(courseOffering.getCourse()),
+				courseOffering.getAcademicPeriod().year().toString(),
+				courseOffering.getAcademicPeriod().semester().toString(),
+				courseOffering.getStatus().toString()
+		);
+	}
+
+	private CourseMapper() {
+		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);
 	}
 }

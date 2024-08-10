@@ -3,20 +3,21 @@ package dev.aries.sagehub.mapper;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.AddressRequest;
 import dev.aries.sagehub.dto.request.ContactInfoRequest;
+import dev.aries.sagehub.dto.request.EducationRequest;
 import dev.aries.sagehub.dto.request.NameRequest;
 import dev.aries.sagehub.dto.request.PersonalInfoRequest;
-import dev.aries.sagehub.dto.response.UserInfoResponse;
+import dev.aries.sagehub.dto.response.UserProfileResponse;
 import dev.aries.sagehub.model.UserProfile;
 import dev.aries.sagehub.model.attribute.Address;
 import dev.aries.sagehub.model.attribute.ContactInfo;
+import dev.aries.sagehub.model.attribute.Education;
 import dev.aries.sagehub.model.attribute.Name;
 import dev.aries.sagehub.model.attribute.PersonalInfo;
 
-public final class UserInfoMapper {
+public final class UserProfileMapper {
 
-	public static UserInfoResponse toUserInfoResponse(UserProfile userProfile) {
-		return new UserInfoResponse(
-				userProfile.getId(),
+	public static UserProfileResponse toUserProfileResponse(UserProfile userProfile) {
+		return new UserProfileResponse(
 				userProfile.getPersonalInfo(),
 				userProfile.getContactInfo()
 		);
@@ -59,7 +60,16 @@ public final class UserInfoMapper {
 		);
 	}
 
-	private UserInfoMapper() {
+	public static Education toEducation(EducationRequest request) {
+		return new Education(
+				request.institution(),
+				request.programPursued(),
+				request.startDate(),
+				request.endDate()
+		);
+	}
+
+	private UserProfileMapper() {
 		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);
 	}
 }

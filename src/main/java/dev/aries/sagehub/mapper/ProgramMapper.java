@@ -1,16 +1,12 @@
 package dev.aries.sagehub.mapper;
 
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 import dev.aries.sagehub.model.Program;
-import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Component;
+public final class ProgramMapper {
 
-@Component
-@RequiredArgsConstructor
-public class ProgramMapper {
-
-	public ProgramResponse toProgramResponse(Program program) {
+	public static ProgramResponse toResponse(Program program) {
 		return new ProgramResponse(
 				program.getId(),
 				program.getName(),
@@ -23,12 +19,16 @@ public class ProgramMapper {
 		);
 	}
 
-	public ProgramResponse toBasicProgramResponse(Program program) {
+	public static ProgramResponse toBasicResponse(Program program) {
 		return ProgramResponse.builder()
 				.id(program.getId())
 				.name(program.getName())
 				.degree(program.getDegree().toString())
 				.duration(program.getDuration())
 				.build();
+	}
+
+	private ProgramMapper() {
+		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);
 	}
 }
