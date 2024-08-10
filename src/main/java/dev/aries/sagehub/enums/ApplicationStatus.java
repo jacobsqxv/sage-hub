@@ -1,7 +1,7 @@
 package dev.aries.sagehub.enums;
 
 /**
- * The {@code ApplicantStatus} class represents the various stages an application can be in
+ * The {@code ApplicationStatus} class represents the various stages an application can be in
  * within the application process. It is used to track the progress and current state
  * of an application through the system's workflow.
  * <p>States include:</p>
@@ -14,7 +14,7 @@ package dev.aries.sagehub.enums;
  *
  * @author Jacobs Agyei
  */
-public enum ApplicantStatus {
+public enum ApplicationStatus {
 	/**
 	 * This represents the pending state.
 	 */
