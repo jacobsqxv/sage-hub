@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Pattern;
 import static dev.aries.sagehub.constant.ValidationMessage.INVALID_FORMAT;
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
-public record EmergencyContactRequest(
+public record EmergencyInfoRequest(
 		@Pattern(regexp = Patterns.NAME, message = INVALID_FORMAT + "full name")
 		@NotEmpty(message = "Full name" + NOT_NULL)
 				@Schema(example = "Jane Doe")

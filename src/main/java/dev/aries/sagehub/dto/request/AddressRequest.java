@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import static dev.aries.sagehub.constant.ValidationMessage.INVALID_FORMAT;
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
-public record AddressUpdateRequest(
+public record AddressRequest(
 		@Pattern(regexp = Patterns.STREET, message = INVALID_FORMAT + "street")
 		@NotEmpty(message = "Street" + NOT_NULL)
 		@Schema(example = "1234 Ring Road")

@@ -6,10 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
-public record ApplicationRequest(
-		@NotNull(message = "Academic year" + NOT_NULL)
-		@Schema(example = "2024")
-		Integer yearOfApplication,
+public record ApplicantInfoRequest(
 		@NotNull(message = "Applicant information" + NOT_NULL)
 		@Valid
 		@Schema(implementation = UserProfileRequest.class)

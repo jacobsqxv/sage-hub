@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import static dev.aries.sagehub.constant.ValidationMessage.NOT_NULL;
 
-public record CourseOfferingRequest(
+public record CrseOffrgRequest(
 		@NotNull(message = "Course ID" + NOT_NULL)
 		Long courseId,
 		@NotNull(message = "Academic period" + NOT_NULL)
