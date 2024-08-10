@@ -8,7 +8,7 @@ import dev.aries.sagehub.model.Program;
 
 import org.springframework.data.jpa.domain.Specification;
 
-public final class ProgramCourseSpecification {
+public final class CourseOffrgSpecification {
 	public static Specification<CourseOffering> hasCourse(String course) {
 		return (root, query, criteriaBuilder) -> (course == null || course.trim().isEmpty()) ?
 				null : criteriaBuilder.like(
@@ -36,7 +36,7 @@ public final class ProgramCourseSpecification {
 				criteriaBuilder.equal(root.get("academicPeriod").get("semester"), semester) : null;
 	}
 
-	private ProgramCourseSpecification() {
+	private CourseOffrgSpecification() {
 		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);
 	}
 }
