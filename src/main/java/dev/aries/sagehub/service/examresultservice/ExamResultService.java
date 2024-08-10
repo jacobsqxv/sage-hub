@@ -6,76 +6,76 @@ import dev.aries.sagehub.dto.request.ExamResultRequest;
 import dev.aries.sagehub.dto.response.ExamResultResponse;
 
 /**
- * The {@code ApplicantResultService} interface provides methods for managing applicant results.
- * It includes functionality for adding and updating applicant results.
+ * The {@code ExamResultService} interface provides methods for managing exam results.
+ * It includes functionality for adding and updating exam results.
  * <p>
  * Implementations of this interface are responsible for handling the business logic
- * related to applicant result management.
+ * related to exam result management.
  * </p>
  *
  * @author Jacobs Agyei
  */
-public interface ApplicantResultService {
+public interface ExamResultService {
 	/**
-	 * Adds new applicant results.
+	 * Adds new exam results to the owner of the resource by their {@code id}.
 	 * <p>
-	 * This method takes the {@code applicantId} and an {@code ApplicantResultRequest} object
-	 * containing the details of the applicant results to be added,
-	 * and returns an {@code ApplicantResultsResponse} object containing the details of the newly added results.
+	 * This method takes the {@code id} and an {@code ExamResultRequest} object
+	 * containing the details of the exam results to be added,
+	 * and returns an {@code ExamResultsResponse} object containing the details of the newly added results.
 	 * </p>
-	 * @param applicantId the ID of the applicant.
-	 * @param request the {@code ApplicantResultRequest} containing the applicant results information.
-	 * @return an {@code ApplicantResultsResponse} containing the new applicant results information.
+	 * @param id the unique identifier of the owner of the {@code ExamResult} object.
+	 * @param request the {@code ExamResultRequest} containing the exam results information.
+	 * @return an {@code ExamResultResponse} containing the new exam results information.
 	 * @throws IllegalArgumentException if the request is null or contains invalid data.
 	 */
-	ExamResultResponse addApplicantResults(Long applicantId, ExamResultRequest request);
+	ExamResultResponse addExamResults(Long id, ExamResultRequest request);
 
 	/**
-	 * Retrieves all the applicant's results.
+	 * Retrieves all exam results belonging to the owner of the resource by their {@code id}.
 	 * <p>
-	 * This method takes the {@code applicantId} and returns a list of {@code ApplicantResultsResponse}
-	 * objects containing the details of the applicant results.
+	 * This method takes the {@code id} and returns a list of {@code ExamResultResponse}
+	 * objects containing the details of the exam results.
 	 * </p>
-	 * @param applicantId the ID of the applicant.
-	 * @return a list of {@code ApplicantResultsResponse} containing the applicant results information.
+	 * @param id the unique identifier of the owner of the {@code ExamResult} object.
+	 * @return a list of {@code ExamResultResponse} containing the exam results information.
 	 */
-	List<ExamResultResponse> getApplicantResults(Long applicantId);
+	List<ExamResultResponse> getExamResults(Long id);
 
 	/**
-	 * Retrieves applicant results by id.
+	 * Retrieves exam results of the owner of the resource by their {@code id}
 	 * <p>
-	 * This method takes the {@code applicantId} and {@code resultId} and returns an
-	 * {@code ApplicantResultsResponse} object containing the details of the applicant results.
+	 * This method takes an {@code id} and a {@code resultId} and returns an
+	 * {@code ExamResultsResponse} object containing the details of the exam results.
 	 * </p>
-	 * @param applicantId the ID of the applicant.
-	 * @param resultId the ID of the applicant results.
-	 * @return an {@code ApplicantResultsResponse} containing the applicant results information.
+	 * @param id the unique identifier of the owner of the {@code ExamResult} object.
+	 * @param resultId the ID of the exam results.
+	 * @return an {@code ExamResultResponse} containing the exam results information.
 	 */
-	ExamResultResponse getApplicantResult(Long applicantId, Long resultId);
+	ExamResultResponse getExamResult(Long id, Long resultId);
 
 	/**
-	 * Updates existing applicant results.
+	 * Updates existing exam results of the owner of the resource by their {@code id}.
 	 * <p>
-	 * This method takes the id of the applicant, the id of the result and an {@code ApplicantResultRequest}
+	 * This method takes an {@code id}, the {@code id} of the result and an {@code ExamResultRequest}
 	 * object containing the updated details of the
-	 * applicant results, and returns an {@code ApplicantResultsResponse} object containing the updated results.
+	 * exam results, and returns an {@code ExamResultsResponse} object containing the updated results.
 	 * </p>
-	 * @param id the ID of the applicant to be updated.
-	 * @param resultId the ID of the applicant results to be updated.
-	 * @param request the {@code ApplicantResultRequest} containing the updated applicant results information.
-	 * @return an {@code ApplicantResultsResponse} containing the updated applicant results information.
+	 * @param id the unique identifier of the owner of the {@code ExamResult} object.
+	 * @param resultId the ID of the exam results to be updated.
+	 * @param request the {@code ExamResultRequest} containing the updated exam results information.
+	 * @return an {@code ExamResultResponse} containing the updated exam results information.
 	 * @throws IllegalArgumentException if the request is null or contains invalid data.
 	 */
-	ExamResultResponse updateApplicantResults(Long id, Long resultId, ExamResultRequest request);
+	ExamResultResponse updateExamResults(Long id, Long resultId, ExamResultRequest request);
 
 	/**
-	 * Deletes applicant results.
+	 * Deletes exam results for the owner of the resource by their {@code id}.
 	 * <p>
-	 * This method takes the {@code applicantId} and {@code resultId} and deletes the applicant results.
+	 * This method takes the {@code id} and {@code resultId} and deletes the exam results.
 	 * </p>
-	 * @param applicantId the ID of the applicant.
-	 * @param resultId the ID of the applicant results.
-	 * @throws IllegalArgumentException if the applicant or result does not exist.
+	 * @param id the unique identifier of the owner of the {@code ExamResult} object.
+	 * @param resultId the ID of the exam results.
+	 * @throws IllegalArgumentException if the exam or result does not exist.
 	 */
-	void deleteApplicantResults(Long applicantId, Long resultId);
+	void deleteExamResults(Long id, Long resultId);
 }

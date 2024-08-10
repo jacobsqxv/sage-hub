@@ -1,11 +1,11 @@
-package dev.aries.sagehub.service.emgcontactservice;
+package dev.aries.sagehub.service.emergencyinfoservice;
 
 import dev.aries.sagehub.dto.request.EmergencyInfoRequest;
 import dev.aries.sagehub.dto.response.EmergencyInfoResponse;
 import dev.aries.sagehub.model.EmergencyInfo;
 
 /**
- * The {@code EmergencyContactInterface} provides methods for managing emergency contact information.
+ * The {@code EmergencyInfoService} provides methods for managing emergency contact information.
  * It includes functionality for retrieving, adding, and updating emergency contact information.
  * <p>
  * Implementations of this interface are responsible for handling the business logic
@@ -13,33 +13,33 @@ import dev.aries.sagehub.model.EmergencyInfo;
  * </p>
  * @author Jacobs Agyei
  */
-public interface EmergencyContactInterface {
+public interface EmergencyInfoService {
 
 	/**
 	 * Retrieves the emergency contact information of a user.
 	 * <p>
-	 * This method takes the ID of the emergency contact info and returns a {@code EmergencyContactResponse} object
+	 * This method takes the ID of the emergency contact info and returns a {@code EmergencyInfoResponse} object
 	 * containing the user's emergency contact information.
 	 * </p>
 	 * @param id the ID of the emergency contact info.
-	 * @return a {@code EmergencyContactResponse} containing the user's emergency contact information.
+	 * @return a {@code EmergencyInfoResponse} containing the user's emergency contact information.
 	 * @throws IllegalArgumentException if the id is null or invalid.
 	 */
-	EmergencyInfoResponse getEmergencyContact(Long id);
+	EmergencyInfoResponse getEmergencyInfo(Long id);
 
 	/**
 	 * Adds new emergency contact information for a user.
 	 * <p>
-	 * This method takes an {@code EmergencyContactRequest} object containing the new emergency contact information,
-	 * and the ID of the user, and returns an {@code EmergencyContact} object
+	 * This method takes an {@code EmergencyInfoRequest} object containing the new emergency contact information,
+	 * and the ID of the user, and returns an {@code EmergencyInfo} object
 	 * containing the updated emergency contact information.
 	 * </p>
-	 * @param request the {@code EmergencyContactRequest} containing the new emergency contact information.
+	 * @param request the {@code EmergencyInfoRequest} containing the new emergency contact information.
 	 * @param userId the ID of the user.
-	 * @return an {@code EmergencyContact} containing the updated emergency contact information.
+	 * @return an {@code EmergencyInfo} containing the saved emergency contact information.
 	 * @throws IllegalArgumentException if the request or userId is null or contains invalid data.
 	 */
-	EmergencyInfo addEmergencyContact(EmergencyInfoRequest request, Long userId);
+	EmergencyInfo addEmergencyInfo(EmergencyInfoRequest request, Long userId);
 
 	/**
 	 * Updates the emergency contact information of a user.
@@ -53,5 +53,5 @@ public interface EmergencyContactInterface {
 	 * @return an {@code EmergencyContactResponse} containing the updated emergency contact information.
 	 * @throws IllegalArgumentException if the id or request is null or contains invalid data.
 	 */
-	EmergencyInfoResponse updateEmergencyContact(Long id, EmergencyInfoRequest request);
+	EmergencyInfoResponse updateEmergencyInfo(Long id, EmergencyInfoRequest request);
 }

@@ -1,83 +1,78 @@
-package dev.aries.sagehub.service.emgcontactservice;
+package dev.aries.sagehub.service.emergencyinfoservice;
 
-import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.EmergencyInfoRequest;
 import dev.aries.sagehub.dto.response.EmergencyInfoResponse;
-import dev.aries.sagehub.mapper.AddressMapper;
-import dev.aries.sagehub.mapper.EmergencyInfoMapper;
+import dev.aries.sagehub.mapper.UserMapper;
+import dev.aries.sagehub.mapper.UserProfileMapper;
 import dev.aries.sagehub.model.EmergencyInfo;
 import dev.aries.sagehub.model.User;
-import dev.aries.sagehub.repository.EmergencyInfoRepository;
-import dev.aries.sagehub.strategy.UpdateStrategy;
+import dev.aries.sagehub.repository.EmergInfoRepository;
+import dev.aries.sagehub.strategy.UpdateStrategyConfig;
 import dev.aries.sagehub.util.Checks;
-import dev.aries.sagehub.util.GlobalUtil;
-import jakarta.persistence.EntityNotFoundException;
+import dev.aries.sagehub.util.DataLoader;
+import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 /**
- * Implementation of the {@code EmergencyContactInterface} interface.
+ * Implementation of the {@code EmergencyInfoService} interface.
  * @author Jacobs Agyei
- * @see dev.aries.sagehub.service.emgcontactservice.EmergencyContactInterface
+ * @see EmergencyInfoService
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class EmergencyContactImpl implements EmergencyContactInterface {
+public class EmergencyInfoServiceImpl implements EmergencyInfoService {
+	private final UpdateStrategyConfig updateStrategyConfig;
+	private final EmergInfoRepository emergInfoRepository;
+	private final DataLoader dataLoader;
+	private final UserUtil userUtil;
 	private final Checks checks;
-	private final GlobalUtil globalUtil;
-	private final AddressMapper addressMapper;
-	private final EmergencyInfoMapper emergencyInfoMapper;
-	private final EmergencyInfoRepository emergencyInfoRepository;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EmergencyInfoResponse getEmergencyContact(Long id) {
-		User loggedUser = checks.currentlyLoggedInUser();
+	public EmergencyInfoResponse getEmergencyInfo(Long id) {
+		User loggedUser = userUtil.currentlyLoggedInUser();
 		checks.isAdminOrLoggedIn(loggedUser.getUsername());
-		EmergencyInfo EmergencyInfo = loadEmergencyContact(id);
-		return emergencyInfoMapper.toEmergencyContactResponse(EmergencyInfo);
+		EmergencyInfo EmergencyInfo = dataLoader.loadEmergencyInfo(id);
+		return UserMapper.toEmergInfoResponse(EmergencyInfo);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EmergencyInfo addEmergencyContact(EmergencyInfoRequest request, Long userId) {
-		EmergencyInfo EmergencyInfo = EmergencyInfo.builder()
+	public EmergencyInfo addEmergencyInfo(EmergencyInfoRequest request, Long userId) {
+		EmergencyInfo emergencyInfo = EmergencyInfo.builder()
 				.userId(userId)
 				.fullName(request.fullName())
 				.relationship(request.relationship())
 				.phoneNumber(request.phoneNumber().number())
 				.email(request.email().value())
 				.occupation(request.occupation())
-				.address(addressMapper.toAddress(request.address()))
+				.address(UserProfileMapper.toAddress(request.address()))
 				.build();
-		log.info("Saving new emergency contact info...");
-		return EmergencyInfo;
+		log.info("Saving emergency contact info...");
+		return emergencyInfo;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EmergencyInfoResponse updateEmergencyContact(Long id, EmergencyInfoRequest request) {
-		User loggedUser = checks.currentlyLoggedInUser();
+	public EmergencyInfoResponse updateEmergencyInfo(Long id, EmergencyInfoRequest request) {
+		User loggedUser = userUtil.currentlyLoggedInUser();
 		checks.isAdminOrLoggedIn(loggedUser.getUsername());
-		EmergencyInfo EmergencyInfo = loadEmergencyContact(id);
-		UpdateStrategy strategy = globalUtil.checkStrategy("updateEmergencyContact");
-		EmergencyInfo = (EmergencyInfo) strategy.update(EmergencyInfo, request);
-		emergencyInfoRepository.save(EmergencyInfo);
+		EmergencyInfo emergencyInfo = dataLoader.loadEmergencyInfo(id);
+		EmergencyInfo updatedEmergencyInfo = (EmergencyInfo) updateStrategyConfig
+				.checkStrategy("EmergencyInfo")
+				.update(emergencyInfo, request);
+		emergInfoRepository.save(updatedEmergencyInfo);
 		log.info("Emergency contact info for user ID: {} updated", loggedUser.getId());
-		return emergencyInfoMapper.toEmergencyContactResponse(EmergencyInfo);
+		return UserMapper.toEmergInfoResponse(updatedEmergencyInfo);
 	}
 
-	private EmergencyInfo loadEmergencyContact(Long id) {
-		return emergencyInfoRepository.findByUserId(id)
-				.orElseThrow(() -> new EntityNotFoundException(
-						String.format(ExceptionConstants.NO_INFO_FOUND, "emergency contact")));
-	}
 }

@@ -16,6 +16,7 @@ import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.enums.TokenStatus;
 import dev.aries.sagehub.enums.TokenType;
+import dev.aries.sagehub.factory.ModelFactory;
 import dev.aries.sagehub.mapper.UserMapper;
 import dev.aries.sagehub.model.Token;
 import dev.aries.sagehub.model.User;
@@ -28,10 +29,8 @@ import dev.aries.sagehub.security.TokenService;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.service.voucherservice.VoucherService;
 import dev.aries.sagehub.util.Checks;
-import dev.aries.sagehub.util.EmailUtil;
 import dev.aries.sagehub.util.Generators;
 import dev.aries.sagehub.util.GlobalUtil;
-import dev.aries.sagehub.util.UserFactory;
 import dev.aries.sagehub.util.UserUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -60,20 +59,16 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 	private final DaoAuthenticationProvider daoAuthProvider;
 	private final JwtAuthenticationProvider jwtAuthProvider;
-	private final TokenService tokenService;
-	private final GlobalUtil globalUtil;
-	private final UserUtil userUtil;
-	private final EmailUtil emailUtil;
-	private final EmailService emailService;
-	private final Generators generator;
-	private final Checks checks;
-	private final UserFactory userFactory;
-	private final UserRepository userRepository;
-	private final TokenRepository tokenRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final UserMapper userMapper;
-	private static final Integer STATUS_OK = HttpStatus.OK.value();
+	private final TokenRepository tokenRepository;
 	private final VoucherService voucherService;
+	private final UserRepository userRepository;
+	private final EmailService emailService;
+	private final TokenService tokenService;
+	private final ModelFactory modelFactory;
+	private final UserUtil userUtil;
+	private final Checks checks;
+	private static final Integer STATUS_OK = HttpStatus.OK.value();
 
 	/**
 	 * {@inheritDoc}
@@ -108,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
 		return new AuthResponse(
 				accessToken,
 				refreshToken,
-				userMapper.toAuthUserResponse(user)
+				UserMapper.toAuthUserResponse(user)
 				);
 	}
 
@@ -121,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
 		Password password = new Password(request.pin());
 		if (!userUtil.userExists(username)) {
 			voucherService.verifyVoucher(request);
-			User user = userFactory.createNewUser(
+			User user = modelFactory.createNewUser(
 					username,
 					password, RoleEnum.APPLICANT);
 			userRepository.save(user);
@@ -145,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
 			return new AuthResponse(
 					authToken.accessToken(),
 					authToken.refreshToken(),
-					userMapper.toAuthUserResponse(user)
+					UserMapper.toAuthUserResponse(user)
 			);
 		}
 		catch (AuthenticationException ex) {
@@ -156,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
 
 	private void checkLockedAccount(User user) {
 		if (user.getLockTime() != null && user.getLockTime().isAfter(LocalDateTime.now())) {
-			String time = globalUtil.formatDateTime(user.getLockTime());
+			String time = GlobalUtil.formatDateTime(user.getLockTime());
 			throw new LockedException(String.format(ExceptionConstants.ACCOUNT_LOCKED, time));
 		}
 	}
@@ -173,7 +168,7 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public GenericResponse resetPasswordRequest(ResetPasswordRequest request) {
 		User user = userUtil.getUser(request.username());
-		String value = generator.generateToken(16);
+		String value = Generators.generateToken(16);
 		Token token = Token.builder()
 				.value(value)
 				.type(TokenType.RESET_PASSWORD)
@@ -182,7 +177,7 @@ public class AuthServiceImpl implements AuthService {
 				.status(TokenStatus.ACTIVE)
 				.build();
 		tokenRepository.save(token);
-		Email recipient = emailUtil.getRecipient(user.getId());
+		Email recipient = userUtil.getRecipient(user);
 		emailService.sendPasswordResetEmail(recipient, value);
 		log.info("Reset password token: {}", value);
 		return new GenericResponse(STATUS_OK, String.format(ResponseMessage.EMAIL_SENT, "Password reset"));
@@ -203,7 +198,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setHashedPassword(passwordEncoder.encode(request.password()));
 		userRepository.save(user);
 		updateTokenStatus(passwordResetToken);
-		Email recipient = emailUtil.getRecipient(user.getId());
+		Email recipient = userUtil.getRecipient(user);
 		emailService.sendPasswordResetCompleteEmail(recipient, "login");
 		return new GenericResponse(STATUS_OK, ResponseMessage.PASSWORD_RESET_SUCCESS);
 	}

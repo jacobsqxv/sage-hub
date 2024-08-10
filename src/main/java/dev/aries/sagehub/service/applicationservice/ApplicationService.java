@@ -1,60 +1,74 @@
-package dev.aries.sagehub.service.applicantservice;
+package dev.aries.sagehub.service.applicationservice;
 
 import java.util.List;
 
-import dev.aries.sagehub.dto.request.ApplicationRequest;
+import dev.aries.sagehub.dto.request.ApplicantInfoRequest;
 import dev.aries.sagehub.dto.request.ProgramChoicesRequest;
-import dev.aries.sagehub.dto.response.ApplicationResponse;
-import dev.aries.sagehub.dto.response.BasicApplicationResponse;
+import dev.aries.sagehub.dto.response.ApplicantInfoResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
 
 /**
- * The {@code ApplicantService} interface provides methods for managing applicants.
- * It includes functionality for adding personal information, retrieving applicant details,
+ * The {@code ApplicationService} interface provides methods for managing applications.
+ * It includes functionality for adding personal information, retrieving application details,
  * and updating program choices.
  * <p>
  * Implementations of this interface are responsible for handling the business logic
- * related to applicant management.
+ * related to application management.
  * </p>
  * @author Jacobs Agyei
  */
-public interface ApplicantService {
+public interface ApplicationService {
 
 	/**
-	 * Adds personal information for a new applicant.
+	 * Adds profile information for a new applicant.
 	 * <p>
-	 * This method takes an {@code ApplicantRequest} object containing the details of the applicant to be added,
-	 * and returns an {@code BasicApplicantResponse} object containing the details of the newly added applicant.
+	 * This method takes an {@code ApplicantInfoRequest} object containing the details of the applicant to be added,
+	 * and returns an {@code ApplicationInfoResponse} object containing the details of the newly added applicant.
 	 * </p>
-	 * @param request the {@code ApplicantRequest} containing the applicant's personal information.
-	 * @return an {@code BasicApplicantResponse} containing the new applicant's information.
+	 * @param request the {@code ApplicantInfoRequest} containing the applicant's personal information.
+	 * @return an {@code ApplicantInfoResponse} containing the new applicant's information.
 	 * @throws IllegalArgumentException if the request is null or contains invalid data.
 	 */
-	BasicApplicationResponse addPersonalInfo(ApplicationRequest request);
+	ApplicantInfoResponse addApplicantInfo(ApplicantInfoRequest request);
 
 	/**
-	 * Retrieves the details of an applicant.
+	 * Retrieves the profile information of an applicant.
 	 * <p>
-	 * This method takes the {@code id} of the applicant and returns an {@code ApplicantResponse} object
+	 * This method takes the {@code id} of the application and returns an {@code ApplicantInfoResponse} object
 	 * containing the applicant's details.
 	 * </p>
-	 * @param applicantId the ID of the applicant to be retrieved.
-	 * @return an {@code ApplicantResponse} containing the applicant's information.
-	 * @throws IllegalArgumentException if the applicantId is null or invalid.
+	 * @param applicationId the ID of the applicant to be retrieved.
+	 * @return an {@code ApplicantInfoResponse} containing the applicant's information.
+	 * @throws IllegalArgumentException if the applicationId is null or invalid.
 	 */
-	ApplicationResponse getApplicant(Long applicantId);
+	ApplicantInfoResponse getApplicantInfo(Long applicationId);
+
+	/**
+	 * Updates the profile information for an applicant.
+	 * <p>
+	 * This method takes the ID of the application and an {@code ApplicantInfoRequest} object
+	 * containing the updated personal information,
+	 * and returns an {@code ApplicantInfoResponse} object containing the updated personal information.
+	 * </p>
+	 * @param applicationId      the ID of the application whose personal information is to be updated.
+	 * @param request the {@code ApplicantInfoRequest} containing the updated personal information.
+	 * @return an {@code ApplicantInfoResponse} containing the updated personal information.
+	 * @throws IllegalArgumentException if the id or request is null or contains invalid data.
+	 */
+	ApplicantInfoResponse updateApplicantInfo(Long applicationId, ApplicantInfoRequest request);
 
 	/**
 	 * Updates the program choices for an applicant.
 	 * <p>
-	 * This method takes the ID of the applicant and a {@code ProgramChoicesRequest} object
+	 * This method takes the ID of the application and a {@code ProgramChoicesRequest} object
 	 * containing the updated program choices,
 	 * and returns a list of {@code ProgramResponse} objects containing the updated program choices.
 	 * </p>
-	 * @param applicantId the ID of the applicant whose program choices are to be updated.
+	 * @param applicationId the ID of the application whose program choices are to be updated.
 	 * @param request     the {@code ProgramChoicesRequest} containing the updated program choices.
 	 * @return a list of {@code ProgramResponse} objects containing the updated program choices.
-	 * @throws IllegalArgumentException if the applicantId or request is null or contains invalid data.
+	 * @throws IllegalArgumentException if the applicationId or request is null or contains invalid data.
 	 */
-	List<ProgramResponse> updateApplicantProgramChoices(Long applicantId, ProgramChoicesRequest request);
+	List<ProgramResponse> updateApplicantProgramChoices(Long applicationId, ProgramChoicesRequest request);
+
 }

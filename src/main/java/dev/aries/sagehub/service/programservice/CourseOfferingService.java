@@ -1,14 +1,14 @@
 package dev.aries.sagehub.service.programservice;
 
-import dev.aries.sagehub.dto.request.ProgramCourseRequest;
-import dev.aries.sagehub.dto.response.ProgramCourseResponse;
-import dev.aries.sagehub.dto.search.GetPrgCoursesPage;
+import dev.aries.sagehub.dto.request.CrseOffrgRequest;
+import dev.aries.sagehub.dto.response.CrseOffrgResponse;
+import dev.aries.sagehub.dto.search.GetCrseOffrgPage;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * The {@code ProgramCourseService} interface provides methods for managing courses offered
+ * The {@code CourseOfferingService} interface provides methods for managing courses offered
  * in a program in a given period.
  * It includes functionality for adding, retrieving, and deleting courses in a period.
  * <p>
@@ -17,35 +17,35 @@ import org.springframework.data.domain.Pageable;
  * </p>
  * @author Jacobs Agyei
  */
-public interface ProgramCourseService {
+public interface CourseOfferingService {
 	/**
 	 * Retrieves a paginated list of programs courses.
 	 * <p>
-	 * This method takes the ID of the program, a {@code GetPrgCoursesPage} request object and
-	 * a {@code Pageable} object, and returns a {@code Page} of {@code ProgramCourseResponse} objects
+	 * This method takes the ID of the program, a {@code GetCrseOffrgPage} request object and
+	 * a {@code Pageable} object, and returns a {@code Page} of {@code CrseOffrgResponse} objects
 	 * containing the programs courses' details.
 	 * </p>
 	 * @param programId the ID of the program whose courses are to be retrieved.
-	 * @param request the {@code GetPrgCoursesPage} containing the pagination and filter information.
+	 * @param request the {@code GetCrseOffrgPage} containing the pagination and filter information.
 	 * @param pageable the {@code Pageable} object containing pagination information.
-	 * @return a {@code Page} of {@code ProgramCourseResponse} objects containing the programs courses' information.
+	 * @return a {@code Page} of {@code CrseOffrgResponse} objects containing the program courses' information.
 	 * @throws IllegalArgumentException if the request or pageable is null or contains invalid data.
 	 */
-	Page<ProgramCourseResponse> getProgramCourses(Long programId, GetPrgCoursesPage request, Pageable pageable);
+	Page<CrseOffrgResponse> getCrseOffgForProgram(Long programId, GetCrseOffrgPage request, Pageable pageable);
 
 	/**
 	 * Adds a new course configuration to a program
 	 * <p>
-	 * This method takes the ID of the program and a {@code ProgramCourseRequest} object containing the academic
-	 * period the course is taken in, and returns a {@code ProgramCourseResponse} object containing
+	 * This method takes the ID of the program and a {@code CrseOffrgRequest} object containing the academic
+	 * period the course is taken in, and returns a {@code CrseOffrgResponse} object containing
 	 * the updated program courses.
 	 * </p>
 	 * @param programId the ID of the program whose courses are to be updated.
-	 * @param request the {@code ProgramCourseRequest} containing the academic period the course is taken in.
-	 * @return a {@code ProgramCourseResponse} containing the updated program courses.
+	 * @param request the {@code CrseOffrgRequest} containing the academic period the course is taken in.
+	 * @return a {@code CrseOffrgResponse} containing the updated program courses.
 	 * @throws IllegalArgumentException if the programId or request is null or contains invalid data.
 	 */
-	ProgramCourseResponse addProgramCourse(Long programId, ProgramCourseRequest request);
+	CrseOffrgResponse addCrseOffgForProgram(Long programId, CrseOffrgRequest request);
 
 	/**
 	 * Deletes a course configuration for a program

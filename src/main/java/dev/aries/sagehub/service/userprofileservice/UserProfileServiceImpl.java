@@ -1,13 +1,12 @@
-package dev.aries.sagehub.service.userinfoservice;
+package dev.aries.sagehub.service.userprofileservice;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
-import dev.aries.sagehub.dto.request.UserInfoRequest;
-import dev.aries.sagehub.dto.response.UserInfoResponse;
-import dev.aries.sagehub.mapper.UserInfoMapper;
+import dev.aries.sagehub.dto.request.UserProfileRequest;
+import dev.aries.sagehub.dto.response.UserProfileResponse;
+import dev.aries.sagehub.mapper.UserProfileMapper;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.UserProfile;
 import dev.aries.sagehub.repository.UserProfileRepository;
-import dev.aries.sagehub.strategy.UpdateStrategy;
 import dev.aries.sagehub.strategy.UpdateStrategyConfig;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.UserUtil;
@@ -17,16 +16,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 /**
- * Implementation of the {@code BasicInfoInterface} interface.
+ * Implementation of the {@code UserProfileService} interface.
  * @author Jacobs Agyei
- * @see UserInfoService
+ * @see UserProfileService
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserInfoServiceImpl implements UserInfoService {
+public class UserProfileServiceImpl implements UserProfileService {
 	private final UserProfileRepository userProfileRepository;
-	private final UpdateStrategyConfig strategyConfig;
+	private final UpdateStrategyConfig updateStrategyConfig;
 	private final UserUtil userUtil;
 	private final Checks checks;
 
@@ -34,21 +33,21 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public UserInfoResponse getUserInfo(Long userId) {
+	public UserProfileResponse getUserProfile(Long userId) {
 		User loggedUser = userUtil.currentlyLoggedInUser();
 		checks.isAdminOrLoggedIn(loggedUser.getUsername());
-		UserProfile userProfile = loadUserInfo(userId);
-		return UserInfoMapper.toUserInfoResponse(userProfile);
+		UserProfile userProfile = loadUserProfile(userId);
+		return UserProfileMapper.toUserProfileResponse(userProfile);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public UserProfile addUserInfo(UserInfoRequest request, Long userId) {
+	public UserProfile addUserProfile(UserProfileRequest request, Long userId) {
 		UserProfile newUserProfile = UserProfile.builder()
-				.personalInfo(UserInfoMapper.toPersonalInfo(request.personalInfo()))
-				.contactInfo(UserInfoMapper.toContactInfo(request.contactInfo()))
+				.personalInfo(UserProfileMapper.toPersonalInfo(request.personalInfo()))
+				.contactInfo(UserProfileMapper.toContactInfo(request.contactInfo()))
 				.userId(userId)
 				.build();
 		log.info("Saving user profile information...");
@@ -60,18 +59,18 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public UserInfoResponse updateUserInfo(Long userId, UserInfoRequest request) {
+	public UserProfileResponse updateUserProfile(Long userId, UserProfileRequest request) {
 		User loggedUser = userUtil.currentlyLoggedInUser();
 		checks.isAdminOrLoggedIn(loggedUser.getUsername());
-		UserProfile userProfile = loadUserInfo(userId);
-		UpdateStrategy strategy = strategyConfig.checkStrategy("updateUserInfo");
-		userProfile = (UserProfile) strategy.update(userProfile, request);
-		userProfileRepository.save(userProfile);
+		UserProfile userProfile = loadUserProfile(userId);
+		UserProfile updatedUserProfile = (UserProfile) updateStrategyConfig
+				.checkStrategy("UserProfile").update(userProfile, request);
+		userProfileRepository.save(updatedUserProfile);
 		log.info("Profile info for user ID: {} updated", loggedUser.getId());
-		return UserInfoMapper.toUserInfoResponse(userProfile);
+		return UserProfileMapper.toUserProfileResponse(updatedUserProfile);
 	}
 
-	private UserProfile loadUserInfo(Long userId) {
+	private UserProfile loadUserProfile(Long userId) {
 		return userProfileRepository.findByUserId(userId)
 				.orElseThrow(() -> new EntityNotFoundException(
 						String.format(ExceptionConstants.NO_INFO_FOUND, "profile")));
