@@ -5,9 +5,8 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record ResultResponse(
+public record ExamResultResponse(
 		Long id,
-		String schoolName,
 		String type,
 		Integer year,
 		String indexNumber,

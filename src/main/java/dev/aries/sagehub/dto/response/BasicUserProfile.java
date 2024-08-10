@@ -6,7 +6,7 @@ import dev.aries.sagehub.enums.RoleEnum;
 import lombok.Builder;
 
 @Builder
-public record BasicUserInfo(
+public record BasicUserProfile(
 		Long userId,
 		Long memberId,
 		String profilePicture,

@@ -1,15 +1,15 @@
 package dev.aries.sagehub.dto.response;
 
-import dev.aries.sagehub.enums.ApplicantStatus;
+import dev.aries.sagehub.enums.ApplicationStatus;
 
-public record BasicApplicantResponse(
-		Long userId,
+public record BasicApplicationResponse(
+		Long applicationId,
 		Long applicantId,
 		Integer yearOfApplication,
 		String profilePicture,
 		String fullName,
 		String email,
-		ApplicantStatus status,
+		ApplicationStatus status,
 		boolean isSubmitted
 ) {
 }

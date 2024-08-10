@@ -4,7 +4,7 @@ import dev.aries.sagehub.model.attribute.Address;
 import lombok.Builder;
 
 @Builder
-public record EmergencyContactResponse(
+public record EmergencyInfoResponse(
 		Long id,
 		String fullName,
 		String relationship,

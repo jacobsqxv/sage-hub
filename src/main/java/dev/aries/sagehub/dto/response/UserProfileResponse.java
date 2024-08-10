@@ -5,8 +5,7 @@ import dev.aries.sagehub.model.attribute.PersonalInfo;
 import lombok.Builder;
 
 @Builder
-public record UserInfoResponse(
-		Long id,
+public record UserProfileResponse(
 		PersonalInfo personalInfo,
 		ContactInfo contactInfo
 ) {
