@@ -5,11 +5,13 @@ import java.util.Arrays;
 import java.util.Map;
 
 import dev.aries.sagehub.enums.RoleEnum;
+import dev.aries.sagehub.factory.ModelFactory;
 import dev.aries.sagehub.model.AcademicYear;
 import dev.aries.sagehub.model.Admin;
 import dev.aries.sagehub.model.Role;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.attribute.Email;
+import dev.aries.sagehub.model.attribute.Name;
 import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.AcademicYearRepository;
@@ -18,7 +20,6 @@ import dev.aries.sagehub.repository.RoleRepository;
 import dev.aries.sagehub.repository.UserRepository;
 import dev.aries.sagehub.service.emailservice.EmailService;
 import dev.aries.sagehub.util.Generators;
-import dev.aries.sagehub.util.UserFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,13 +32,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 
-	private final RoleRepository roleRepository;
-	private final AdminRepository adminRepository;
-	private final UserFactory userFactory;
-	private final UserRepository userRepository;
-	private final Generators generators;
-	private final EmailService emailService;
 	private final AcademicYearRepository academicYearRepository;
+	private final AdminRepository adminRepository;
+	private final UserRepository userRepository;
+	private final RoleRepository roleRepository;
+	private final EmailService emailService;
+	private final ModelFactory modelFactory;
+	private final Generators generators;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -82,14 +83,13 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
 		String firstName = "Super";
 		String lastName = "Admin";
 		Username username = generators.generateUsername(firstName, lastName);
-		Password password = generators.generatePassword(8);
+		Password password = Generators.generatePassword(8);
 		Email email = new Email("sagehub.superadmin@mockinbox.com");
-		User user = userFactory.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
+		User user = modelFactory.createNewUser(username, password, RoleEnum.SUPER_ADMIN);
 		Admin superAdmin = Admin.builder()
-				.firstName(firstName)
-				.lastName(lastName)
+				.name(new Name(firstName, null, lastName))
 				.primaryEmail(email.value())
-				.profilePictureUrl("https://www.gravatar.com/avatar.jpg")
+				.profilePicture("https://www.gravatar.com/avatar.jpg")
 				.user(user)
 				.build();
 		adminRepository.save(superAdmin);

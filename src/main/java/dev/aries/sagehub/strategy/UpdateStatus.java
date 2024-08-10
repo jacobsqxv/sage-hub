@@ -1,7 +1,7 @@
 package dev.aries.sagehub.strategy;
 
 import dev.aries.sagehub.enums.Status;
-import dev.aries.sagehub.repository.ProgramCourseRepository;
+import dev.aries.sagehub.repository.CourseOffrgRepository;
 import dev.aries.sagehub.repository.ProgramRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,14 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 public class UpdateStatus {
-	private final ProgramCourseRepository programCourseRepository;
+	private final CourseOffrgRepository courseOffrgRepository;
 	private final ProgramRepository programRepository;
 
 	@Transactional
 	public void updateProgramCoursesStatus(Status status, Long programId) {
 		log.info("Updating program course status: {}", status);
 		if (isNotActive(status)) {
-			programCourseRepository.updateStatusByProgramId(status, programId);
+			courseOffrgRepository.updateStatusByProgramId(status, programId);
 		}
 	}
 

@@ -24,12 +24,13 @@ public class SubjectScore extends Auditing {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@Column(nullable = false)
-	private String subjectName;
+	private String subject;
+	private Double score;
 	@Column(nullable = false)
 	private Character grade;
 	@ManyToOne
-	@JoinColumn(name = "result_id", nullable = false)
-	private ApplicantResult result;
+	@JoinColumn(nullable = false)
+	private ExamResult examResult;
 
 	@Override
 	public final boolean equals(Object o) {

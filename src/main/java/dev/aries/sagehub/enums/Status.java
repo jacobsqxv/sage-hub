@@ -1,10 +1,8 @@
 package dev.aries.sagehub.enums;
 
 /**
- * Enum {@code Status} represents the various states an entity can be in within the application.
+ * The {@code Status} class represents the various states an entity can be in within the application.
  * It is designed to be used across different entities to maintain a consistent status tracking mechanism.
- *
- * <p>States include:</p>
  * <ul>
  *     <li>{@code ACTIVE} - Indicates the entity is currently active and operational within the system.</li>
  *     <li>{@code PENDING} - Represents a state where the entity is awaiting further action or review.</li>

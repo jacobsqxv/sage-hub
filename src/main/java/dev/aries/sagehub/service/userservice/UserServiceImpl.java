@@ -1,32 +1,27 @@
 package dev.aries.sagehub.service.userservice;
 
-import dev.aries.sagehub.dto.request.AddUserRequest;
+import dev.aries.sagehub.dto.request.FacultyMemberRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.enums.RoleEnum;
-import dev.aries.sagehub.mapper.UserMapper;
 import dev.aries.sagehub.model.BaseUser;
-import dev.aries.sagehub.model.BasicInfo;
-import dev.aries.sagehub.model.ContactInfo;
-import dev.aries.sagehub.model.EmergencyContact;
+import dev.aries.sagehub.model.EmergencyInfo;
 import dev.aries.sagehub.model.Staff;
 import dev.aries.sagehub.model.Student;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.UserProfile;
 import dev.aries.sagehub.model.attribute.Email;
-import dev.aries.sagehub.model.attribute.Password;
-import dev.aries.sagehub.model.attribute.Username;
 import dev.aries.sagehub.repository.StaffRepository;
 import dev.aries.sagehub.repository.StudentRepository;
 import dev.aries.sagehub.repository.UserRepository;
-import dev.aries.sagehub.service.basicinfoservice.BasicInfoInterface;
-import dev.aries.sagehub.service.contactinfoservice.ContactInfoInterface;
 import dev.aries.sagehub.service.emailservice.EmailService;
-import dev.aries.sagehub.service.emgcontactservice.EmergencyContactInterface;
+import dev.aries.sagehub.service.emergencyinfoservice.EmergencyInfoService;
+import dev.aries.sagehub.service.userprofileservice.UserProfileService;
 import dev.aries.sagehub.util.Checks;
 import dev.aries.sagehub.util.EmailUtil;
 import dev.aries.sagehub.util.Generators;
-import dev.aries.sagehub.util.UserFactory;
+import dev.aries.sagehub.util.UserUtil;
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static dev.aries.sagehub.constant.ExceptionConstants.ALREADY_EXISTS;
 import static dev.aries.sagehub.constant.ExceptionConstants.INVALID_CURRENT_PASSWORD;
 import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 
@@ -48,28 +44,25 @@ import static dev.aries.sagehub.constant.ExceptionConstants.UNEXPECTED_VALUE;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-	private final UserRepository userRepository;
+	private final EmergencyInfoService emergencyInfoService;
 	private final StudentRepository studentRepository;
 	private final StaffRepository staffRepository;
-	private final Checks checks;
 	private final PasswordEncoder passwordEncoder;
-	private final Generators generators;
+	private final UserProfileService userProfileService;
+	private final UserRepository userRepository;
 	private final EmailService emailService;
 	private final EmailUtil emailUtil;
-	private final ContactInfoInterface contactInfoInterface;
-	private final EmergencyContactInterface emgContactInterface;
-	private final BasicInfoInterface basicInfoInterface;
-	private final UserFactory userFactory;
+	private final UserUtil userUtil;
+	private final Checks checks;
 	private static final Integer STATUS_OK = HttpStatus.OK.value();
-	private final UserMapper userMapper;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public GenericResponse changePassword(Long id, PasswordChangeRequest request) {
-		User user = checks.currentlyLoggedInUser();
-		Checks.validateLoggedInUser(user, id);
+		User user = userUtil.currentlyLoggedInUser();
+		Checks.validateLoggedInUserId(user, id);
 		if (!checks.isPasswordEqual(user, request.oldPassword())) {
 			log.info("Current password is incorrect");
 			throw new IllegalArgumentException(INVALID_CURRENT_PASSWORD);
@@ -84,28 +77,23 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@Transactional
-	public BasicUserResponse addFacultyMember(AddUserRequest request) {
-		Username username = generators.generateUsername(
-				request.basicInfo().firstName(), request.basicInfo().lastName());
-		Password password = generators.generatePassword(8);
-		User user = userFactory.createNewUser(username, password, request.role());
-		userRepository.save(user);
-		switch (request.role()) {
-			case RoleEnum.STUDENT -> {
-				Student newStudent = (Student) buildInfo(user, request);
+	public BaseUser addFacultyMember(FacultyMemberRequest request, Long memberId) {
+		switch (request.user().getRole().getName()) {
+			case RoleEnum.APPLICANT -> {
+				Student newStudent = (Student) buildInfo(request, memberId);
 				log.info("Saving new student with ID: {}", newStudent.getId());
-				checks.checkStudentExists(newStudent.getId());
-				studentRepository.save(newStudent);
-				sendEmail(user.getId(), username, password);
-				return userMapper.toBasicUserResponse(newStudent);
+				checkStudentExists(newStudent.getId());
+//				studentRepository.save(newStudent);
+//				sendEmail(user.getId(), username, password);
+				return newStudent;
 			}
 			case RoleEnum.STAFF -> {
-				Staff newStaff = (Staff) buildInfo(user, request);
+				Staff newStaff = (Staff) buildInfo(request, memberId);
 				log.info("Saving new staff with ID: {}", newStaff.getId());
-				checks.checkStaffExists(newStaff.getId());
-				staffRepository.save(newStaff);
-				sendEmail(user.getId(), username, password);
-				return userMapper.toBasicUserResponse(newStaff);
+				checkStaffExists(newStaff.getId());
+//				staffRepository.save(newStaff);
+//				sendEmail(user.getId(), username, password);
+				return newStaff;
 			}
 			default -> throw new IllegalArgumentException(UNEXPECTED_VALUE);
 		}
@@ -114,33 +102,46 @@ public class UserServiceImpl implements UserService {
 	 * This method builds a BaseUser object for a new user.
 	 * It sets the basic info, contact info, emergency contact, id, and primary email.
 	 * @param request the request containing the user information.
-	 * @param user   the user object to be associated with the new user.
+	 * @param memberId the ID of the user.
 	 * @return a BaseUser object built with the provided role and request.
 	 * @throws IllegalArgumentException if the role is not "STUDENT" or "STAFF".
 	 */
-	private BaseUser buildInfo(User user, AddUserRequest request) {
-		log.info("User ID: {}", user.getId());
-		Long userId = user.getId();
-		BasicInfo basicInfo = basicInfoInterface.addBasicInfo(request.basicInfo(), userId);
-		ContactInfo contactInfo = contactInfoInterface.addContactInfo(request.contactInfo(), userId);
-		EmergencyContact emergencyContact = emgContactInterface
-				.addEmergencyContact(request.emergencyContact(), userId);
-		Email primaryEmail = generators.generateUserEmail(user.getUsername(), request.role().name());
-		boolean isStudent = request.role().equals(RoleEnum.STUDENT);
-		Long id = generators.generateUniqueId(isStudent);
+	private BaseUser buildInfo(FacultyMemberRequest request, Long memberId) {
+		log.info("User ID: {}", request.user().getId());
+		User user = request.user();
+		RoleEnum role = user.getRole().getName();
+		Long userId = request.user().getId();
+		UserProfile userProfile = userProfileService.addUserProfile(request.userProfile(), userId);
+		EmergencyInfo emergencyInfo = emergencyInfoService
+				.addEmergencyInfo(request.emergencyInfo(), userId);
+		Email primaryEmail = Generators.generateUserEmail(request.user().getUsername(),
+				role);
+		boolean isStudent = role.equals(RoleEnum.APPLICANT);
 		BaseUser.BaseUserBuilder<?, ?> builder = (isStudent ? Student.builder() : Staff.builder())
-				.id(id)
+				.id(memberId)
 				.primaryEmail(primaryEmail.value())
-				.basicInfo(basicInfo)
-				.contactInfo(contactInfo)
-				.emergencyContact(emergencyContact)
+				.userProfile(userProfile)
+				.emergencyInfo(emergencyInfo)
 				.user(user);
 		return builder.build();
 	}
 
-	private void sendEmail(Long userId, Username username, Password password) {
-		Email recipient = emailUtil.getRecipient(userId);
-		emailService.sendAccountCreatedEmail(username, password, recipient);
-		log.info("User added:: username: {} | password: {}", username.value(), password.value());
+//	private void sendEmail(Long userId, Username username, Password password) {
+//		Email recipient = emailUtil.getRecipient(userId);
+//		emailService.sendAccountCreatedEmail(username, password, recipient);
+//		log.info("User added:: username: {} | password: {}", username.value(), password.value());
+//	}
+
+	public void checkStudentExists(Long studentId) {
+		if (studentRepository.existsById(studentId)) {
+			throw new EntityExistsException(String.format(ALREADY_EXISTS, "Student"));
+		}
 	}
+
+	public void checkStaffExists(Long staffId) {
+		if (staffRepository.existsById(staffId)) {
+			throw new EntityExistsException(String.format(ALREADY_EXISTS, "Staff"));
+		}
+	}
+
 }

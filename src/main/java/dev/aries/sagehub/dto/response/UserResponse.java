@@ -10,8 +10,7 @@ public record UserResponse(
 		Long memberId,
 		String role,
 		String status,
-		BasicInfoResponse basicInfo,
-		ContactInfoResponse contactInfo,
-		EmergencyContactResponse emergencyContact
+		UserProfileResponse userInfo,
+		EmergencyInfoResponse emergencyInfo
 ) {
 }

@@ -47,7 +47,7 @@ public class Program extends Auditing {
 	private Integer cutOff;
 	@OneToMany(mappedBy = "program", orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonManagedReference
-	private List<ProgramCourse> courses;
+	private List<CourseOffering> courses;
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;

@@ -19,8 +19,8 @@ public record ContactInfoRequest(
 		@Schema(example = "{\"countryCode\":\"GH\",\"number\":\"500000000\"}")
 		PhoneNumber phoneNumber,
 		@Valid
-		@Schema(implementation = AddressUpdateRequest.class)
-		AddressUpdateRequest address,
+		@Schema(implementation = AddressRequest.class)
+		AddressRequest residentialAddress,
 		@Pattern(regexp = Patterns.POSTAL_ADDRESS, message = INVALID_FORMAT + "postal address")
 		@Schema(example = "P.O. Box 1234, Accra")
 		String postalAddress

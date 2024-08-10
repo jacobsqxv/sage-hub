@@ -1,7 +1,9 @@
 package dev.aries.sagehub.model;
 
+import dev.aries.sagehub.model.attribute.Name;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,8 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import static dev.aries.sagehub.model.BasicInfo.getFullName;
 
 @Getter
 @Setter
@@ -29,15 +29,11 @@ public class Admin extends Auditing {
 	private Long id;
 
 	@Column(nullable = false)
-	private String profilePictureUrl;
+	private String profilePicture;
 
+	@Embedded
 	@Column(nullable = false)
-	private String firstName;
-
-	@Column(nullable = false)
-	private String lastName;
-
-	private String middleName;
+	private Name name;
 
 	@Column(nullable = false)
 	private String primaryEmail;
@@ -47,7 +43,7 @@ public class Admin extends Auditing {
 	private User user;
 
 	public String fullName() {
-		return getFullName(firstName, middleName, lastName);
+		return name.fullName();
 	}
 
 	@Override

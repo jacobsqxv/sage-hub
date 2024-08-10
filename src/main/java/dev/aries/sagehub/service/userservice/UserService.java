@@ -1,9 +1,9 @@
 package dev.aries.sagehub.service.userservice;
 
-import dev.aries.sagehub.dto.request.AddUserRequest;
+import dev.aries.sagehub.dto.request.FacultyMemberRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.GenericResponse;
+import dev.aries.sagehub.model.BaseUser;
 
 
 /**
@@ -33,13 +33,14 @@ public interface UserService {
 	/**
 	 * Adds a new faculty member.
 	 * <p>
-	 * This method takes an {@code AddUserRequest} object containing the new faculty member's information,
-	 * and adds the new faculty member to the system.
+	 * This method takes an {@code FacultyMemberRequest} object containing the new faculty member's information,
+	 * and {@code RoleEnum} which specifies the type of faculty member being added to the system.
 	 * </p>
-	 * @param request the {@code AddUserRequest} containing the user information and type of user to create.
-	 * @return a {@code BasicUserResponse} containing the new faculty member's information.
+	 * @param request the {@code FacultyMemberRequest} containing the user information
+	 * @param memberId the {@code Long} ID of the new faculty member.
+	 * @return a {@code BaseUser} containing the new faculty member's information.
 	 * @throws IllegalArgumentException if the request or role is null or invalid.
 	 */
-	BasicUserResponse addFacultyMember(AddUserRequest request);
+	BaseUser addFacultyMember(FacultyMemberRequest request, Long memberId);
 
 }

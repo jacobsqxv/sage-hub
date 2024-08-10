@@ -1,8 +1,6 @@
 package dev.aries.sagehub.enums;
 /**
- * Enum {@code MaritalStatus} represents the various marital status of the user.
- *
- * <p>States include:</p>
+ * The {@code MaritalStatus} class represents the various marital status of the user.
  * <ul>
  *     <li>{@code SINGLE} - Represents the single marital status.</li>
  *     <li>{@code MARRIED} - Represents the married marital status.</li>

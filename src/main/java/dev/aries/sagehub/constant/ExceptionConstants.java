@@ -59,7 +59,7 @@ public final class ExceptionConstants {
 	/**
 	 * Message for cannot update name exception. The placeholder is for the type of resource.
 	 */
-	public static final String CANNOT_UPDATE_NAME = "%s name cannot be updated";
+	public static final String CANNOT_UPDATE = "%s cannot be updated";
 	/**
 	 * Message for used and or expired tokens. The placeholder is for the type of token.
 	 */
@@ -112,6 +112,12 @@ public final class ExceptionConstants {
 	 * Message for blacklisted token.
 	 */
 	public static final String BLACKLISTED_TOKEN = "An access token has already been issued for this refresh token";
+
+	/**
+	 * Message for invalid period.
+	 */
+	public static final String INVALID_PERIOD = "Invalid start and end dates";
+
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 * Throws an exception if instantiation is attempted.

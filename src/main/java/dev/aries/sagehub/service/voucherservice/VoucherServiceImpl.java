@@ -20,6 +20,7 @@ import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.repository.AcademicYearRepository;
 import dev.aries.sagehub.repository.VoucherRepository;
 import dev.aries.sagehub.util.Checks;
+import dev.aries.sagehub.util.DataLoader;
 import dev.aries.sagehub.util.Generators;
 import lombok.RequiredArgsConstructor;
 
@@ -35,13 +36,13 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class VoucherServiceImpl implements VoucherService {
-	private static final int LIMIT = 1000;
 	private static final Integer STATUS_OK = HttpStatus.OK.value();
 	private static final String VOUCHER = "Voucher";
-	private final VoucherRepository voucherRepository;
+	private static final int LIMIT = 1000;
 	private final AcademicYearRepository academicYearRepository;
+	private final VoucherRepository voucherRepository;
 	private final Generators generators;
-	private final VoucherMapper voucherMapper;
+	private final DataLoader dataLoader;
 
 	/**
 	 * {@inheritDoc}
@@ -53,7 +54,7 @@ public class VoucherServiceImpl implements VoucherService {
 		List<Voucher> vouchers = new ArrayList<>();
 		for (int i = 0; i < request.quantity(); i++) {
 			Long serialNumber = generators.generateUniqueId(true);
-			Password pin = generators.generatePassword(8);
+			Password pin = Generators.generatePassword(8);
 			LocalDate expiresAt = year.getStartDate().plusMonths(2);
 			vouchers.add(Voucher.builder()
 					.serialNumber(serialNumber)
@@ -76,7 +77,7 @@ public class VoucherServiceImpl implements VoucherService {
 			Checks.checkIfEnumExists(TokenStatus.class, request.status());
 		}
 		return voucherRepository.findAll(request.year(), request.status(), pageable)
-				.map(voucherMapper::toVoucherResponse);
+				.map(VoucherMapper::toResponse);
 	}
 
 	/**
@@ -84,7 +85,10 @@ public class VoucherServiceImpl implements VoucherService {
 	 */
 	@Override
 	public void verifyVoucher(VoucherRequest request) {
-		Voucher voucher = getVoucher(request.serialNumber(), request.pin());
+		Voucher voucher = dataLoader.loadVoucher(request.serialNumber());
+		if (!voucher.getPin().equals(request.pin())) {
+			throw new IllegalArgumentException(ExceptionConstants.INVALID_TOKEN);
+		}
 		checkValidity(voucher);
 
 	}
@@ -111,12 +115,6 @@ public class VoucherServiceImpl implements VoucherService {
 						String.format(ExceptionConstants.NOT_FOUND, "Academic Year")));
 	}
 
-	private Voucher getVoucher(Long serialNumber, String pin) {
-		return voucherRepository.findBySerialNumberAndPin(serialNumber, pin)
-				.orElseThrow(() -> new IllegalArgumentException(
-						String.format(ExceptionConstants.NOT_FOUND, VOUCHER)));
-	}
-
 	private void checkValidity(Voucher voucher) {
 		TokenStatus status = voucher.getStatus();
 		if (!status.equals(TokenStatus.ACTIVE) && !status.equals(TokenStatus.USED)) {
@@ -124,4 +122,5 @@ public class VoucherServiceImpl implements VoucherService {
 					String.format(ExceptionConstants.INVALID_TOKEN, VOUCHER));
 		}
 	}
+
 }

@@ -6,9 +6,9 @@ import java.util.Objects;
 import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.request.DepartmentRequest;
 import dev.aries.sagehub.enums.Status;
+import dev.aries.sagehub.model.CourseOffering;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.model.Program;
-import dev.aries.sagehub.model.ProgramCourse;
 import dev.aries.sagehub.repository.DepartmentRepository;
 import dev.aries.sagehub.repository.ProgramRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,7 +43,7 @@ public class UpdateDepartment implements UpdateStrategy<Department, DepartmentRe
 	private void checkName(Department entity, DepartmentRequest request) {
 		if (!Objects.equals(request.name(), entity.getName())) {
 			throw new IllegalArgumentException(String.format(
-					ExceptionConstants.CANNOT_UPDATE_NAME, "Department"));
+					ExceptionConstants.CANNOT_UPDATE, "Department name"));
 		}
 	}
 
@@ -58,8 +58,8 @@ public class UpdateDepartment implements UpdateStrategy<Department, DepartmentRe
 			.toList();
 		for (Program program : programsToArchive) {
 			program.setStatus(Status.ARCHIVED);
-			for (ProgramCourse programCourse : program.getCourses()) {
-				programCourse.setStatus(Status.ARCHIVED);
+			for (CourseOffering courseOffering : program.getCourses()) {
+				courseOffering.setStatus(Status.ARCHIVED);
 			}
 			programRepository.save(program);
 		}

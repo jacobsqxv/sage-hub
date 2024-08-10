@@ -2,18 +2,13 @@ package dev.aries.sagehub.mapper;
 
 import java.util.ArrayList;
 
+import dev.aries.sagehub.constant.ExceptionConstants;
 import dev.aries.sagehub.dto.response.DepartmentResponse;
 import dev.aries.sagehub.model.Department;
-import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Component;
+public final class DepartmentMapper {
 
-@Component
-@RequiredArgsConstructor
-public class DepartmentMapper {
-	private final ProgramMapper programMapper;
-
-	public DepartmentResponse toResponse(Department department) {
+	public static DepartmentResponse toResponse(Department department) {
 		DepartmentResponse.DepartmentResponseBuilder response = DepartmentResponse.builder();
 		response.id(department.getId())
 				.code(department.getCode())
@@ -22,13 +17,13 @@ public class DepartmentMapper {
 				.programs(new ArrayList<>());
 		if (department.getPrograms() != null) {
 			response.programs(department.getPrograms().stream()
-						.map(programMapper::toProgramResponse)
+						.map(ProgramMapper::toResponse)
 						.toList());
 		}
 		return response.build();
 	}
 
-	public DepartmentResponse toPageResponse(Department department) {
+	public static DepartmentResponse toPageResponse(Department department) {
 		return DepartmentResponse.builder()
 				.id(department.getId())
 				.code(department.getCode())
@@ -37,4 +32,7 @@ public class DepartmentMapper {
 				.build();
 	}
 
+	private DepartmentMapper() {
+		throw new IllegalStateException(ExceptionConstants.UTILITY_CLASS);
+	}
 }

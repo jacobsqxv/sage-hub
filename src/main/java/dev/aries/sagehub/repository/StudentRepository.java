@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
-	@Query("SELECT s.contactInfo.secondaryEmail FROM Student s " +
+	@Query("SELECT s.userProfile.contactInfo.secondaryEmail FROM Student s " +
 			"WHERE s.user.id = :userId")
 	Optional<String> findSecondaryEmailByUserId(Long userId);
 }

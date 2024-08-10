@@ -1,27 +1,29 @@
 package dev.aries.sagehub.service.programservice;
 
 import dev.aries.sagehub.constant.ExceptionConstants;
-import dev.aries.sagehub.dto.request.ProgramCourseRequest;
+import dev.aries.sagehub.dto.request.CrseOffrgRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
-import dev.aries.sagehub.dto.response.ProgramCourseResponse;
+import dev.aries.sagehub.dto.response.CrseOffrgResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
-import dev.aries.sagehub.dto.search.GetPrgCoursesPage;
+import dev.aries.sagehub.dto.search.GetCrseOffrgPage;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
 import dev.aries.sagehub.enums.Degree;
 import dev.aries.sagehub.enums.Status;
-import dev.aries.sagehub.mapper.ProgramCourseMapper;
+import dev.aries.sagehub.mapper.CourseMapper;
 import dev.aries.sagehub.mapper.ProgramMapper;
-import dev.aries.sagehub.model.AcademicPeriod;
+import dev.aries.sagehub.model.CourseOffering;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.model.Program;
-import dev.aries.sagehub.model.ProgramCourse;
 import dev.aries.sagehub.model.User;
+import dev.aries.sagehub.model.attribute.AcademicPeriod;
+import dev.aries.sagehub.repository.CourseOffrgRepository;
 import dev.aries.sagehub.repository.DepartmentRepository;
-import dev.aries.sagehub.repository.ProgramCourseRepository;
 import dev.aries.sagehub.repository.ProgramRepository;
-import dev.aries.sagehub.strategy.UpdateStrategy;
+import dev.aries.sagehub.strategy.UpdateStrategyConfig;
 import dev.aries.sagehub.util.Checks;
-import dev.aries.sagehub.util.GlobalUtil;
+import dev.aries.sagehub.util.DataLoader;
+import dev.aries.sagehub.util.UserUtil;
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,25 +32,27 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static dev.aries.sagehub.constant.ExceptionConstants.ALREADY_EXISTS;
+
 /**
- * Implementation of the {@code ProgramService} and {@code ProgramCourseService} interfaces.
+ * Implementation of the {@code ProgramService} and {@code CourseOfferingService} interfaces.
+ *
  * @author Jacobs Agyei
  * @see dev.aries.sagehub.service.programservice.ProgramService
- * @see dev.aries.sagehub.service.programservice.ProgramCourseService
+ * @see CourseOfferingService
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProgramServiceImpl implements ProgramService, ProgramCourseService {
+public class ProgramServiceImpl implements ProgramService, CourseOfferingService {
 
-	private final ProgramRepository programRepository;
-	private final ProgramCourseRepository programCourseRepository;
-	private final DepartmentRepository departmentRepository;
-	private final ProgramMapper programMapper;
-	private final ProgramCourseMapper programCourseMapper;
-	private final GlobalUtil globalUtil;
-	private final Checks checks;
 	private static final String NAME = "Program";
+	private final CourseOffrgRepository courseOffrgRepository;
+	private final UpdateStrategyConfig updateStrategyConfig;
+	private final DepartmentRepository departmentRepository;
+	private final ProgramRepository programRepository;
+	private final DataLoader dataLoader;
+	private final UserUtil userUtil;
 
 	/**
 	 * {@inheritDoc}
@@ -56,7 +60,7 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
 		existsByName(request.name().toUpperCase());
-		Department department = globalUtil.loadDepartment(request.departmentId());
+		Department department = dataLoader.loadDepartment(request.departmentId());
 		Degree degree = request.degree();
 		Program program = Program.builder()
 				.name(request.name().toUpperCase())
@@ -72,7 +76,7 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 			department.getPrograms().add(program);
 		}
 		departmentRepository.save(department);
-		return programMapper.toProgramResponse(program);
+		return ProgramMapper.toResponse(program);
 	}
 
 	/**
@@ -83,7 +87,7 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 		if (request.status() != null) {
 			Checks.checkIfEnumExists(Status.class, request.status());
 		}
-		User loggedInUser = checks.currentlyLoggedInUser();
+		User loggedInUser = userUtil.currentlyLoggedInUser();
 		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllPrograms(request, pageable);
 		}
@@ -100,7 +104,7 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 
 	private Page<ProgramResponse> loadPrograms(GetProgramsPage request, String status, Pageable pageable) {
 		return programRepository.findAll(request, status, pageable)
-				.map(programMapper::toProgramResponse);
+				.map(ProgramMapper::toResponse);
 	}
 
 	/**
@@ -108,8 +112,8 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 	 */
 	@Override
 	public ProgramResponse getProgram(Long programId) {
-		Program program = globalUtil.loadProgram(programId);
-		return programMapper.toProgramResponse(program);
+		Program program = dataLoader.loadProgram(programId);
+		return ProgramMapper.toResponse(program);
 	}
 
 	/**
@@ -117,66 +121,66 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 	 */
 	@Override
 	public ProgramResponse updateProgram(Long programId, ProgramRequest request) {
-		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.checkAdmins(loggedInUser.getRole().getName());
-		Program program = globalUtil.loadProgram(programId);
-		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateProgram");
-		program = (Program) updateStrategy.update(program, request);
-		programRepository.save(program);
-		log.info("Program {} updated successfully", program.getName());
-		return programMapper.toProgramResponse(program);
+		User loggedInUser = userUtil.currentlyLoggedInUser();
+		Checks.checkAdmins(loggedInUser.getRole().getName());
+		Program program = dataLoader.loadProgram(programId);
+		Program updatedProgram = (Program) updateStrategyConfig
+				.checkStrategy("Program").update(program, request);
+		programRepository.save(updatedProgram);
+		log.info("Program {} updated successfully", updatedProgram.getName());
+		return ProgramMapper.toResponse(updatedProgram);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Page<ProgramCourseResponse> getProgramCourses(
-			Long programId, GetPrgCoursesPage request, Pageable pageable) {
-		User loggedInUser = checks.currentlyLoggedInUser();
-		Program program = globalUtil.loadProgram(programId);
+	public Page<CrseOffrgResponse> getCrseOffgForProgram(
+			Long programId, GetCrseOffrgPage request, Pageable pageable) {
+		User loggedInUser = userUtil.currentlyLoggedInUser();
+		Program program = dataLoader.loadProgram(programId);
 		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
-			return getAllProgramsCourses(program, request, pageable);
+			return getAllCrseOffrgs(program, request, pageable);
 		}
-		return getActiveProgramCourses(program, request, pageable);
+		return getActiveCrseOffrgs(program, request, pageable);
 	}
 
-	private Page<ProgramCourseResponse> getActiveProgramCourses(
-			Program program, GetPrgCoursesPage request, Pageable pageable) {
+	private Page<CrseOffrgResponse> getActiveCrseOffrgs(
+			Program program, GetCrseOffrgPage request, Pageable pageable) {
 		request = request.withStatus(Status.ACTIVE.name());
-		return loadProgramCourses(program, request, pageable);
+		return loadCourseOffrgs(program, request, pageable);
 	}
 
-	private Page<ProgramCourseResponse> getAllProgramsCourses(
-			Program program, GetPrgCoursesPage request, Pageable pageable) {
-		return loadProgramCourses(program, request, pageable);
+	private Page<CrseOffrgResponse> getAllCrseOffrgs(
+			Program program, GetCrseOffrgPage request, Pageable pageable) {
+		return loadCourseOffrgs(program, request, pageable);
 	}
 
-	private Page<ProgramCourseResponse> loadProgramCourses(
-			Program program, GetPrgCoursesPage request, Pageable pageable) {
-		return programCourseRepository.findAll(program, request, pageable)
-				.map(programCourseMapper::toProgramCourseResponse);
+	private Page<CrseOffrgResponse> loadCourseOffrgs(
+			Program program, GetCrseOffrgPage request, Pageable pageable) {
+		return courseOffrgRepository.findAll(program, request, pageable)
+				.map(CourseMapper::toCourseOffrgResponse);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProgramCourseResponse addProgramCourse(Long programId, ProgramCourseRequest request) {
-		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.checkAdmins(loggedInUser.getRole().getName());
-		checks.checkProgramCourse(programId, request.courseId(), request.period());
-		ProgramCourse programCourse = ProgramCourse.builder()
-				.program(globalUtil.loadProgram(programId))
-				.course(globalUtil.loadCourse(request.courseId()))
+	public CrseOffrgResponse addCrseOffgForProgram(Long programId, CrseOffrgRequest request) {
+		User loggedInUser = userUtil.currentlyLoggedInUser();
+		Checks.checkAdmins(loggedInUser.getRole().getName());
+		checkCourseOffering(programId, request.courseId(), request.period());
+		CourseOffering courseOffering = CourseOffering.builder()
+				.program(dataLoader.loadProgram(programId))
+				.course(dataLoader.loadCourse(request.courseId()))
 				.academicPeriod(new AcademicPeriod(
 						(request.period().year()),
 						request.period().semester()
 				))
 				.status(Status.PENDING)
 				.build();
-		programCourseRepository.save(programCourse);
-		return programCourseMapper.toProgramCourseResponse(programCourse);
+		courseOffrgRepository.save(courseOffering);
+		return CourseMapper.toCourseOffrgResponse(courseOffering);
 	}
 
 	/**
@@ -185,13 +189,23 @@ public class ProgramServiceImpl implements ProgramService, ProgramCourseService 
 	@Override
 	@Transactional
 	public void deleteCourseConfig(Long programId, Long id) {
-		int success = programCourseRepository.deleteByIdAndProgramId(id, programId);
+		int success = courseOffrgRepository.deleteByIdAndProgramId(id, programId);
 		if (success != 1) {
 			throw new IllegalArgumentException(
 					String.format(ExceptionConstants.NOT_FOUND, "Course configuration"));
 		}
 		else {
 			log.info("Course configuration deleted successfully");
+		}
+	}
+
+	public void checkCourseOffering(Long programId, Long courseId, AcademicPeriod period) {
+		boolean courseExistsAtPeriod = courseOffrgRepository.existsByProgramIdAndCourseIdAndAcademicPeriod(
+				programId, courseId, period);
+		boolean courseExists = courseOffrgRepository.existsByProgramIdAndCourseId(programId, courseId);
+		if (courseExistsAtPeriod || courseExists) {
+			throw new EntityExistsException(
+					String.format(ALREADY_EXISTS, "Course configuration"));
 		}
 	}
 

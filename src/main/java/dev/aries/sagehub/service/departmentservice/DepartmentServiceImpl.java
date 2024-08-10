@@ -4,14 +4,15 @@ import dev.aries.sagehub.dto.request.DepartmentRequest;
 import dev.aries.sagehub.dto.response.DepartmentResponse;
 import dev.aries.sagehub.dto.search.GetDepartmentsPage;
 import dev.aries.sagehub.enums.Status;
+import dev.aries.sagehub.factory.ModelFactory;
 import dev.aries.sagehub.mapper.DepartmentMapper;
 import dev.aries.sagehub.model.Department;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.DepartmentRepository;
-import dev.aries.sagehub.strategy.UpdateStrategy;
+import dev.aries.sagehub.strategy.UpdateStrategyConfig;
 import dev.aries.sagehub.util.Checks;
-import dev.aries.sagehub.util.Generators;
-import dev.aries.sagehub.util.GlobalUtil;
+import dev.aries.sagehub.util.DataLoader;
+import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,10 +31,10 @@ import static dev.aries.sagehub.constant.ExceptionConstants.NAME_EXISTS;
 @Slf4j
 public class DepartmentServiceImpl implements DepartmentService {
 	private final DepartmentRepository departmentRepository;
-	private final Generators generators;
-	private final DepartmentMapper departmentMapper;
-	private final Checks checks;
-	private final GlobalUtil globalUtil;
+	private final UpdateStrategyConfig updateStrategyConfig;
+	private final ModelFactory modelFactory;
+	private final DataLoader dataLoader;
+	private final UserUtil userUtil;
 	private static final String NAME = "Department";
 
 	/**
@@ -42,14 +43,10 @@ public class DepartmentServiceImpl implements DepartmentService {
 	@Override
 	public DepartmentResponse addDepartment(DepartmentRequest request) {
 		existsByName(request.name());
-		Department department = Department.builder()
-				.name(request.name())
-				.code(generators.generateDeptCode())
-				.status(Status.PENDING)
-				.build();
+		Department department = modelFactory.createNewDept(request);
 		departmentRepository.save(department);
 		log.info("Department {} added successfully", department.getCode());
-		return departmentMapper.toResponse(department);
+		return DepartmentMapper.toResponse(department);
 	}
 
 	/**
@@ -57,14 +54,14 @@ public class DepartmentServiceImpl implements DepartmentService {
 	 */
 	@Override
 	public DepartmentResponse getDepartment(Long departmentId) {
-		Department department = globalUtil.loadDepartment(departmentId);
-		User loggedInUser = checks.currentlyLoggedInUser();
+		Department department = dataLoader.loadDepartment(departmentId);
+		User loggedInUser = userUtil.currentlyLoggedInUser();
 		if (!Checks.isAdmin(loggedInUser.getRole().getName())) {
 			department.setPrograms(department.getPrograms().stream()
 					.filter((program) -> program.getStatus() == Status.ACTIVE)
 					.toList());
 		}
-		return departmentMapper.toResponse(department);
+		return DepartmentMapper.toResponse(department);
 	}
 
 	/**
@@ -75,7 +72,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 		if (request.status() != null) {
 			Checks.checkIfEnumExists(Status.class, request.status());
 		}
-		User loggedInUser = checks.currentlyLoggedInUser();
+		User loggedInUser = userUtil.currentlyLoggedInUser();
 		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllDepartments(request, pageable);
 		}
@@ -92,7 +89,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 	private Page<DepartmentResponse> loadDepartments(GetDepartmentsPage request, String status, Pageable pageable) {
 		return departmentRepository.findAll(request, status, pageable)
-				.map(departmentMapper::toPageResponse);
+				.map(DepartmentMapper::toPageResponse);
 	}
 
 	/**
@@ -100,14 +97,15 @@ public class DepartmentServiceImpl implements DepartmentService {
 	 */
 	@Override
 	public DepartmentResponse updateDepartment(Long departmentId, DepartmentRequest request) {
-		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.checkAdmins(loggedInUser.getRole().getName());
-		Department department = globalUtil.loadDepartment(departmentId);
-		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateDepartment");
-		department = (Department) updateStrategy.update(department, request);
-		departmentRepository.save(department);
-		log.info("Department {} updated successfully", department.getCode());
-		return departmentMapper.toResponse(department);
+		User loggedInUser = userUtil.currentlyLoggedInUser();
+		Checks.checkAdmins(loggedInUser.getRole().getName());
+		Department department = dataLoader.loadDepartment(departmentId);
+		Department updatedDepartment = (Department) updateStrategyConfig
+				.checkStrategy("Department")
+				.update(department, request);
+		departmentRepository.save(updatedDepartment);
+		log.info("Department {} updated successfully", updatedDepartment.getCode());
+		return DepartmentMapper.toResponse(updatedDepartment);
 	}
 
 	private void existsByName(String name) {

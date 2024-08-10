@@ -9,10 +9,11 @@ import dev.aries.sagehub.mapper.CourseMapper;
 import dev.aries.sagehub.model.Course;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.repository.CourseRepository;
-import dev.aries.sagehub.strategy.UpdateStrategy;
+import dev.aries.sagehub.strategy.UpdateStrategyConfig;
 import dev.aries.sagehub.util.Checks;
+import dev.aries.sagehub.util.DataLoader;
 import dev.aries.sagehub.util.Generators;
-import dev.aries.sagehub.util.GlobalUtil;
+import dev.aries.sagehub.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,11 +29,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
-	private final Generators generators;
+	private final UpdateStrategyConfig updateStrategyConfig;
 	private final CourseRepository courseRepository;
-	private final CourseMapper courseMapper;
-	private final GlobalUtil globalUtil;
-	private final Checks checks;
+	private final Generators generators;
+	private final DataLoader dataLoader;
+	private final UserUtil userUtil;
 	private static final String NAME = "Course";
 
 	/**
@@ -49,7 +50,7 @@ public class CourseServiceImpl implements CourseService {
 				.status(Status.PENDING)
 				.build();
 		courseRepository.save(course);
-		return courseMapper.toCourseResponse(course);
+		return CourseMapper.toCourseResponse(course);
 	}
 
 	/**
@@ -57,8 +58,8 @@ public class CourseServiceImpl implements CourseService {
 	 */
 	@Override
 	public CourseResponse getCourse(Long courseId) {
-		Course course = globalUtil.loadCourse(courseId);
-		return courseMapper.toCourseResponse(course);
+		Course course = dataLoader.loadCourse(courseId);
+		return CourseMapper.toCourseResponse(course);
 	}
 
 	/**
@@ -69,7 +70,7 @@ public class CourseServiceImpl implements CourseService {
 		if (request.status() != null) {
 			Checks.checkIfEnumExists(Status.class, request.status());
 		}
-		User loggedInUser = checks.currentlyLoggedInUser();
+		User loggedInUser = userUtil.currentlyLoggedInUser();
 		if (Checks.isAdmin(loggedInUser.getRole().getName())) {
 			return getAllCourses(request, pageable);
 		}
@@ -86,7 +87,7 @@ public class CourseServiceImpl implements CourseService {
 
 	private Page<CourseResponse> loadCourses(GetCoursesPage request, String status, Pageable pageable) {
 		return courseRepository.findAll(request, status, pageable)
-				.map(courseMapper::toCourseResponse);
+				.map(CourseMapper::toCourseResponse);
 	}
 
 	/**
@@ -94,14 +95,15 @@ public class CourseServiceImpl implements CourseService {
 	 */
 	@Override
 	public CourseResponse updateCourse(Long id, CourseRequest request) {
-		User loggedInUser = checks.currentlyLoggedInUser();
-		checks.checkAdmins(loggedInUser.getRole().getName());
-		Course course = globalUtil.loadCourse(id);
-		UpdateStrategy updateStrategy = globalUtil.checkStrategy("updateCourse");
-		course = (Course) updateStrategy.update(course, request);
-		courseRepository.save(course);
-		log.info(" Course {} updated successfully", course.getCode());
-		return courseMapper.toCourseResponse(course);
+		User loggedInUser = userUtil.currentlyLoggedInUser();
+		Checks.checkAdmins(loggedInUser.getRole().getName());
+		Course course = dataLoader.loadCourse(id);
+		Course updatedCourse = (Course) updateStrategyConfig
+				.checkStrategy("Course")
+				.update(course, request);
+		courseRepository.save(updatedCourse);
+		log.info(" Course {} updated successfully", updatedCourse.getCode());
+		return CourseMapper.toCourseResponse(updatedCourse);
 	}
 
 	private void existsByName(String name) {

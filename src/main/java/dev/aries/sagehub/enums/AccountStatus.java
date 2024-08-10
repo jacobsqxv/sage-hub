@@ -1,7 +1,7 @@
 package dev.aries.sagehub.enums;
 
 /**
- * Enum representing the possible states of a user account within the system.
+ * The {@code AccountStatus} class represents the possible states of a user account within the system.
  * <ul>
  *     <li>{@code ACTIVE} - The account is currently active and the user can access all the system's features.</li>
  *     <li>{@code INACTIVE} - The account is inactive, possibly due to user inaction or administrative decision.
@@ -9,6 +9,7 @@ package dev.aries.sagehub.enums;
  *     <li>{@code DELETED} - The account has been deleted.
  *     This is typically irreversible and means all user data associated with the account may have been removed.</li>
  * </ul>
+ *
  * @author Jacobs Agyei
  */
 public enum AccountStatus {

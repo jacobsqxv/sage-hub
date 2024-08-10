@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.util.Calendar;
 
 import dev.aries.sagehub.constant.Patterns;
+import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.model.attribute.Email;
 import dev.aries.sagehub.model.attribute.Password;
 import dev.aries.sagehub.model.attribute.Username;
@@ -39,7 +40,7 @@ public class Generators {
 	private static final CharacterRule alphabetical = new CharacterRule(EnglishCharacterData.Alphabetical);
 	private final CourseRepository courseRepository;
 
-	public Password generatePassword(int length) {
+	public static Password generatePassword(int length) {
 		length = Math.max(length, 8);
 		CharacterData specialChars = new CharacterData() {
 			public String getErrorCode() {
@@ -84,22 +85,22 @@ public class Generators {
 		return new Username(username);
 	}
 
-	public Email generateUserEmail(String username, String domain) {
-		domain = domain.toLowerCase();
+	public static Email generateUserEmail(String username, RoleEnum role) {
+		String domain = role.name().toLowerCase();
 		String email = String.format("%s.%s%s@sagehub.xyz", username, domain.substring(0, 2), domain.charAt(3));
 		return new Email(email);
 	}
 
 	public Long generateUniqueId(boolean isStudent) {
-		Long id = Long.valueOf(generateId(isStudent));
+		long id = Long.parseLong(generateId(isStudent));
 		if (isStudent) {
 			while (voucherRepository.existsBySerialNumber(id)) {
-				id = Long.valueOf(generateId(true));
+				id = Long.parseLong(generateId(true));
 			}
 		}
 		else {
 			while (staffRepository.existsById(id)) {
-				id = Long.valueOf(generateId(false));
+				id = Long.parseLong(generateId(false));
 			}
 		}
 		return id;
@@ -133,7 +134,7 @@ public class Generators {
 		return code;
 	}
 
-	public String generateToken(int length) {
+	public static String generateToken(int length) {
 		return generator.generatePassword(length, digits, alphabetical);
 	}
 }
