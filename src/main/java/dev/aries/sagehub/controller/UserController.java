@@ -1,10 +1,8 @@
 package dev.aries.sagehub.controller;
 
-import dev.aries.sagehub.dto.request.AddUserRequest;
 import dev.aries.sagehub.dto.request.AdminRequest;
 import dev.aries.sagehub.dto.request.PasswordChangeRequest;
 import dev.aries.sagehub.dto.response.AdminResponse;
-import dev.aries.sagehub.dto.response.BasicUserResponse;
 import dev.aries.sagehub.dto.response.GenericResponse;
 import dev.aries.sagehub.service.adminservice.AdminService;
 import dev.aries.sagehub.service.userservice.UserService;
@@ -56,17 +54,5 @@ public class UserController {
 	public ResponseEntity<AdminResponse> addAdmin(
 			@RequestBody @Valid AdminRequest request) {
 		return new ResponseEntity<>(adminService.addAdmin(request), HttpStatus.CREATED);
-	}
-
-	@PostMapping
-	@PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
-	@Operation(summary = "Add a new faculty member",
-			description = "Add a student or staff to the system",
-			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "201", description = "Faculty member added successfully",
-			content = {@Content(schema = @Schema(implementation = BasicUserResponse.class))})
-	public ResponseEntity<BasicUserResponse> addFacultyMember(@RequestBody @Valid AddUserRequest request) {
-		return new ResponseEntity<>(userService.addFacultyMember(request),
-				HttpStatus.CREATED);
 	}
 }

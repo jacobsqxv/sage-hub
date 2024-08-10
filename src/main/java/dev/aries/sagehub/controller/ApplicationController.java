@@ -2,12 +2,11 @@ package dev.aries.sagehub.controller;
 
 import java.util.List;
 
-import dev.aries.sagehub.dto.request.ApplicantRequest;
+import dev.aries.sagehub.dto.request.ApplicantInfoRequest;
 import dev.aries.sagehub.dto.request.ProgramChoicesRequest;
-import dev.aries.sagehub.dto.response.ApplicationResponse;
-import dev.aries.sagehub.dto.response.BasicApplicationResponse;
+import dev.aries.sagehub.dto.response.ApplicantInfoResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
-import dev.aries.sagehub.service.applicantservice.ApplicantService;
+import dev.aries.sagehub.service.applicationservice.ApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,33 +28,44 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/applicants")
+@RequestMapping("/api/v1/applications")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('SCOPE_APPLICANT')")
-@Tag(name = "Applicant", description = "Manage applicants and their information")
-public class ApplicantController {
-	private final ApplicantService applicantService;
+@Tag(name = "Application", description = "Manage applicants and their information")
+public class ApplicationController {
+	private final ApplicationService applicationService;
 
-	@PostMapping
+	@PostMapping("/applicant-info")
 	@Operation(summary = "Start application",
-			description = "Start application process by adding personal information",
+			description = "Start application process by adding applicant personal information",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Applicant personal information added successfully",
-			content = {@Content(schema = @Schema(implementation = BasicApplicationResponse.class))})
-	public ResponseEntity<BasicApplicationResponse> addPersonalInformation(
-			@RequestBody @Valid ApplicantRequest request) {
-		return new ResponseEntity<>(applicantService.addPersonalInfo(request), HttpStatus.CREATED);
+			content = {@Content(schema = @Schema(implementation = ApplicantInfoResponse.class))})
+	public ResponseEntity<ApplicantInfoResponse> addPersonalInformation(
+			@RequestBody @Valid ApplicantInfoRequest request) {
+		return new ResponseEntity<>(applicationService.addApplicantInfo(request), HttpStatus.CREATED);
 	}
 
-	@GetMapping("{id}")
-	@Operation(summary = "Get applicant",
+	@PutMapping("{id}/applicant-info")
+	@Operation(summary = "Update applicant information",
+			description = "Update applicant information by ID",
+			security = @SecurityRequirement(name = "bearerAuth"))
+	@ApiResponse(responseCode = "200", description = "Applicant information updated successfully",
+			content = {@Content(schema = @Schema(implementation = ApplicantInfoResponse.class))})
+	public ResponseEntity<ApplicantInfoResponse> updateApplicantInfo(
+			@PathVariable Long id, @RequestBody @Valid ApplicantInfoRequest request) {
+		return ResponseEntity.ok(applicationService.updateApplicantInfo(id, request));
+	}
+
+	@GetMapping("{id}/applicant-info")
+	@Operation(summary = "Get applicant information",
 			description = "Get applicant information by ID",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Applicant information retrieved successfully",
-			content = {@Content(schema = @Schema(implementation = ApplicationResponse.class))})
-	public ResponseEntity<ApplicationResponse> getApplicant(
+			content = {@Content(schema = @Schema(implementation = ApplicantInfoResponse.class))})
+	public ResponseEntity<ApplicantInfoResponse> getApplicant(
 			@PathVariable Long id) {
-		return ResponseEntity.ok(applicantService.getApplicant(id));
+		return ResponseEntity.ok(applicationService.getApplicantInfo(id));
 	}
 
 	@PutMapping("{id}/program-choices")
@@ -66,7 +76,7 @@ public class ApplicantController {
 			content = {@Content(schema = @Schema(implementation = ProgramResponse.class))})
 	public ResponseEntity<List<ProgramResponse>> updateProgramChoices(
 			@PathVariable Long id, @RequestBody @Valid ProgramChoicesRequest request) {
-		return ResponseEntity.ok(applicantService.updateApplicantProgramChoices(id, request));
+		return ResponseEntity.ok(applicationService.updateApplicantProgramChoices(id, request));
 	}
 
 }

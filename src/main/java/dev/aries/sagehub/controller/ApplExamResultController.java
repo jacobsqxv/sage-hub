@@ -27,65 +27,65 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/v1/applicants/{id}/results")
+@RequestMapping("api/v1/applications/{id}/results")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('SCOPE_APPLICANT')")
-@Tag(name = "Applicant")
-public class ExamResultController {
+@Tag(name = "Application")
+public class ApplExamResultController {
 	private final ExamResultService examResultService;
 
 	@PostMapping
-	@Operation(summary = "Add new applicant results",
-			description = "Add new applicant results by Applicant ID",
+	@Operation(summary = "Add new exam results",
+			description = "Add new exam results for applicant by id",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "201", description = "Applicant results added successfully",
+	@ApiResponse(responseCode = "201", description = "Exam results added successfully",
 			content = {@Content(schema = @Schema(implementation = ExamResultResponse.class))})
 	public ResponseEntity<ExamResultResponse> addResults(
-			@PathVariable Long id, @RequestBody @Valid ExamResultRequest request) {
-		return new ResponseEntity<>(examResultService.addExamResults(id, request),
+			@PathVariable("id") Long applicationId, @RequestBody @Valid ExamResultRequest request) {
+		return new ResponseEntity<>(examResultService.addExamResults(applicationId, request),
 				HttpStatus.CREATED);
 	}
 
 	@GetMapping
-	@Operation(summary = "Get all applicant results",
-			description = "Get all applicant results by Applicant ID",
+	@Operation(summary = "Get all exam results",
+			description = "Get all exam results of applicant by id",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "200", description = "Applicant results retrieved successfully",
+	@ApiResponse(responseCode = "200", description = "Exam results retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = ExamResultResponse.class))})
-	public ResponseEntity<List<ExamResultResponse>> getResults(@PathVariable("id") Long applicantId) {
-		return ResponseEntity.ok(examResultService.getExamResults(applicantId));
+	public ResponseEntity<List<ExamResultResponse>> getResults(@PathVariable("id") Long applicationId) {
+		return ResponseEntity.ok(examResultService.getExamResults(applicationId));
 	}
 
 	@GetMapping("{result-id}")
-	@Operation(summary = "Get applicant results",
-			description = "Get applicant results by Applicant ID and Result ID",
+	@Operation(summary = "Get exam results",
+			description = "Get exam results by application id and result id",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "200", description = "Applicant results retrieved successfully",
+	@ApiResponse(responseCode = "200", description = "Applicant exam results retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = ExamResultResponse.class))})
-	public ResponseEntity<ExamResultResponse> getResult(@PathVariable("id") Long applicantId,
+	public ResponseEntity<ExamResultResponse> getResult(@PathVariable("id") Long applicationId,
 								@PathVariable("result-id") Long resultId) {
-		return ResponseEntity.ok(examResultService.getExamResult(applicantId, resultId));
+		return ResponseEntity.ok(examResultService.getExamResult(applicationId, resultId));
 	}
 
 	@PutMapping("{result-id}")
-	@Operation(summary = "Update applicant results",
-			description = "Update applicant results by Applicant ID and Result ID",
+	@Operation(summary = "Update exam results",
+			description = "Update exam results by application id and result id",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "200", description = "Applicant results updated successfully",
+	@ApiResponse(responseCode = "200", description = "Exam results updated successfully",
 			content = {@Content(schema = @Schema(implementation = ExamResultResponse.class))})
-	public ResponseEntity<ExamResultResponse> updateResults(@PathVariable("id") Long applicantId,
+	public ResponseEntity<ExamResultResponse> updateResults(@PathVariable("id") Long applicationId,
 			@PathVariable("result-id") Long resultId, @RequestBody @Valid ExamResultRequest request) {
-		return ResponseEntity.ok(examResultService.updateExamResults(applicantId, resultId, request));
+		return ResponseEntity.ok(examResultService.updateExamResults(applicationId, resultId, request));
 	}
 
 	@DeleteMapping("{result-id}")
-	@Operation(summary = "Delete applicant results",
-			description = "Delete applicant results by Applicant ID and Result ID",
+	@Operation(summary = "Delete exam results",
+			description = "Delete exam results by application id and result id",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "204", description = "Applicant results deleted successfully")
-	public ResponseEntity<Void> deleteResults(@PathVariable("id") Long applicantId,
+	@ApiResponse(responseCode = "204", description = "Exam results deleted successfully")
+	public ResponseEntity<Void> deleteResults(@PathVariable("id") Long applicationId,
 			@PathVariable("result-id") Long resultId) {
-		examResultService.deleteExamResults(applicantId, resultId);
+		examResultService.deleteExamResults(applicationId, resultId);
 		return ResponseEntity.noContent().build();
 	}
 }

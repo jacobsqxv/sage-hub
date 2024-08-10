@@ -2,7 +2,7 @@ package dev.aries.sagehub.controller;
 
 import dev.aries.sagehub.dto.request.EmergencyInfoRequest;
 import dev.aries.sagehub.dto.response.EmergencyInfoResponse;
-import dev.aries.sagehub.service.emgcontactservice.EmergencyContactInterface;
+import dev.aries.sagehub.service.emergencyinfoservice.EmergencyInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,31 +22,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/users/{user-id}/emergency-contact")
+@RequestMapping("api/v1/users/{user-id}/emergency-info")
 @Tag(name = "User")
-public class EmergencyContactController {
-	private final EmergencyContactInterface emergencyContactService;
+public class EmergencyInfoController {
+	private final EmergencyInfoService emergencyInfoService;
 
 	@GetMapping
-	@Operation(summary = "Get emergency contact",
-			description = "Get emergency contact of a user",
+	@Operation(summary = "Get emergency contact information",
+			description = "Get emergency contact information of a user",
 			security = @SecurityRequirement(name = "bearerAuth"))
-	@ApiResponse(responseCode = "200", description = "Emergency contact retrieved successfully",
+	@ApiResponse(responseCode = "200", description = "Emergency contact information retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = EmergencyInfoResponse.class))})
-	public ResponseEntity<EmergencyInfoResponse> getEmergencyContact(
+	public ResponseEntity<EmergencyInfoResponse> getEmergencyInfo(
 			@PathVariable("user-id") Long id) {
-		return ResponseEntity.ok(emergencyContactService.getEmergencyContact(id));
+		return ResponseEntity.ok(emergencyInfoService.getEmergencyInfo(id));
 	}
 
 	@PutMapping
-	@Operation(summary = "Update emergency contact",
-			description = "Update emergency contact of a user",
+	@Operation(summary = "Update emergency contact information",
+			description = "Update emergency contact information of a user",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Emergency contact updated successfully",
 			content = {@Content(schema = @Schema(implementation = EmergencyInfoResponse.class))})
-	public ResponseEntity<EmergencyInfoResponse> updateEmergencyContact(
+	public ResponseEntity<EmergencyInfoResponse> updateEmergencyInfo(
 			@PathVariable("user-id") Long id,
 			@RequestBody @Valid EmergencyInfoRequest request) {
-		return ResponseEntity.ok(emergencyContactService.updateEmergencyContact(id, request));
+		return ResponseEntity.ok(emergencyInfoService.updateEmergencyInfo(id, request));
 	}
 }

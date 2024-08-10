@@ -1,8 +1,8 @@
 package dev.aries.sagehub.controller;
 
-import dev.aries.sagehub.dto.request.UserInfoRequest;
-import dev.aries.sagehub.dto.response.UserInfoResponse;
-import dev.aries.sagehub.service.userinfoservice.UserInfoService;
+import dev.aries.sagehub.dto.request.UserProfileRequest;
+import dev.aries.sagehub.dto.response.UserProfileResponse;
+import dev.aries.sagehub.service.userprofileservice.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,19 +22,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/users/{user-id}/user-info")
+@RequestMapping("api/v1/users/{user-id}/profile")
 @Tag(name = "User")
-public class UserInfoController {
-	private final UserInfoService userInfoService;
+public class UserProfileController {
+	private final UserProfileService userProfileService;
 
 	@GetMapping
 	@Operation(summary = "Get user info",
 			description = "Get a user's personal and emergency contact information",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "User info retrieved successfully",
-			content = {@Content(schema = @Schema(implementation = UserInfoResponse.class))})
-	public ResponseEntity<UserInfoResponse> getUserInfo(@PathVariable("user-id") Long id) {
-		return ResponseEntity.ok(userInfoService.getUserInfo(id));
+			content = {@Content(schema = @Schema(implementation = UserProfileResponse.class))})
+	public ResponseEntity<UserProfileResponse> getUserInfo(@PathVariable("user-id") Long id) {
+		return ResponseEntity.ok(userProfileService.getUserProfile(id));
 	}
 
 	@PutMapping
@@ -42,9 +42,9 @@ public class UserInfoController {
 			description = "Update user's personal and emergency contact information",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "User info updated successfully",
-			content = {@Content(schema = @Schema(implementation = UserInfoResponse.class))})
-	public ResponseEntity<UserInfoResponse> updateUserInfo(
-			@PathVariable("user-id") Long id, @RequestBody @Valid UserInfoRequest request) {
-		return ResponseEntity.ok(userInfoService.updateUserInfo(id, request));
+			content = {@Content(schema = @Schema(implementation = UserProfileResponse.class))})
+	public ResponseEntity<UserProfileResponse> updateUserInfo(
+			@PathVariable("user-id") Long id, @RequestBody @Valid UserProfileRequest request) {
+		return ResponseEntity.ok(userProfileService.updateUserProfile(id, request));
 	}
 }

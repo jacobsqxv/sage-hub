@@ -1,12 +1,12 @@
 package dev.aries.sagehub.controller;
 
-import dev.aries.sagehub.dto.request.ProgramCourseRequest;
+import dev.aries.sagehub.dto.request.CrseOffrgRequest;
 import dev.aries.sagehub.dto.request.ProgramRequest;
-import dev.aries.sagehub.dto.response.ProgramCourseResponse;
+import dev.aries.sagehub.dto.response.CrseOffrgResponse;
 import dev.aries.sagehub.dto.response.ProgramResponse;
-import dev.aries.sagehub.dto.search.GetPrgCoursesPage;
+import dev.aries.sagehub.dto.search.GetCrseOffrgPage;
 import dev.aries.sagehub.dto.search.GetProgramsPage;
-import dev.aries.sagehub.service.programservice.ProgramCourseService;
+import dev.aries.sagehub.service.programservice.CourseOfferingService;
 import dev.aries.sagehub.service.programservice.ProgramService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAnyAuthority('SCOPE_SUPER_ADMIN', 'SCOPE_ADMIN')")
 public class ProgramController {
 	private final ProgramService programService;
-	private final ProgramCourseService programCourseService;
+	private final CourseOfferingService courseOfferingService;
 
 	@PostMapping
 	@Operation(summary = "Add program", description = "Add a new program",
@@ -67,7 +67,7 @@ public class ProgramController {
 	@ApiResponse(responseCode = "200", description = "Program retrieved successfully",
 			content = {@Content(schema = @Schema(implementation = ProgramResponse.class))})
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<ProgramResponse> getProgram(@PathVariable("program-id")Long programId) {
+	public ResponseEntity<ProgramResponse> getProgram(@PathVariable("program-id") Long programId) {
 		return ResponseEntity.ok(programService.getProgram(programId));
 	}
 
@@ -85,21 +85,21 @@ public class ProgramController {
 	@Operation(summary = "Get program courses", description = "Get program courses by program ID",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Program courses retrieved successfully",
-			content = {@Content(schema = @Schema(implementation = ProgramCourseResponse.class))})
+			content = {@Content(schema = @Schema(implementation = CrseOffrgResponse.class))})
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<Page<ProgramCourseResponse>> getProgramCourses(@PathVariable("program-id") Long programId,
-							GetPrgCoursesPage request, @PageableDefault Pageable pageable) {
-		return ResponseEntity.ok(programCourseService.getProgramCourses(programId, request, pageable));
+	public ResponseEntity<Page<CrseOffrgResponse>> getProgramCourses(@PathVariable("program-id") Long programId,
+							GetCrseOffrgPage request, @PageableDefault Pageable pageable) {
+		return ResponseEntity.ok(courseOfferingService.getCrseOffgForProgram(programId, request, pageable));
 	}
 
 	@PostMapping("/{program-id}/courses")
 	@Operation(summary = "Add course config", description = "Add new course config for a given period",
 			security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Program course added successfully",
-			content = {@Content(schema = @Schema(implementation = ProgramCourseResponse.class))})
-	public ResponseEntity<ProgramCourseResponse> addProgramCourse(
-			@PathVariable("program-id") Long programId, @RequestBody @Valid ProgramCourseRequest request) {
-		return new ResponseEntity<>(programCourseService.addProgramCourse(programId, request),
+			content = {@Content(schema = @Schema(implementation = CrseOffrgResponse.class))})
+	public ResponseEntity<CrseOffrgResponse> addProgramCourse(
+			@PathVariable("program-id") Long programId, @RequestBody @Valid CrseOffrgRequest request) {
+		return new ResponseEntity<>(courseOfferingService.addCrseOffgForProgram(programId, request),
 				HttpStatus.CREATED);
 	}
 
@@ -109,7 +109,7 @@ public class ProgramController {
 	@ApiResponse(responseCode = "204", description = "Program course deleted successfully")
 	public ResponseEntity<Void> deleteProgramCourse(
 			@PathVariable("program-id") Long programId, @PathVariable("id") Long id) {
-			programCourseService.deleteCourseConfig(programId, id);
+		courseOfferingService.deleteCourseConfig(programId, id);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
