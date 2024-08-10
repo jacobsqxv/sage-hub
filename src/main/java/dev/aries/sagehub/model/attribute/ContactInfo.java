@@ -1,4 +1,4 @@
-package dev.aries.sagehub.model;
+package dev.aries.sagehub.model.attribute;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -14,5 +14,5 @@ public record ContactInfo(
 		@Column(nullable = false)
 		Address residentialAddress,
 		String postalAddress
-){
+) {
 }

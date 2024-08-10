@@ -1,5 +1,6 @@
 package dev.aries.sagehub.model;
 
+import dev.aries.sagehub.model.attribute.Address;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -18,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class ICEInfo extends Auditing {
+public class EmergencyInfo extends Auditing {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,10 +45,10 @@ public class ICEInfo extends Auditing {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof ICEInfo ICEInfo)) {
+		if (!(o instanceof EmergencyInfo EmergencyInfo)) {
 			return false;
 		}
-		return getId() != null && getId().equals(ICEInfo.getId());
+		return getId() != null && getId().equals(EmergencyInfo.getId());
 	}
 
 	@Override

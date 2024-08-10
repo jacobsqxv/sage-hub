@@ -24,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class ProgramCourse extends Auditing {
+public class CourseOffering extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -46,10 +46,10 @@ public class ProgramCourse extends Auditing {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof ProgramCourse programCourse)) {
+		if (!(o instanceof CourseOffering courseOffering)) {
 			return false;
 		}
-		return getId() != null && getId().equals(programCourse.getId());
+		return getId() != null && getId().equals(courseOffering.getId());
 	}
 
 	@Override

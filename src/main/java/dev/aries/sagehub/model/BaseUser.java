@@ -27,13 +27,10 @@ public class BaseUser extends Auditing {
 	private String primaryEmail;
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(nullable = false)
-	private BasicInfo basicInfo;
+	private UserProfile userProfile;
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(nullable = false)
-	private ContactInfo contactInfo;
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(nullable = false)
-	private EmergencyContact emergencyContact;
+	private EmergencyInfo emergencyInfo;
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(nullable = false)
 	private User user;

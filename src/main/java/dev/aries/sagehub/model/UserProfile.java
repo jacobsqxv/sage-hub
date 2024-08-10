@@ -20,7 +20,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class UserInfo extends Auditing {
+public class UserProfile extends Auditing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -41,10 +41,10 @@ public class UserInfo extends Auditing {
 		if (this == o) {
 			return true;
 		}
-		if (!(o instanceof UserInfo userInfo)) {
+		if (!(o instanceof UserProfile userProfile)) {
 			return false;
 		}
-		return getId() != null && getId().equals(userInfo.getId());
+		return getId() != null && getId().equals(userProfile.getId());
 	}
 
 	@Override

@@ -35,14 +35,12 @@ public class ExamResult extends Auditing {
 	@Enumerated(EnumType.STRING)
 	private ResultType type;
 	@Column(nullable = false)
-	private String schoolName;
-	@Column(nullable = false)
 	private Integer year;
 	@Column(nullable = false, unique = true)
 	private String indexNumber;
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "exam", orphanRemoval = true)
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "examResult", orphanRemoval = true)
 	@JsonManagedReference
-	private List<SubjectScore> grades;
+	private List<SubjectScore> results;
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 

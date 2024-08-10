@@ -1,4 +1,4 @@
-package dev.aries.sagehub.model;
+package dev.aries.sagehub.model.attribute;
 
 import dev.aries.sagehub.enums.Semester;
 import dev.aries.sagehub.enums.Year;

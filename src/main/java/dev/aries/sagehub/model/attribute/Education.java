@@ -1,17 +1,21 @@
 package dev.aries.sagehub.model.attribute;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Builder;
 
 @Embeddable
-public record Address(
+@Builder
+public record Education(
 		@Column(nullable = false)
-		String street,
+		String institution,
 		@Column(nullable = false)
-		String city,
+		String programPursued,
 		@Column(nullable = false)
-		String region,
+		LocalDate startDate,
 		@Column(nullable = false)
-		String country
+		LocalDate endDate
 ) {
 }
