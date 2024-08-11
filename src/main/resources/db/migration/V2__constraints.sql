@@ -30,7 +30,6 @@ CALL create_fk_if_not_exists('application_program_choices', 'fk_application_prog
 CALL create_fk_if_not_exists('application_program_choices', 'fk_application_program_choices_on_program_choices', 'program_choices_id', 'program', 'id');
 CALL create_fk_if_not_exists('course_offering', 'fk_course_offering_on_course', 'course_id', 'course', 'id');
 CALL create_fk_if_not_exists('course_offering', 'fk_course_offering_on_program', 'program_id', 'program', 'id');
-CALL create_fk_if_not_exists('exam_result', 'fk_exam_result_on_user', 'user_id', '_user', 'id');
 CALL create_fk_if_not_exists('program', 'fk_program_on_department', 'department_id', 'department', 'id');
 CALL create_fk_if_not_exists('staff', 'fk_staff_on_user_profile', 'user_profile_id', 'user_profile', 'id');
 CALL create_fk_if_not_exists('staff', 'fk_staff_on_emergency_info', 'emergency_info_id', 'emergency_info', 'id');

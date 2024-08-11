@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS exam_result
     index_number VARCHAR(255)                            NOT NULL,
     type         VARCHAR(255)                            NOT NULL,
     year         INTEGER                                 NOT NULL,
-    user_id      BIGINT,
+    student_id   BIGINT                                  NOT NULL,
     CONSTRAINT exam_result_pkey PRIMARY KEY (id),
     CONSTRAINT uc_exam_result_index_number UNIQUE (index_number)
 );
