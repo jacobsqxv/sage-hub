@@ -10,6 +10,7 @@ import dev.aries.sagehub.enums.RoleEnum;
 import dev.aries.sagehub.exception.UnauthorizedAccessException;
 import dev.aries.sagehub.model.User;
 import dev.aries.sagehub.model.attribute.Password;
+import dev.aries.sagehub.model.attribute.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,6 +92,16 @@ public class Checks {
 		}
 		catch (NumberParseException ex) {
 			return false;
+		}
+	}
+
+	public static String toIntlFormat(PhoneNumber phoneNo) {
+		try {
+			Phonenumber.PhoneNumber intl = PHONE_NUMBER_UTIL.parse(phoneNo.number(), phoneNo.countryCode());
+			return String.valueOf(intl.getCountryCode()) + intl.getNationalNumber();
+		}
+		catch (NumberParseException ex) {
+			throw new IllegalArgumentException(ExceptionConstants.UNEXPECTED_VALUE);
 		}
 	}
 }

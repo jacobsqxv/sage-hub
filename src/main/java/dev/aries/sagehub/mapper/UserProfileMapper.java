@@ -13,6 +13,7 @@ import dev.aries.sagehub.model.attribute.ContactInfo;
 import dev.aries.sagehub.model.attribute.Education;
 import dev.aries.sagehub.model.attribute.Name;
 import dev.aries.sagehub.model.attribute.PersonalInfo;
+import dev.aries.sagehub.util.Checks;
 
 public final class UserProfileMapper {
 
@@ -37,7 +38,7 @@ public final class UserProfileMapper {
 	public static ContactInfo toContactInfo(ContactInfoRequest request) {
 		return new ContactInfo(
 				request.secondaryEmail().value(),
-				request.phoneNumber().number(),
+				Checks.toIntlFormat(request.phoneNumber()),
 				toAddress(request.residentialAddress()),
 				request.postalAddress()
 		);

@@ -10,6 +10,7 @@ import dev.aries.sagehub.model.attribute.Address;
 import dev.aries.sagehub.model.attribute.ContactInfo;
 import dev.aries.sagehub.model.attribute.Education;
 import dev.aries.sagehub.model.attribute.PersonalInfo;
+import dev.aries.sagehub.util.Checks;
 
 public final class UpdateAttributes {
 
@@ -27,7 +28,7 @@ public final class UpdateAttributes {
 				(req.secondaryEmail() != null) ?
 						req.secondaryEmail().value() : entity.secondaryEmail(),
 				(req.phoneNumber() != null) ?
-						req.phoneNumber().number() : entity.phoneNumber(),
+						Checks.toIntlFormat(req.phoneNumber()) : entity.phoneNumber(),
 				(req.residentialAddress() != null) ?
 						updateAddress(
 								entity.residentialAddress(), req.residentialAddress())

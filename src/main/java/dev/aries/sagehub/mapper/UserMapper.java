@@ -22,13 +22,13 @@ public final class UserMapper {
 		);
 	}
 
-	public static EmergencyInfoResponse toEmergInfoResponse(EmergencyInfo EmergencyInfo) {
+	public static EmergencyInfoResponse toEmergInfoResponse(EmergencyInfo emergencyInfo) {
 		return new EmergencyInfoResponse(
-				EmergencyInfo.getId(),
-				EmergencyInfo.getFullName(),
-				EmergencyInfo.getRelationship(),
-				EmergencyInfo.getPhoneNumber(),
-				EmergencyInfo.getAddress()
+				emergencyInfo.getId(),
+				emergencyInfo.getFullName(),
+				emergencyInfo.getRelationship(),
+				emergencyInfo.getPhoneNumber(),
+				emergencyInfo.getAddress()
 		);
 	}
 
