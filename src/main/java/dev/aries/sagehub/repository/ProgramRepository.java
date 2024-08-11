@@ -1,6 +1,7 @@
 package dev.aries.sagehub.repository;
 
 import dev.aries.sagehub.dto.search.GetProgramsPage;
+import dev.aries.sagehub.enums.Degree;
 import dev.aries.sagehub.enums.Status;
 import dev.aries.sagehub.model.Program;
 import dev.aries.sagehub.specification.GeneralSpecification;
@@ -20,7 +21,7 @@ public interface ProgramRepository extends JpaRepository<Program, Long>, JpaSpec
 	@Query("UPDATE Program p SET p.status = :status WHERE p.department.id = :departmentId")
 	void updateStatusByDepartmentId(@Param("status") Status status, @Param("departmentId") Long departmentId);
 
-	boolean existsByName(String name);
+	boolean existsByNameAndDegree(String name, Degree degree);
 
 	default Page<Program> findAll(GetProgramsPage request, String status, Pageable page) {
 		GeneralSpecification<Program> spec = new GeneralSpecification<>();

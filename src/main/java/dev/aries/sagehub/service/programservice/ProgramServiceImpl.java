@@ -59,7 +59,7 @@ public class ProgramServiceImpl implements ProgramService, CourseOfferingService
 	 */
 	@Override
 	public ProgramResponse addProgram(ProgramRequest request) {
-		existsByName(request.name().toUpperCase());
+		existingProgram(request.name().toUpperCase(), request.degree());
 		Department department = dataLoader.loadDepartment(request.departmentId());
 		Degree degree = request.degree();
 		Program program = Program.builder()
@@ -209,10 +209,10 @@ public class ProgramServiceImpl implements ProgramService, CourseOfferingService
 		}
 	}
 
-	private void existsByName(String name) {
-		if (programRepository.existsByName(name)) {
+	private void existingProgram(String name, Degree degree) {
+		if (programRepository.existsByNameAndDegree(name, degree)) {
 			throw new IllegalArgumentException(
-					String.format(ExceptionConstants.NAME_EXISTS, NAME, name));
+					String.format(ALREADY_EXISTS, "Program"));
 		}
 	}
 }
