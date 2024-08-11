@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ExamResultRepository extends JpaRepository<ExamResult, Long> {
 	boolean existsByIndexNumber(String indexNumber);
 
-	List<ExamResult> findAllByUserId(Long id);
+	List<ExamResult> findAllByStudentId(Long id);
 
-	Optional<ExamResult> findByIdAndUserId(Long id, Long userId);
+	Optional<ExamResult> findByIdAndStudentId(Long id, Long userId);
 }

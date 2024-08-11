@@ -52,7 +52,7 @@ public class ApplicantExamResults implements ExamResultService {
 		Application application = dataLoader.loadApplicationById(applicationId);
 		checkLoggedInApplicant(applicationId, loggedInUser.getId());
 		checkExistingResults(request.indexNumber());
-		ExamResult results = ExamResultMapper.toExamResult(request, loggedInUser);
+		ExamResult results = ExamResultMapper.toExamResult(request, application.getStudent().getId());
 		for (SubjectScore score : results.getResults()) {
 			score.setExamResult(results);
 		}
@@ -139,13 +139,13 @@ public class ApplicantExamResults implements ExamResultService {
 	}
 
 	private ExamResult loadApplicantResultById(Long resultId, Long userId) {
-		return examResultRepository.findByIdAndUserId(resultId, userId)
+		return examResultRepository.findByIdAndStudentId(resultId, userId)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Results")));
 	}
 
 	private List<ExamResult> loadApplicantResults(Long userId) {
-		return examResultRepository.findAllByUserId(userId);
+		return examResultRepository.findAllByStudentId(userId);
 	}
 
 	private List<SubjectScore> updateScores(List<SubjectScoreRequest> scores, ExamResult examResult) {

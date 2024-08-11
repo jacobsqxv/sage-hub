@@ -7,7 +7,6 @@ import dev.aries.sagehub.dto.response.ExamResultResponse;
 import dev.aries.sagehub.dto.response.SubjectScoreResponse;
 import dev.aries.sagehub.model.ExamResult;
 import dev.aries.sagehub.model.SubjectScore;
-import dev.aries.sagehub.model.User;
 
 public final class ExamResultMapper {
 
@@ -23,7 +22,7 @@ public final class ExamResultMapper {
 		);
 	}
 
-	public static ExamResult toExamResult(ExamResultRequest request, User user) {
+	public static ExamResult toExamResult(ExamResultRequest request, Long studentId) {
 		return ExamResult.builder()
 				.type(request.resultType())
 				.year(request.year())
@@ -31,7 +30,7 @@ public final class ExamResultMapper {
 				.results(request.subjectScores().stream()
 						.map(ExamResultMapper::toSubjectScore)
 						.toList())
-				.user(user)
+				.studentId(studentId)
 				.build();
 	}
 
