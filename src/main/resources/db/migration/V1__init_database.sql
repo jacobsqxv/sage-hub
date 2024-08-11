@@ -66,10 +66,10 @@ CREATE TABLE IF NOT EXISTS application
     end_date               date                                    NOT NULL,
     is_submitted           BOOLEAN                                 NOT NULL,
     status                 VARCHAR(255)                            NOT NULL,
-    student_id             BIGINT                                  NOT NULL,
+    applicant_id           BIGINT                                  NOT NULL,
     year_of_application_id BIGINT,
     CONSTRAINT application_pkey PRIMARY KEY (id),
-    CONSTRAINT uc_application_student_id UNIQUE (student_id)
+    CONSTRAINT uc_application_applicant_id UNIQUE (applicant_id)
 );
 
 CREATE TABLE IF NOT EXISTS application_exam_results

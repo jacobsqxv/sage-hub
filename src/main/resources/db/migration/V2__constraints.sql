@@ -22,7 +22,7 @@ $$;
 -- Add foreign key constraints
 CALL create_fk_if_not_exists('_user', 'fk__user_on_role', 'role_id', 'role', 'id');
 CALL create_fk_if_not_exists('admin', 'fk_admin_on_user', 'user_id', '_user', 'id');
-CALL create_fk_if_not_exists('application', 'fk_application_on_student', 'student_id', 'student', 'id');
+CALL create_fk_if_not_exists('application', 'fk_application_on_student', 'applicant_id', 'student', 'id');
 CALL create_fk_if_not_exists('application', 'fk_application_on_year_of_application', 'year_of_application_id', 'academic_year', 'id');
 CALL create_fk_if_not_exists('application_exam_results', 'fk_application_exam_results_on_application', 'application_id', 'application', 'id');
 CALL create_fk_if_not_exists('application_exam_results', 'fk_application_exam_results_on_exam_results', 'exam_results_id', 'exam_result', 'id');
