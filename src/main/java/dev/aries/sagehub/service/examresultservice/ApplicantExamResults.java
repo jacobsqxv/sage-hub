@@ -52,7 +52,7 @@ public class ApplicantExamResults implements ExamResultService {
 		Application application = dataLoader.loadApplicationById(applicationId);
 		checkLoggedInApplicant(applicationId, loggedInUser.getId());
 		checkExistingResults(request.indexNumber());
-		ExamResult results = ExamResultMapper.toExamResult(request, application.getStudent().getId());
+		ExamResult results = ExamResultMapper.toExamResult(request, application.getApplicant().getId());
 		for (SubjectScore score : results.getResults()) {
 			score.setExamResult(results);
 		}
@@ -161,7 +161,7 @@ public class ApplicantExamResults implements ExamResultService {
 	}
 
 	private void checkLoggedInApplicant(Long applicationId, Long userId) {
-		if (!applicationRepository.existsByIdAndStudentUserId(applicationId, userId)) {
+		if (!applicationRepository.existsByIdAndApplicantUserId(applicationId, userId)) {
 			throw new IllegalArgumentException(ExceptionConstants.UNAUTHORIZED_ACCESS);
 		}
 	}

@@ -67,7 +67,7 @@ public class DataLoader {
 	}
 
 	public Application loadApplicationByUserId(Long userId) {
-		return applicationRepository.findByStudentUserId(userId)
+		return applicationRepository.findByApplicantUserId(userId)
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format(ExceptionConstants.NOT_FOUND, "Applicant")));
 	}

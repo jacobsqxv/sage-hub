@@ -59,11 +59,11 @@ public class ModelFactory {
 				request.guardianInfo(),
 				user
 		);
-		Student student = (Student) userService.addFacultyMember(
+		Student newApplicant = (Student) userService.addFacultyMember(
 				facultyMember, voucher.getSerialNumber());
 		Application application = Application.builder()
 				.yearOfApplication(voucher.getAcademicYear())
-				.student(student)
+				.applicant(newApplicant)
 				.education(UserProfileMapper.toEducation(request.educationBackground()))
 				.examResults(new ArrayList<>())
 				.programChoices(new ArrayList<>())

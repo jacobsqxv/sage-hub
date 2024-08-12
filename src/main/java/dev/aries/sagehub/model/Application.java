@@ -36,7 +36,7 @@ public class Application extends Auditing {
 	private Long id;
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(nullable = false)
-	private Student student;
+	private Student applicant;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ExamResult> examResults;
 	@OneToMany(fetch = FetchType.LAZY)

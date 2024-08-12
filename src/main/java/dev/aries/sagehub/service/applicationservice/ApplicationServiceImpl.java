@@ -75,7 +75,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 	public ApplicantInfoResponse getApplicantInfo(Long applicationId) {
 		User loggedInUser = userUtil.currentlyLoggedInUser();
 		Application application = dataLoader.loadApplicationById(applicationId);
-		Checks.validateLoggedInUser(loggedInUser, application.getStudent().getUser());
+		Checks.validateLoggedInUser(loggedInUser, application.getApplicant().getUser());
 		return ApplicationMapper.toApplicantInfoResponse(application);
 	}
 
@@ -86,8 +86,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 	public ApplicantInfoResponse updateApplicantInfo(Long applicationId, ApplicantInfoRequest request) {
 		User loggedInUser = userUtil.currentlyLoggedInUser();
 		Application application = dataLoader.loadApplicationById(applicationId);
-		Checks.validateLoggedInUser(loggedInUser, application.getStudent().getUser());
-		UserProfile userProfile = application.getStudent().getUserProfile();
+		Checks.validateLoggedInUser(loggedInUser, application.getApplicant().getUser());
+		UserProfile userProfile = application.getApplicant().getUserProfile();
 		UserProfileRequest userProfileRequest = new UserProfileRequest(
 				request.applicantInfo().personalInfo(),
 				request.applicantInfo().contactInfo()
@@ -111,7 +111,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 	public List<ProgramResponse> updateApplicantProgramChoices(Long applicationId, ProgramChoicesRequest request) {
 		User loggedInUser = userUtil.currentlyLoggedInUser();
 		Application application = dataLoader.loadApplicationById(applicationId);
-		Checks.validateLoggedInUser(loggedInUser, application.getStudent().getUser());
+		Checks.validateLoggedInUser(loggedInUser, application.getApplicant().getUser());
 		List<Program> programChoices = request.programChoices()
 				.stream().map(dataLoader::loadProgram).toList();
 		if (programChoices.size() != 4) {
@@ -124,7 +124,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 	}
 
 	public void checkApplicantExists(Long userId) {
-		if (appRepository.existsByStudentUserId(userId)) {
+		if (appRepository.existsByApplicantUserId(userId)) {
 			throw new EntityExistsException(
 					String.format(ALREADY_EXISTS, "Applicant"));
 		}
